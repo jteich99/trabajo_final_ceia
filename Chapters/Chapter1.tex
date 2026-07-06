@@ -5,294 +5,145 @@
 \label{Chapter1} % For referencing the chapter elsewhere, use \ref{Chapter1} 
 \label{IntroGeneral}
 
-Todos los capítulos deben comenzar con un breve párrafo introductorio que indique cuál es el contenido que se encontrará al leerlo.  La redacción sobre el contenido de la memoria debe hacerse en presente y todo lo referido al proyecto en pasado, siempre de modo impersonal.
+A continuación, se presentan los lineamientos básicos en cuanto al funcionamiento de la Central Nuclear Atucha II, el diseño termohidráulico de la misma, y los métodos de cálculo de Potencia Límite de Canal y estimación de Flujo Crítico de Calor.
 
-%----------------------------------------------------------------------------------------
+\section{Contexto y motivación}
+Uno de los cálculos más importantes en el diseño termohidráulico de un reactor PHWR (del inglés, \textit{Pressurized Heavy Water Reactor}) es el de las Potencias Límite de Canal (PLC). Este cálculo puede necesitar repetirse más de un millón de veces durante cada iteración del cálculo de una estrategia de recambio de combustibles, lo que implica un alto costo computacional. Por lo tanto, obtener una herramienta que permita computar de manera eficiente las PLC e identificar los casos más críticos a ser evaluados con los códigos termohidráulicos, es de alto interés.
 
-% Define some commands to keep the formatting separated from the content 
-\newcommand{\keyword}[1]{\textbf{#1}}
-\newcommand{\tabhead}[1]{\textbf{#1}}
-\newcommand{\code}[1]{\texttt{#1}}
-\newcommand{\file}[1]{\texttt{\bfseries#1}}
-\newcommand{\option}[1]{\texttt{\itshape#1}}
-\newcommand{\grados}{$^{\circ}$}
+Adicionalmente, en el cálculo con los códigos termohidráulicos, un paso fundamental es la estimación del Flujo Crítico de Calor (CHF, del inglés \textit{Critical Heat Flux}) en función de las condiciones locales del fluido. Hoy en día, esto se realiza con métodos que se dividen en dos: fórmulas semi-empíricas que buscan capturar la alta dimensionalidad del problema, y tablas de Flujo Crítico de Calor obtenidas de ensayos en geometrías simples que luego son modificadas por factores ad-hoc para replicar lo mejor posible los ensayos realizados sobre las geometrías reales del canal refrigerante del reactor.
 
-%----------------------------------------------------------------------------------------
+\section{Central Nuclear Atucha II}
+La Central Nuclear Atucha II (CNA-UII) se ubica en la localidad de Lima, en la provincia de Buenos Aires, Argentina. Es una central nuclear de tipo PHWR, que utiliza agua pesada (óxido de deuterio) como moderador y refrigerante, y uranio natural como combustible. El reactor nuclear genera 2175 MW térmicos, proveyendo 745 MW eléctricos al Sistema Argentino de Interconexión (SADI). En la Figura \ref{fig:cna2} se aprecia una foto aérea de la central.
 
-%\section{Introducción}
-
-%----------------------------------------------------------------------------------------
-\section{Aprendiendo \LaTeX{}}
-
-\LaTeX{} no es \textsc{WYSIWYG} (What You See is What You Get), a diferencia de los procesadores de texto como Microsoft Word o Pages de Apple o incluso LibreOffice en el mundo open-source. En lugar de ello, un documento escrito para \LaTeX{} es en realidad un archivo de texto simple o llano que \emph{no contiene formato} . Nosotros le decimos a \LaTeX{} cómo deseamos que se aplique el formato en el documento final escribiendo comandos simples entre el texto, por ejemplo, si quiero usar texto en itálicas para dar énfasis, escribo \verb|\it{texto}| y pongo el texto que quiero en itálicas entre medio de las llaves. Esto significa que \LaTeX{} es un lenguaje del tipo \enquote{mark-up}, muy parecido a HTML.
-
-\subsection{Una introducción (no tan corta) a \LaTeX{}}
-
-Si sos nuevo en \LaTeX{}, hay un muy buen libro electrónico - disponible gratuitamente en Internet como un archivo PDF - llamado, \enquote{A (not so short) Introduction to \LaTeX{}}. El título del libro es generalmente acortado a simplemente \emph{lshort}. Puede descargar la versión más reciente en inglés (ya que se actualiza de vez en cuando) desde aquí:
-\url{http://www.ctan.org/tex-archive/info/lshort/english/lshort.pdf}
-
-Se puede encontrar la versión en español en la lista en esta página: \url{http://www.ctan.org/tex-archive/info/lshort/}
-
-\subsubsection{Una subsubsección}
-
-Acá tiene un ejemplo de una ``subsubsección'' que es el cuarto nivel de ordenamiento del texto, después de capítulo, sección y subsección.  Como se puede ver, las subsubsecciones no van numeradas en el cuerpo del documento ni en el índice.  El formato está definido por la plantilla y no debe ser modificado.
-
-\subsection{Guía matemática rápida para \LaTeX{}}
-
-Si estás escribiendo un documento con mucho contenido matemático, entonces es posible que desees leer el documento de la AMS (American Mathematical Society) llamado, \enquote{A Short Math Guide for \LaTeX{}}. Se puede encontrar en línea en el siguiente link: \url{http://www.ams.org/tex/amslatex.html} en la sección \enquote{Additional Documentation} hacia la parte inferior de la página.
-
-
-%----------------------------------------------------------------------------------------
-
-\section{Utilizando esta plantilla}
-
-Si estás familiarizado con \LaTeX{}, entonces podés explorar la estructura de directorios de esta plantilla y proceder a personalizarla agregando tu información en el bloque \emph{INFORMACIÓN DE LA PORTADA} en el archivo \file{memoria.tex}.  
-
-Se puede continuar luego modificando el resto de los archivos siguiendo los lineamientos que se describen en la sección \ref{sec:FillingFile} en la página \pageref{sec:FillingFile}.
-
-Debés asegurarte de leer el capítulo \ref{Chapter2} acerca de las convenciones utilizadas para las Memoria de los Trabajos Finales de la \degreename.
-
-Si sos nuevo en \LaTeX{}, se recomienda que continúes leyendo el documento ya que contiene información básica para aprovechar el potencial de esta herramienta.
-
-
-%----------------------------------------------------------------------------------------
-
-\section{Qué incluye esta plantilla}
-
-\subsection{Carpetas}
-
-Esta plantilla se distribuye como una único archivo .zip que se puede descomprimir en varios archivos y carpetas. Asimismo, se puede consultar el repositorio git para obtener la última versión de los archivos, \url{https://github.com/patriciobos/Plantilla-CESE.git}. Los nombres de las carpetas son, o pretender ser, auto-explicativos.
-
-\keyword{Appendices} -- Esta es la carpeta donde se deben poner los apéndices. Cada apéndice debe ir en su propio archivo \file{.tex}. Se incluye un ejemplo y una plantilla en la carpeta.
-
-\keyword{Chapters} -- Esta es la carpeta donde se deben poner los capítulos de la memoria. Cada capítulo debe ir un su propio archivo \file{.tex} por separado.  Se ofrece por defecto, la siguiente estructura de capítulos y se recomienda su utilización dentro de lo posible:
-
-\begin{itemize}
-\item Capítulo 1: Introducción general	
-\item Capítulo 2: Introducción específica
-\item Capítulo 3: Diseño e implementación
-\item Capítulo 4: Ensayos y resultados
-\item Capítulo 5: Conclusiones
-
-\end{itemize}
-
-Esta estructura de capítulos es la que se recomienda para las memorias de la especialización.
-
-\keyword{Figures} -- Esta carpeta contiene todas las figuras de la memoria.  Estas son las versiones finales de las imágenes que van a ser incluidas en la memoria.  Pueden ser imágenes en formato \textit{raster}\footnote{\url{https://en.wikipedia.org/wiki/Raster_graphics}} como \file{.png}, \file{.jpg} o en formato vectoriales\footnote{\url{https://en.wikipedia.org/wiki/Vector_graphics}} como \file{.pdf}, \file{.ps}.  Se debe notar que utilizar imágenes vectoriales disminuye notablemente el peso del documento final y acelera el tiempo de compilación por lo que es recomendable su utilización siempre que sea posible.
-
-\subsection{Archivos}
-
-También están incluidos varios archivos, la mayoría de ellos son de texto plano y se puede ver su contenido en un editor de texto. Después de la compilación inicial, se verá que más archivos auxiliares son creados por \ LaTeX{} o BibTeX, pero son de uso interno y no es necesario hacer nada en particular con ellos.  Toda la información necesaria para compilar el documento se encuentra en los archivos \file{.tex}, \file{.bib}, \file{.cls} y en las imágenes de la carpeta Figures.
-
-\keyword{referencias.bib} - este es un archivo importante que contiene toda la información de referencias bibliográficas que se utilizarán para las citas en la memoria en conjunto con BibTeX. Usted puede escribir las entradas bibliográficas en forma manual, aunque existen también programas de gestión de referencias que facilitan la creación y gestión de las referencias y permiten exportarlas en formato BibTeX.  También hay disponibles sitios web como \url{books.google.com} que permiten obtener toda la información necesaria para una cita en formato BibTeX. Ver sección \ref{sec:biblio}
-
-\keyword{MastersDoctoralThesis.cls} -- este es un archivo importante. Es el archivos con la clase que le informa a \LaTeX{} cómo debe dar formato a la memoria. El usuario de la plantilla no debería necesitar modificar nada de este archivo.
-
-\keyword{memoria.pdf} -- esta es su memoria con una tipografía bellamente compuesta (en formato de archivo PDF) creado por \LaTeX{}. Se distribuye con la plantilla y después de compilar por primera vez sin hacer ningún cambio se debería obtener una versión idéntica a este documento.
-
-\keyword{memoria.tex} -- este es un archivo importante. Este es el archivo que tiene que compilar \LaTeX{} para producir la memoria como un archivo PDF. Contiene un marco de trabajo y estructuras que le indican a \LaTeX{} cómo diagramar la memoria.  Está altamente comentado para que se pueda entender qué es lo que realiza cada línea de código y por qué está incluida en ese lugar.  En este archivo se debe completar la información personalizada de las primeras sección según se indica en la sección \ref{sec:FillingFile}.
-
-Archivos que \emph{no} forman parte de la distribución de la plantilla pero que son generados por \LaTeX{} como archivos auxiliares necesarios para la producción de la memoria.pdf son:
-
-\keyword{memoria.aux} -- este es un archivo auxiliar generado por \LaTeX{}, si se borra \LaTeX{} simplemente lo regenera cuando se compila el archivo principal \file{memoria.tex}.
-
-\keyword{memoria.bbl} -- este es un archivo auxiliar generado por BibTeX, si se borra BibTeX simplemente lo regenera cuando se compila el archivo principal \file{memoria.tex}. Mientras que el archivo \file{.bib} contiene todas las referencias que hay, este archivo \file{.bbl} contine sólo las referencias que han sido citadas y se utiliza para la construcción de la bibiografía.
-
-\keyword{memoria.blg} -- este es un archivo auxiliar generado por BibTeX, si se borra BibTeX simplemente lo regenera cuando se compila el archivo principal \file{memoria.tex}.
-
-\keyword{memoria.lof} -- este es un archivo auxiliar generado por \LaTeX{}, si se borra \LaTeX{} simplemente lo regenera cuando se compila el archivo principal \file{memoria.tex}.  Le indica a \LaTeX{} cómo construir la sección \emph{Lista de Figuras}.
- 
-\keyword{memoria.log} --  este es un archivo auxiliar generado por \LaTeX{}, si se borra \LaTeX{} simplemente lo regenera cuando se compila el archivo principal \file{memoria.tex}. Contiene mensajes de \LaTeX{}. Si se reciben errores o advertencias durante la compilación, se guardan en este archivo \file{.log}.
-
-\keyword{memoria.lot} -- este es un archivo auxiliar generado por \LaTeX{}, si se borra \LaTeX{} simplemente lo regenera cuando se compila el archivo principal \file{memoria.tex}.  Le indica a \LaTeX{} cómo construir la sección \emph{Lista de Tablas}.
-
-\keyword{memoria.out} -- este es un archivo auxiliar generado por \LaTeX{}, si se borra \LaTeX{} simplemente lo regenera cuando se compila el archivo principal \file{memoria.tex}.
-
-De esta larga lista de archivos, sólo aquellos con la extensión \file{.bib}, \file{.cls} y \file{.tex} son importantes.  Los otros archivos auxiliares pueden ser ignorados o borrados ya que \LaTeX{} y BibTeX los regenerarán durante la compilación.
-
-%----------------------------------------------------------------------------------------
-
-\section{Entorno de trabajo}
-
-Ante de comenzar a editar la plantilla debemos tener un editor \LaTeX{} instalado en nuestra computadora.  En forma análoga a lo que sucede en lenguaje C, que se puede crear y editar código con casi cualquier editor, existen ciertos entornos de trabajo que nos pueden simplificar mucho la tarea.  En este sentido, se recomienda, sobre todo para los principiantes en \LaTeX{} la utilización de TexMaker, un programa gratuito y multi-plantaforma que está disponible tanto para windows como para sistemas GNU/linux.
-
-La versión más reciente de TexMaker es la 4.5 y se puede descargar del siguiente link: \url{http://www.xm1math.net/texmaker/download.html}. Se puede consultar el manual de usuario en el siguiente link: \url{http://www.xm1math.net/texmaker/doc.html}.
- 
-
-\subsection{Paquetes adicionales}
-
-Si bien durante el proceso de instalación de TexMaker, o cualquier otro editor que se haya elegido, se instalarán en el sistema los paquetes básicos necesarios para trabajar con \LaTeX{}, la plantilla de los trabajos de Especialización y Maestría requieren de paquete adicionales.
-
-Se indican a continuación los comandos que se deben introducir en la consola de Ubuntu (ctrl + alt + t) para instalarlos:
-
-\begin{lstlisting}[language=bash]
-  $ sudo apt install texlive-lang-spanish texlive-science 
-  $ sudo apt install texlive-bibtex-extra biber
-  $ sudo apt install texlive texlive-fonts-recommended
-  $ sudo apt install texlive-latex-extra
-\end{lstlisting}
-
-
-\subsection{Configurando TexMaker}
-\label{subsec:configurando}
-
-
-
-Una vez instalado el programa y los paquetes adicionales se debe abrir el archivo memoria.tex con el editor para ver una pantalla similar a la que se puede apreciar en la figura \ref{fig:texmaker}. 
-Una vez instalado el programa y los paquetes adicionales se debe abrir el archivo memoria.tex con el editor para ver una pantalla similar a la que se puede apreciar en la figura \ref{fig:texmaker}. 
-Una vez instalado el programa y los paquetes adicionales se debe abrir el archivo memoria.tex con el editor para ver una pantalla similar a la que se puede apreciar en la figura \ref{fig:texmaker}. 
-Una vez instalado el programa y los paquetes adicionales se debe abrir el archivo memoria.tex con el editor para ver una pantalla similar a la que se puede apreciar en la figura \ref{fig:texmaker}. 
-
-\vspace{1cm}
+La CNA-UII comenzó su construcción en 1982, pero debido a diversos factores fue suspendida en 1994. En 2006, la empresa Nucleoeléctrica Argentina S.A. (NASA) retomó la construcción de la central, logrando su primer criticidad el 3 de junio de 2014, y finalmente obteniendo en 2016 su licencia de operación comercial. El diseño de la CNA-UII es similar al de la Central Nuclear Atucha I (CNA-UI), emplazada en el mismo predio, desarrollado originalmente por la empresa alemana Siemens-KWU.
 
 \begin{figure}[htbp]
 	\centering
-	\includegraphics[width=.5\textwidth]{./Figures/texmaker.png}
-	\caption{Entorno de trabajo de texMaker.}
-	\label{fig:texmaker}
+	\includegraphics[width=.6\textwidth]{./Figures/cna2_aerea.jpg}
+	\caption{Fotografía aérea de la Central Nuclear Atucha II.}
+	\label{fig:cna2}
 \end{figure}
 
-\vspace{1cm}
+\section{Diseño Termohidráulico de la Central Nuclear Atucha II}
+El diseño termohidráulico de la CNA-UII tiene por objetivo "proporcionar una adecuada transferencia de calor compatible con la tasa de generación de calor en el núcleo y, con la capacidad de remover calor del sistema refrigerante del reactor. Además de los datos principales para el sistema refrigerante del reactor (geometría, caudal másico, nivel de presión y temperatura), el diseño termohidráulico especifica la configuración para los sistemas de control, limitación y protección del reactor que aseguran una operación segura de la planta dentro de los límites aceptables", según lo establecido en el Informe Final de Seguridad (IFS) de la CNA-UII \citep{IFS_CNA2}.
 
-Notar que existe una vista llamada Estructura a la izquierda de la interfaz que nos permite abrir desde dentro del programa los archivos individuales de los capítulos.  A la derecha se encuentra una vista con el archivo propiamente dicho para su edición. Hacia la parte inferior se encuentra una vista del log con información de los resultados de la compilación.  En esta última vista pueden aparecen advertencias o \textit{warning}, que normalmente pueden ser ignorados, y los errores que se indican en color rojo y deben resolverse para que se genere el PDF de salida.
+En la Tabla \ref{tab:condiciones_operacion_cna2} se presentan los principales parámetros de diseño y condiciones de operación de la CNA-UII. Se tiene un reactor con 451 elementos combustibles, cada uno alojado en un canal refrigerante, el cual toma agua pesada del plenum inferior, la calienta removiendo calor de los combustibles, y la retorna al circuito primario en el plenum superior. El núcleo se encuentra dividido en 5 zonas hidráulicas, cada una con un caudal másico característico, dado por un restrictor de caudal distintivo para cada zona de 1 a 4. La zona 5 no tiene restricción de caudal. Esta división en zonas hidráulicas se realizó con el criterio de obtener un salto entálpico uniforme en el núcleo, por lo que las zonas periféricas con menor potencia reciben menor caudal. En la Figura \ref{fig:zonas_hidraulicas} se presenta una imagen esquemática de la distribución de los canales en el núcleo de la CNA-UII, y las zonas hidráulicas del mismo.
 
-Recordar que el archivo que se debe compilar con PDFLaTeX es \file{memoria.tex}, si se tratara de compilar alguno de los capítulos saldría un error.  Para salvar la molestia de tener que cambiar de archivo para compilar cada vez que se realice una modificación en un capítulo, se puede definir el archivo \file{memoria.tex} como ``documento maestro'' yendo al menú opciones -> ``definir documento actual como documento maestro'', lo que permite compilar con PDFLaTeX memoria.tex directamente desde cualquier archivo que se esté modificando . Se muestra esta opción en la figura \ref{fig:docMaestro}.
-
-\begin{figure}[h]
+\begin{table}[h]
 	\centering
-	\includegraphics[width=\textwidth]{./Figures/docMaestro.png}
-	\caption{Definir memoria.tex como documento maestro.}
-	\label{fig:docMaestro}
+	\caption{Principales parámetros de diseño y condiciones de operación de la Central Nuclear Atucha II. \citep{IFS_CNA2}}
+	\begin{tabular}{l c}    
+        \toprule
+        \textbf{Condiciones Generales de Operación} & \textbf{CNA-UII} \\
+        \hline
+        Potencia térmica del reactor & 2160 $\text{MW}_\text{th}$ \\
+        Caudal másico total & 10576 $\nicefrac{\text{kg}}{\text{s}}$ \\
+        Presión del Sistema Primario & 115 bar \\
+        Temperatura de entrada del refrigerante & 277.8 $\degree\text{C}$ \\
+        Temperatura de salida del refrigerante & 314.6 $\degree\text{C}$ \\
+        Cantidad de zonas hidráulicas del núcleo & 5 \\
+        Cantidad de elementos combustibles en el núcleo & 451 \\
+        Cantidad de barras combustibles por elemento combustible & 37 \\
+		\bottomrule
+		% \hline
+	\end{tabular}
+	\label{tab:condiciones_operacion_cna2}
+\end{table}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=.6\textwidth]{./Figures/zonas_hidraulicas.png}
+	\caption{Esquematización de los canales refrigerantes en el núcleo de la CNA-UII y las 5 zonas hidráulicas. \citep{IFS_CNA2}}
+	\label{fig:zonas_hidraulicas}
 \end{figure}
 
-En el menú herramientas se encuentran las opciones de compilación.  Para producir un archivo PDF a partir de un archivo .tex se debe ejecutar PDFLaTeX (el shortcut es F6). Para incorporar nueva bibliografía se debe utilizar la opción BibTeX del mismo menú herramientas (el shortcut es F11).
+Para cumplir con los criterios de diseño y operación segura establecidos en el IFS, se deben cumplir dos principales criterios en cuanto a la potencia a la que pueden operar los combustibles dentro del núcleo: el criterio de límite de vacío a la salida de los canales refrigerantes y el criterio de Apartamiento de la Ebullición Nucleada (DNB, del inglés \textit{Departure from Nucleate Boiling}).
 
-Notar que para actualizar las tablas de contenidos se debe ejecutar PDFLaTeX dos veces.  Esto se debe a que es necesario actualizar algunos archivos auxiliares antes de obtener el resultado final.  En forma similar, para actualizar las referencias bibliográficas se debe ejecutar primero PDFLaTeX, después BibTeX y finalmente PDFLaTeX dos veces por idénticos motivos.
+En primer lugar, la fracción de vacío ($\alpha$) se define como el porcentaje del área a la salida del canal ocupada por vapor:
+\begin{equation}
+    \alpha = \frac{A_\text{vapor}}{A_\text{vapor} + A_\text{líquido}},
+\end{equation}
+y tiene un límite autoimpuesto para evitar vibraciones excesivas en los elementos combustibles y los componentes que aseguran su rigidez estructural. La fracción de vacío está relacionada con el título termodinámico ($x$) de la mezcla de vapor y líquido por la siguiente ecuación:
+\begin{equation}
+    \alpha = \cfrac{1}{1 + \cfrac{1-x}{x}\cdot \cfrac{\rho_v}{\rho_l}\cdot S},
+\end{equation}
+siendo $S$ el \textit{slip ratio}, definido como el cociente entre la velocidad del vapor y la velocidad del líquido:
+\begin{equation}
+    S = \frac{v_v}{v_l}.
+\end{equation}
 
-\section{Personalizando la plantilla, el archivo \file{memoria.tex}}
-\label{sec:FillingFile}
+El límite por DNB se explica en la siguiente sección.
 
-Para personalizar la plantilla se debe incorporar la información propia en los distintos archivos \file{.tex}. 
+\section{Apartamiento de la Ebullición Nucleada (DNB)}
 
-Primero abrir \file{memoria.tex} con TexMaker (o el editor de su preferencia). Se debe ubicar dentro del archivo el bloque de código titulado \emph{INFORMACIÓN DE LA PORTADA} donde se deben incorporar los primeros datos personales con los que se construirá automáticamente la portada.
+Para poder explicar el fenómeno de DNB, primero se debe introducir el régimen de flujo típico de un reactor de tipo PHWR. En este tipo de reactores el fluido refrigerante se encuentra subenfriado a la entrada del canal refrigerante, y a medida que asciende por el mismo puede transicionar a un régimen de ebullición nucleada, donde se forman burbujas de vapor en la superficie de las vainas combustibles. 
 
+La ebullición nucleada es un régimen de transferencia de calor muy eficiente, ya que las burbujas que se forman en la superficie facilitan la transferencia de calor al líquido. En la Figura \ref{fig:nukiyama} se puede observar la curva de Nukiyama \citep{NUKIYAMA1966}, que representa la relación entre el flujo de calor y la diferencia entre la temperatura de pared y la temperatura de saturación del líquido, para el caso de un cable sumergido en una pileta de agua. Se observa que hasta el comienzo de la ebullición nucleada (ONB, del inglés \textit{Onset of Nucleate Boiling}), el flujo aumenta con la diferencia de temperatura. Luego del ONB, la pendiente se incrementa, es decir, que aumenta la capacidad de transferencia de calor. Sin embargo, este incremento tiene un límite, el punto B de la curva o CHF. En ese punto se tiene un salto repentino al punto D, donde la temperatura de pared aumenta drásticamente, entrando en un régimen de ebullición por película, donde la transferencia de calor es muy ineficiente por la película de vapor que aisla la pared calefaccionada del líquido.
 
-%----------------------------------------------------------------------------------------
+En la Figura \ref{fig:dnb} se tiene el mismo fenómeno, pero representado en un tubo cuyas paredes están calefaccionadas, al cual ingresa líquido por la parte inferior. Se observa que al ascender el régimen pasa de transferencia por convección al líquido subenfriado, a ebullición subenfriada (es decir, con temperatura promedio del líquido por debajo de la temperatura de saturación), a ebullición nucleada en saturación, y finalmente al apartamiento de la ebullición nucleada y la ebullición en película.
 
-\section{El código del archivo \file{memoria.tex} explicado}
+El criterio de seguridad del diseño termohidráulico de una central es garantizar la integridad las vainas combustibles y las pastillas de combustible dentro de las mismas. Para esto, se requiere que la temperatura de las mismas esté por debajo de un cierto valor establecido en el diseño. Si retornamos a la curva de Nukiyama (Figura \ref{fig:nukiyama}), podemos comprender que evitar el DNB es entonces un principio fundamental en el diseño termohidráulico de un reactor PHWR. 
 
-El archivo \file{memoria.tex} contiene la estructura del documento y es el archivo de mayor jerarquía de la memoria.  Podría ser equiparable a la función \emph{main()} de un programa en C, o mejor dicho al archivo fuente .c donde se encuentra definida la función main().
+\begin{figure}[htbp]
+	\centering
+	% \includegraphics[width=.6\textwidth]{./Figures/curva_nukiyama.png}
+	\includegraphics[width=.8\textwidth]{./Figures/nukiyama.jpg}
+	\caption{Curva de Nukiyama.}
+	\label{fig:nukiyama}
+\end{figure}
 
-La estructura básica de cualquier documento de \LaTeX{} comienza con la definición de clase del documento, es seguida por un preámbulo donde se pueden agregar funcionalidades con el uso de \texttt{paquetes} (equiparables a bibliotecas de C), y finalmente, termina con el cuerpo del documento, donde irá el contenido de la memoria.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=.7\textwidth]{./Figures/dnb.jpg}
+	\caption{Esquematización del Apartamiento de la Ebullición Nucleada (DNB) en un tubo.}
+	\label{fig:dnb}
+\end{figure}
 
-\lstset{%
-  basicstyle=\small\ttfamily,
-  language=[LaTeX]{TeX}
-}
+\section{Cálculo de Potencia Límite de Canal}
+Se tiene entonces dos límites relacionados a la potencia a la que puede operar un canal refrigerante: por fracción de vacío y por DNB. El cálculo de la Potencia Límite de Canal (PLC) consiste en determinar la potencia máxima a la que puede operar un canal refrigerante sin superar los límites de fracción de vacío y DNB.
 
-\begin{lstlisting}
-\documentclass{article}  <- Definicion de clase
-\usepackage{listings}	 <- Preambulo
+Para tener en cuenta la incerteza en la estimación del CHF, la sensibilidad de ésta con respecto a las condiciones de operación del núcleo, y que todos los transitorios operacionales previstos deben cumplir con asegurar que no se tenga DNB, se debe plantea asegurar un márgen al DNB o DNBR (del inglés, \textit{Departure from Nucleate Boiling Ratio}). Entonces, la PLC por DNB en rigor es aquela potencia a la cual se mantiene el DNBR establecido en el IFS de la CNA-UII, el cual es característico para cada zona hidráulica.
 
-\begin{document}	 <- Comienzo del contenido propio 
-	Hello world!
-\end{document}
-\end{lstlisting}
+El cálculo de las PLC para la CNA-UII se realiza utilizando dos códigos termohidráulicos. En primer lugar se utiliza el código COBRA3-CP \citep{cobra3cp}, un código de subcanales desarrollado originalmente por el MIT, modificado posteriormente por la empresa alemana Siemens-KWU en los años ochenta, y luego por INVAP en el año 2008. Estas modificaciones han permitido adaptar el código, pensado originalmente para reactores de tipo PWR, a la geometría específica del reactor de la CNA-UII. El código COBRA-3CP permite simular el comportamiento termohidráulico de un canal refrigerante, y determinar la potencia a la que se alcanza el límite por vacío y el límite por DNB.
 
+Por otro lado, el código AXCNA \citep{axcna}, de desarrollo interno de la Gerencia de Análisis de Seguridad y Diseño del Núcleo (GASyDN) de NASA, permite simular el comportamiento hidráulico de todo el sistema primario para obtener la pérdida de carga en el reactor, a partir de la señal de salto de presión en las bombas del primario. Luego, se utiliza este valor para calcular la distribución de caudal entre los canales refrigerantes, en función de los restrictores de caudal y las pérdidas hidráulicas por la generación de vapor en los canales. Esto permite estimar en tiempo real el límite al DNB de cada canal refrigerante, y, en conjunto con los medidores de potencia in-core, provee al sistema de limitación de potencia (RELEB, del alemán \textit{Reaktor LeistungsBegrenzung}) la información necesaria para computar el márgen de potencia en tiempo real.
 
-El archivo \file{memoria.tex} se encuentra densamente comentado para explicar qué páginas, secciones y elementos de formato está creando el código \LaTeX{} en cada línea. El código está dividido en bloques con nombres en mayúsculas para que resulte evidente qué es lo que hace esa porción de código en particular. Inicialmente puede parecer que hay mucho código \LaTeX{}, pero es principalmente código para dar formato a la memoria por lo que no requiere intervención del usuario de la plantilla.  Sí se deben personalizar con su información los bloques indicados como:
+Las PLC también son utilizadas para el cómputo de las estrategias de recambios de combustibles, teniendo un proceso iterativo entre el cómputo neutrónico de las estrategias y el recálculo termohidráulico de las PLC. Por lo tanto, es de interés tener un método rápido y confiable para evaluar las estrategias de recambio, e identificar los estados del reactor más comprometido dentro de las mismas para su análisis detallado con AXCNA y COBRA3-CP.
 
-\begin{itemize}
-	\item Informacion de la memoria
-	\item Resumen
-	\item Agradecimientos
-	\item Dedicatoria
-\end{itemize}
+\subsection{Códigos de subcanales}
+A continuación se desarrolla la teoría base del método de los códigos de subcanales, utilizando como base el Manual de Modelos de COBRA3-CP \citep{cobra3cp}.
 
-El índice de contenidos, las listas de figura de tablas se generan en forma automática y no requieren intervención ni edición manual por parte del usuario de la plantilla. 
+En la Figura \ref{fig:sch} se esquematiza la discretización en subcanales. Esta busca generar elementos prismáticos, los cuales tienen algunas caras en contacto con las vainas combustibles, y otras en contacto con subcanales adyacentes. De esta forma, se puede resolver por medio de las ecuaciones de conservación en su formato unidimensional, y sólo es necesario agregar una componente transversal debido a la comunicación entre subcanales y una ecuación de conservación para la cantidad de movimiento transversal.
 
-En la parte final del documento se encuentran los capítulos y los apéndices.  Por defecto se incluyen los 5 capítulos propuestos que se encuentran en la carpeta /Chapters. Cada capítulo se debe escribir en un archivo .tex separado y se debe poner en la carpeta \emph{Chapters} con el nombre \file{Chapter1}, \file{Chapter2}, etc\ldots El código para incluir capítulos desde archivos externos se muestra a continuación.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=.6\textwidth]{./Figures/subchannels.jpg}
+	\caption{Esquematización de discretización en subcanales. Obtenido del Manual de Modelos de COBRA3-CP \citep{cobra3cp}}
+	\label{fig:sch}
+\end{figure}
 
-\begin{verbatim}
-	\include{Chapters/Chapter1}
-	\include{Chapters/Chapter2} 
-	\include{Chapters/Chapter3}
-	\include{Chapters/Chapter4} 
-	\include{Chapters/Chapter5} 
-\end{verbatim}
+Entonces se desarrollan las ecuaciones de conservación para un dado subcanal $i$ a continuación. En primer lugar, la conservación de la masa viene dada por:
 
-Los apéndices también deben escribirse en archivos .tex separados, que se deben ubicar dentro de la carpeta \emph{Appendices}. Los apéndices vienen comentados por defecto con el caracter \code{\%} y para incluirlos simplemente se debe eliminar dicho caracter.
+\begin{equation}
+    A \frac{\partial \rho_i}{\partial t} + \frac{\partial \dot{m}_i}{\partial z} + \sum_j w_{ij} = 0,
+\end{equation}
+siendo $A$ el área de paso, $\rho$ la densidad, $\dot{m}$ el caudal másico, $z$ la coordenada axial y $w_{ij}$ el factor de flujo cruzado por diversión.
 
-Finalmente, se encuentra el código para incluir la bibliografía en el documento final.  Este código tampoco debe modificarse. La metodología para trabajar las referencias bibliográficas se desarrolla en la sección \ref{sec:biblio}.
-%----------------------------------------------------------------------------------------
+Luego, se presenta la conservación de la energía:
+\begin{equation}
+    A \frac{\partial (\rho h)_i}{\partial t} + \frac{\partial (\dot{m} h)_i}{\partial z} = q'_i - \sum_j w^{*H}_{ij} (h_i - h_j) - \sum_j w_{ij} h^* + A \frac{Dp}{Dt},
+\end{equation}
+siendo $h$ la entalpía, $q'$ el flujo de calor, $w^{*H}_{ij}$ el factor de flujo cruzado efectivo por transporte de energía, $h^*$ la entalpía transportada por diversión y $p$ la presión.
 
-\section{Bibliografía}
-\label{sec:biblio}
+En tercer lugar, se tiene la conservación de la cantidad de movimiento axial:
+\begin{equation}
+    \frac{\partial \dot{m}_i}{\partial t} + \sum_j w_{ij} u^*_j + \frac{\partial (\dot{m} u_z)_i}{\partial z} = -A \rho g_z - A \frac{\partial p}{\partial z} - \sum_j w^{*M}_{ij} (u_{zi} - u_{zj}) - F_{iz},
+\end{equation}
+siendo $u^*$ la velocidad axial transportada por diversión, $u$ la velocidad con subíndice según la dirección, $g_z$ la aceleración de la gravedad, $w^{*M}_{ij}$ el factor de flujo cruzado efectivo por transporte de momento y $F_i$ la fuerza de arrastre por fricción y forma con subíndice según la dirección.
 
-Las opciones de formato de la bibliografía se controlan a través del paquete de latex \option{biblatex} que se incluye en la memoria en el archivo memoria.tex.  Estas opciones determinan cómo se generan las citas bibliográficas en el cuerpo del documento y cómo se genera la bibliografía al final de la memoria.
+Por último, la conservación de la cantidad de movimiento transversal viene dada por:
+\begin{equation}
+    \frac{\partial w_{ij}}{\partial t} + \frac{\partial w_{ij} u_x}{\partial x} + \frac{\partial w_{ij} u_z}{\partial x} = - s_{ij} \frac{\partial p}{\partial x} - F_{ix}.
+\end{equation}
 
-En el preámbulo se puede encontrar el código que incluye el paquete biblatex, que no requiere ninguna modificación del usuario de la plantilla, y que contiene las siguientes opciones:
-
-\begin{lstlisting}
-\usepackage[backend=bibtex,
-	natbib=true, 
-	style=numeric, 
-	sorting=none]
-{biblatex}
-\end{lstlisting}
-
-En el archivo \file{reference.bib} se encuentran las referencias bibliográficas que se pueden citar en el documento.  Para incorporar una nueva cita al documento lo primero es agregarla en este archivo con todos los campos necesario.  Todas las entradas bibliográficas comienzan con $@$ y una palabra que define el formato de la entrada.  Para cada formato existen campos obligatorios que deben completarse. No importa el orden en que las entradas estén definidas en el archivo .bib.  Tampoco es importante el orden en que estén definidos los campos de una entrada bibliográfica. A continuación se muestran algunos ejemplos:
-
-\begin{lstlisting}
-@ARTICLE{ARTICLE:1,
-    AUTHOR="John Doe",
-    TITLE="Title",
-    JOURNAL="Journal",
-    YEAR="2017",
-}
-\end{lstlisting}
-
-
-\begin{lstlisting}
-@BOOK{BOOK:1,
-    AUTHOR="John Doe",
-    TITLE="The Book without Title",
-    PUBLISHER="Dummy Publisher",
-    YEAR="2100",
-}
-\end{lstlisting}
-
-
-\begin{lstlisting}
-@INBOOK{BOOK:2,
-    AUTHOR="John Doe",
-    TITLE="The Book without Title",
-    PUBLISHER="Dummy Publisher",
-    YEAR="2100",
-    PAGES="100-200",
-}
-\end{lstlisting}
-
-
-\begin{lstlisting}
-@MISC{WEBSITE:1,
-    HOWPUBLISHED = "\url{http://example.com}",
-    AUTHOR = "Intel",
-    TITLE = "Example Website",
-    MONTH = "12",
-    YEAR = "1988",
-    URLDATE = {2012-11-26}
-}
-\end{lstlisting}
-
-Se debe notar que los nombres \emph{ARTICLE:1}, \emph{BOOK:1}, \emph{BOOK:2} y \emph{WEBSITE:1} son nombres de fantasía que le sirve al autor del documento para identificar la entrada. En este sentido, se podrían reemplazar por cualquier otro nombre.  Tampoco es necesario poner : seguido de un número, en los ejemplos sólo se incluye como un posible estilo para identificar las entradas.
-
-La entradas se citan en el documento con el comando: 
-
-\begin{verbatim}
-\citep{nombre_de_la_entrada}
-\end{verbatim}
-
-Y cuando se usan, se muestran así: \citep{ARTICLE:1}, \citep{BOOK:1}, \citep{BOOK:2}, \citep{WEBSITE:1}.  Notar cómo se conforma la sección Bibliografía al final del documento.
-
-Finalmente y como se mencionó en la subsección \ref{subsec:configurando}, para actualizar las referencias bibliográficas tanto en la sección bibliografía como las citas en el cuerpo del documento, se deben ejecutar las herramientas de compilación PDFLaTeX, BibTeX, PDFLaTeX, PDFLaTeX, en ese orden.  Este procedimiento debería resolver cualquier mensaje "Citation xxxxx on page x undefined".
+Es importante notar que los términos de flujo cruzado son de carácter empírico, y para su determinación se utilizan ensayos de mezclado en condiciones subenfriadas para la geometría específica que se quiere modelar. Estos términos han sido determinados de esta forma para el \textit{bundle} de la CNA-UII, y se continúan proponiendo mejoras para su modelado.

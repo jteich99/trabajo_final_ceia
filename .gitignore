@@ -1,0 +1,13 @@
+**/*.out
+**/*.log
+**/*.lot
+**/*.toc
+**/*.xml
+**/*.ist
+**/*.glo
+**/*.blg
+**/*.bbl
+**/*.aux
+**/*.acn
+**/*blx.bib
+**/*.iof
