@@ -1,11 +1,218 @@
 \chapter{Diseño e implementación} % Main chapter title
 
-\label{Chapter3} % Change X to a consecutive number; for referencing this chapter elsewhere, use \ref{ChapterX}
+\label{Chapter3} 
 
-\section{Pipeline de datos}
+En este capítulo, se describe el diseño e implementación de los dos modelos desarrollados en este trabajo. Debido a la naturaleza del trabajo, se divide el capítulo en dos secciones, una para la estimación de PLC y otra para la de CHF.
 
-\section{Arquitectura del modelo}
+\section{Estimación de PLC}
+Intro...
 
-\section{Entrenamiento y optimización}
+Archivo \texttt{plc.py} con funciones de ayuda. \textcolor{red}{Nota: lo dejo en el anexo? Vale la pena?}
 
-\section{Integración e implementación del sistema}
+\subsection{Pipeline de datos}
+Para la estimación de PLC, los datos provienen de simulaciones con COBRA-3CP de estados del reactor simulados para el diseño de la estrategia de recambio de combustibles. Se evaluaron 100 estados del reactor, cada uno implicando 451 simulaciones.
+
+Debido a que los datos de una estrategia están alrededor de los parámetros de operación del reactor, se agregó una varianza a los parámetros de potencia total, temperatura de entrada, y presión a la salida. Esto fue realizado por medio de un \textit{script} de Python, utilizando las funciones \texttt{random()} y \texttt{randint()} de la biblioteca random, que proveen una distribución uniforme en el rango establecido. Se varió la potencia aumentando la misma entre 5\% y 30\%, con intervalos de 5\%. La temperatura se varío en un intervalo uniforme entre 268 \degree C y 288 \degree C ($\pm$ 10 \degree C respecto de la temperatura nominal de operación), y la presión entre 105 bar y 125 bar ($\pm$ 10 bar respecto de la presión nominal de operación).
+
+Las simulaciones se realizaron en paralelo y fueron procesadas al finalizar, para luego borrar el directorio de ejecución. De esta manera se evitó un excesivo volumen de datos en disco que no proveían valor. Se extrajo, para cada caso y canal: la zona hidráulica de ejecución, el perfil axial de potencia, el perfil por barra o radial de potencia, la potencia total del EECC, la fracción de vacío promedio a la salida del canal, el caudal de entrada, la temperatura de entrada, la presión a la salida y el MDNBR.
+
+La distribución de fracción de vacío y MDNBR obtenida se puede observar en la figura \ref{fig:hist_void_mdnbr}. Se observa que el MDNBR tiene una fuerte dependencia con la ZH. Esto es esperable ya que cada ZH tiene una relación potencia-caudal característica, y los límites de DNBR son mayores cuanto más periferica la ZH. Será entonces un criterio de evaluación del modelo final si logra predecir correctamente para cada ZH la PLC. Por otro lado, la fracción de vacío presenta una distribución uniforme en casi todo el dominio, con un pico en 0, es decir líquido sin vapor a la salida del canal.
+
+\begin{figure}[hbt]
+    \centering
+    \includegraphics[width=\textwidth]{Figures/hist_void_mdnbr.png}
+    \caption{Histogramas de fracción de vacío y MDNBR para las simulaciones con COBRA3-CP.}
+    \label{fig:hist_void_mdnbr}
+\end{figure}
+
+Al realizar las simulaciones y procesarlas se genera un archivo con extensión \texttt{csv}, el cual tiene las siguientes columnas: \texttt{caso}, \texttt{canal}, \texttt{zh}, \texttt{pa1}, \texttt{...}, \texttt{pa22}, \texttt{pr1}, \texttt{...}, \texttt{pr37}, \texttt{power}, \texttt{void}, \texttt{caudal}, \texttt{temperatura}, \texttt{presion}, \texttt{MDNBR}. Este archivo fue importado como un objeto \texttt{pandas.DataFrame}, de la bilbioteca pandas \citep{reback2020pandas, mckinney2010}.
+
+Se filtraron los resultados a utilizar por el valor de MDNBR y fracción de vacío, para utilizar sólo valores en el rango de interés al calcular las PLC. Los datos por fuera de estos rangos serviran de set adicional de evaluación, para determinar la capacidad de generalización del modelo por fuera del rango entrenado. Se filtraron los casos con MDNBR entre 1.7 y 2.5, o fracción de vacío entre 15\% y 35\%.
+
+Con los resultados filtrados el pipeline es el siguiente:
+\begin{enumerate}
+    \item Conversión a tensores (\texttt{torch.tensor(, dtype=torch.float(32))}) para las \textit{features} (todas las variables menos \texttt{MDNBR} y \texttt{void}) y \textit{target}.
+    \item División entre \textit{train} y \textit{test} por medio de \texttt{train\_test\_split} de scikit-learn \citep{pedregosa2011scikit}.
+    \item Normalización de tensores de \textit{features} y \textit{targets} por medio de la función \texttt{plc.scale\_tensors()}, que utiliza por dentro \texttt{StandardScaler()} de scikit-learn.
+\end{enumerate}
+
+\textcolor{red}{Nota para el corrector: tengo que poner los códigos de las funciones de ayuda que arme en un anexo? Acá me parece que ocuparían mucho espacio sin sentido, pero a la vez las funciones tampoco son revolucionarias como para que agreguen valor.\\
+Ídem con funciones de adquicisión de datos. Son funciones que modifican archivos y ejecutan COBRA3-CP. Algo que sólo a mi me interesa porque es parte de mi trabajo.}
+
+\subsection{Arquitectura del modelo}
+% \lstinputlisting[language=Python]{Code/plc_arq.py}
+\begin{itemize}
+    \item Función para armado de arquitectura dinámica
+\end{itemize}
+
+Adam \citep{kingma2015adam} como optimizador.
+
+\subsection{Entrenamiento y optimización}
+
+Función de ayuda \texttt{train\_model}.
+
+Optimización con optuna
+\begin{figure}[hbt]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Figures/plc_opt_result.png}
+    \caption{Resultados de los distintos intentos de la optimización.}
+    \label{fig:plc_opt_results}
+\end{figure}
+
+Las funciones de activación consideradas son: ReLU \citep{nair2010rectified}, GELU \citep{hendrycks2016gaussian}, SiLU/Swish \citep{elfwing2018sigmoid}, Tanh, Leaky ReLU \citep{maas2013rectifier} y ELU \citep{clevert2015fast}.
+
+\subsection{Integración e implementación del sistema}
+
+\pagebreak
+\section{Estimación de CHF}
+Intro...
+
+Archivos con funciones de ayuda: \texttt{chf.py}, \texttt{ahmad\_scaling.py}. \textcolor{red}{Nota: lo dejo en el anexo? Vale la pena?}
+
+\subsection{Pipeline de datos}
+Los datos disponibles para estimación de CHF se dividen en tres fuentes:
+\begin{itemize}
+    \item Datos de ensayo en tubo, utilizados por Groeneveld para sus LUT (versión 2006).
+    \item Datos de ensayos de la Universidad de Columbia, sobre el bundle de la CNA-UII.
+    \item Datos de simulaciones de COBRA3-CP, modelando la geometría y condiciones de los ensayos de la Universidad de Columbia.
+\end{itemize}
+Estas fuentes tienen distintas características. Los datos de ensayos experimentales tienen una disponibilidad similar de datos, aunque los ensayos de bundle conllevan una mayor complejidad geometrica, propia del bundle, que podría ser tenida en cuenta por el modelo. Es posible realizar \textit{data augmentation} de los datos experimentales por medio de modelos y relaciones termodinámicas. Por otro lado, las simulaciones permiten obtener datos muy detallados, tanto espacialmente como en variables termodinámicas informadas.
+
+Por otro lado, se debe definir con cautela qué \textit{features} dar al modelo para predecir CHF. Si consideramos que no tenemos pérdidas de calor, la evolución de la entalpía del fluido en función de la coordenada $z$ va a venir dada por:
+\begin{equation}
+    h(z) = h_\mathrm{inlet} + \frac{\pi\,D}{\dot{m}} \int_0^z q''\,dz'.
+    \label{eq:hz}
+\end{equation}
+Por otro lado, el título termodinamico de equilibrio se relaciona con la entalpía de la siguiente forma:
+\begin{equation}
+    x(z) = \frac{h(z) - h_f}{h_{fg}}.
+    \label{eq:xz}
+\end{equation}
+Si $q''=\mathrm{cte}$, como lo es tanto en los ensayos de un tubo y del bundle de la \cna{}, reemplazando \ref{eq:hz} en \ref{eq:xz} tenemos:
+\begin{equation}
+    x(z) = x_\mathrm{inlet} + \frac{\pi\,D\,q''\,z}{\dot{m}\,h_{fg}},
+\end{equation}
+por lo que el modelo, dado $x(z=1)=x_\mathrm{outlet}$, puede despejar $q''$. Pero esto tiene dos implicancias: en primer lugar el modelo está asumiendo perfil de flujo de calor constante; y en segundo lugar, está considerando que las variables de entrada corresponden a un estado de CHF. Ninguna de estas dos implicancias son deseables, ya que el modelo no podrá generalizar a los casos de interés: cuando no sabemos cuál es el valor del CHF, ni estamos en condición de CHF.
+
+En la bibliografía clásica de CHF existen dos enfoques: el método de sustitución directa (DSM, del inglés \textit{Direct Substitution Method}) y el método de balance de calor (HBM, del inglés \textit{Heat Balance Method}). El DSM tiene como principal hipótesis que el CHF es un fenómeno local, por lo que utiliza directamente con variables locales para predecir CHF. Esta hipótesis se ha considerado relativamente válida en caso de DNB, como lo sugieren \citep{weisman1983, tong1997boiling, lecorre2010}. Por otro lado, el HBM, como lo indica su nombre, realiza el balance de calor a partir de las condiciones de entrada al tubo.
+Groeneveld et al. evaluaron sus tres versiones de las LUT (1986 \citep{GROENEVELD1986}, 1995 y 2006) mediante ambos métodos, y obtuvieron predicciones más precisas utilizando el HBM. 
+Sin embargo, el DSM es el más utilizado en la práctica, y el más adecuado para su aplicación en códigos termohidráulicos, como señala Siman\=/Tov \citep{SIMANTOV1996}. Esto se debe, por un lado, a su simplicidad, y por otro, a que los ensayos realizados en geometrías reales (de bundle) informan las condiciones promedio, mientras que el CHF ocurre a nivel de subcanal. Las condiciones locales a nivel de subcanal pueden ser estimadas por medio de códigos de subcanal como COBRA3-CP, pero esto agregaría un error de la herramienta de cálculo que sería deseable evitar.
+Adicionalmente, el DSM es el método utilizado en la estimación de CHF para el bundle de la \cna{}, por medio de las LUT 1995 y los TMF de INVAP.
+
+Entonces, en este trabajo, se analizarán dos \textit{pipelines} de datos, ambos basadas en DSM. En primer lugar considerar las mismas entradas que toma el método actual: \textcolor{red}{completar con lo que toma la LUT + lo que toman los factores de correccion de Groeneveld y los TMF de INVAP. Hay algunos datos que son específicos de la corrección de bundle.}. A este pipeline lo llamaremos \texttt{pipeline vanilla}.
+
+En segundo lugar, se realizará una transformación de las variables en números adimensionales, y se evaluará por medio de regularización y validación cruzada su relevancia. Las variables planteadas en este pipeline son: \textcolor{red}{completar!! Tener en cuenta que algunos datos son particulares de bundle (distancia al separador por ej)}. 
+\begin{equation}
+    \mathrm{We} = 
+\end{equation}
+\begin{equation}
+    \mathrm{Re} = 
+\end{equation}
+A este pipeline lo llamaremos \texttt{pipeline novel}.
+
+Adicionalmente, debemos considerar un detalle importante de los ensayos realizados en la Universidad de Columbia. La mayoría de estos ensayos fueron realizados en agua liviana ($H_2 O$), pero una serie de los mismos fue realizada en agua pesada, el fluido de trabajo de la \cna{}. Esto impone la necesidad de traducir los ensayos a un único fluido. Debido a que tradicionalmente los ensayos se han hecho con agua liviana en vistas de reactores PWR (del inglés, \textit{Pressurized Water Reactors}), y que los ensayos en un tuvo se realizaron con agua liviana, tradicionalmente se escaló el ensayo de agua pesado a agua liviana. Luego, la predicción de CHF para agua liviana se debe escalar a agua pesada, para poder predecir las condiciones dentro del reactor. En este trabajo se continúa con esta línea de trabajo. El escaleo de propiedades entre fluidos es dependiente del fenómeno estudiado, en particular, para CHF se utiliza la regla de escaleo de Ahmad \citep{ahmad1973}. Esta regla de escaleo propone cuatro números adimensionales a conservar entre el fluido ``prototipo''  y el fluido ``modelo'':
+\begin{equation}
+    \begin{cases}
+        \left( \Psi_\mathrm{CHF} \right)_\mathrm{prototipo} = \left( \Psi_\mathrm{CHF} \right)_\mathrm{modelo}, \\
+        \left( \nicefrac{\Delta H}{\lambda} \right)_\mathrm{prototipo} = \left( \nicefrac{\Delta H}{\lambda} \right)_\mathrm{modelo}, \\ 
+        \left( \nicefrac{\rho_L}{\rho_V} \right)_\mathrm{prototipo} = \left( \nicefrac{\rho_L}{\rho_V} \right)_\mathrm{modelo}, \\ 
+        \left( \nicefrac{L}{D} \right)_\mathrm{prototipo} = \left( \nicefrac{L}{D} \right)_\mathrm{modelo}.
+    \end{cases}
+\end{equation}
+
+Siendo $\Delta H$ el subenfriamiento a la entrada, $\lambda$ el calor latente de vaporización, $\rho_L$ y $\rho_V$ las densidades de la fase líquida y vapor respectivamente, $L$ el largo de la sección de ensayo, $D$ el diámetro de la sección de ensayo, y $\Psi_\mathrm{CHF}$ el número adimensional propuesto específicamente para CHF por Ahmad:
+\begin{equation}
+    \Psi_\mathrm{CHF} = \left[\left(\frac{G\,D}{\mu_L}\right) \cdot \left(\frac{\mu_l^2}{\sigma\,D\,\rho_L}\right)^{\nicefrac{2}{3}} \cdot \left(\frac{\mu_V}{\mu_L}\right)^{\nicefrac{1}{5}} \right],
+\end{equation}
+siendo $G$ el flujo másico por unidad de área, $\mu_L$ y $\mu_V$ las viscosidades dinámicas de la fase líquido y vapor respectivamente, y $\sigma$ la tensión superficial. Esta regla de escaleo se encuentra implementada en un código python, por medio de la función \texttt{scaling\_ahmad()}. \textcolor{red}{Nota: Lo dejo en un anexo?}
+
+% Una metodología usual al tratar con datos de ensayos es realizar la adimensionalización de los mismos, de esta forma se pueden evaluar ensayos con distintas escalas en las variables utilizadas. En este caso, se propone utilizar como variables adimensionales:
+% \begin{itemize}
+%     \item El número de Reynolds evaluado en la sección de entrada y en la sección de salida (o la particular de posición $z$ en caso de simulaciones de COBRA3-CP).
+%     \item El título termodinámico evaluado en la sección de entrada y en la sección de salida (o en la posición $z$).
+%     \item El cociente entre la pérdida de carga en la sección (o hasta la posición $z$) y la presión a la entrada.
+%     \item El cociente entre la longitud calefaccionada y el diámetro hidráulico.
+%     \item La posición adimensionalizada con la longitud total ($z$).
+% \end{itemize}
+% De esta manera se tienen 7 variables de entrada al modelo, con una única salida, el CHF.
+
+% Ahora bien, los datos disponibles en cada fuente difieren en la información provista y no es posible computar de forma directa los números adimensionales propuestos. Por lo tanto, es necesario realizar un proceso de transformación de la información. Este proceso es individual de cada fuente de datos y se describe a continuación.
+
+% Para los ensayos en tubo, se tiene disponible: el diámetro del tubo, la longitud calefaccionada, la presión a la salida, el flujo másico por unidad de área, el título termodinámica en  salida, el subenfriamiento a la entrada y la temperatura a la entrada. Estos datos no describen de forma explícita el estado de entrada del fluido, ni la caída de presión que sufre a lo largo del canal. Para esto, se aplica el modelo homogéneo de equilibrio (HEM, del inglés \textit{Homogeneus Equilibrium Model}), que permite computar de manera sencilla y robusta la termohidráulica bifásica. Este es el modelo aplicado por COBRA3-CP. El HEM considera flujo sin deslizamiento entre fases (homogéneo), equilibrio termodinámico entre las fáses, y título de flujo igual al título termodinámico. Bajo estas hipótesis, el flujo bifásico es tratado como flujo monofásico, sustituyendo las propiedades del fluido por propiedades de mezcla adecuadas. Para calcular la pérdida de carga entonces aplicamos el balance de la cantidad de movimiento en estado estacionario para la mezcla homogénea:
+% \begin{equation}
+%     -\frac{dP}{dz}
+%     = \underbrace{f_D\,\frac{G^2}{2\,D\,\rho}}_{\text{fricción}}
+%     + \underbrace{G^2\,\frac{d}{dz}\!\left(\frac{1}{\rho}\right)}_{\text{aceleración}}
+%     + \underbrace{\rho\,g\,\sin\theta}_{\text{gravedad}},
+%     \label{eq:cons_momento}
+% \end{equation}
+% siendo: $G$ el flujo másico por unidad de área $[\mathrm{kg/(m^2\,s)}]$, $\rho$ la densidad homogénea de la mezcla, $f_D$ el factor de fricción de Darcy, $\theta$ la inclinación del tubo (flujo vertical ascendente, por lo que $\sin\theta = 1$) y $g$ la aceleración de la gravedad. Debido a que los ensayos fueron realizados con flujo de calor uniforme, el balance de energía se simplifica a una relación lineal con la posición axial:
+% \begin{equation}
+%     \frac{dh}{dz} = \frac{q''\,P_h}{\dot{m}} = \text{constante}
+%     \quad\Longrightarrow\quad
+%     h(z) = h_\text{in} + \left(h_\text{out} - h_\text{in}\right)\frac{z}{L}.
+%     \label{eq:entalpia_local}
+% \end{equation}
+
+% Para evaluar las propiedades termofísicas del agua se utiliza la biblioteca CoolProp. Son necesarias tres relaciones de cierre para computar las propiedades y la fricción de la mezcla. En primer lugar, la densidad de la mezcla es computada como la densidad de equilibrio de la mezcla. Esta relación de cierre es la empleada por defecto por CoolProp. En segundo lugar, para la viscosidad de la mezcla no es posible utilizar CoolProp ya que no provee propiedades de transporte dentro de la campana bifásica, y es necesaria para el cómputo del número de Reynolds. Para ello se emplea el modelo de McAdams \citep{mcadams1942vaporization} (de amplia adopción, por ejemplo \citep{SAISORN2008} lo señala como le mejor modelo entre cinco modelos evaluados), el cual computa la viscosidad de la mezcla de la siguiente forma:
+% \begin{equation}
+%     \frac{1}{\mu_\text{tp}} = \frac{x}{\mu_g} + \frac{1 - x}{\mu_f}.
+% \end{equation}
+% Por último, el factor de fricción es calculado con la correlación de Chuchill \citep{churchill1977friction}:
+% \begin{equation}
+%     f_D = 8\left[\left(\frac{8}{Re}\right)^{12}
+%     + \frac{1}{(A + B)^{3/2}}\right]^{1/12},
+% \end{equation}
+% siendo:
+% \begin{equation}
+%     A = \left[2{,}457\,\ln\!\frac{1}{(7/Re)^{0{,}9} + 0{,}27\,\varepsilon/D}\right]^{16},
+%     \qquad
+%     B = \left(\frac{37530}{Re}\right)^{16}.
+% \end{equation}
+% Esta correlación es válida en todo el rango laminar-transición-turbulento, y para cualquier rugosidad relativa.
+
+% Entonces, la metodología de cálculo es la siguiente:
+% \begin{enumerate}
+%     \item Se conoce el estado de salida por medio de la presión y el título termodinámico. Se computa entonces la entalpía y la temperatura.
+%     \item Se integra la ecuación de momento aguas arriba, de salida a entrada, avanzando nodo a nodo a lo largo de una discretización axial del tubo. En cada paso:
+%         \begin{itemize}
+%             \item Se obtiene la entalpía local a partir del perfil lineal (ec. \ref{eq:entalpia_local}).
+%             \item Se calcula la presión local a partir de la conservación de momento (ec. \ref{eq:cons_momento}).
+%             \item Se evalúan las propiedades locales.
+%             \item Se acumulan las contribuciones de fricción, aceleración y gravedad.
+%         \end{itemize}
+%     \item Se obtiene la entalpía de entrada, a partir del grado de subenfriamiento referenciado a la saturación en la presión de salida. El título termodinámico se calcula a partir de la entalpía directamente.
+% \end{enumerate}
+
+% \begin{itemize}
+%     \item Datos de ensayos en tubo
+%     \begin{itemize}
+%         \item Data-augmentation con fundamentos termodinámicos
+%         \item Adimensionalización de los datos
+%     \end{itemize}
+%     \item Datos de ensayos de Columbia
+%     \begin{itemize}
+%         \item Escaleo de datos de $D_2 O$ a $H_2 O$ 
+%         \item Adimensionalización de los datos
+%     \end{itemize}
+%     \item Datos de ensayos con COBRA
+%     \begin{itemize}
+%         \item Escaleo de datos de $D_2 O$ a $H_2 O$ 
+%         \item Adimensionalización de los datos
+%     \end{itemize}
+%     \item Datos de casos reales con COBRA
+%     \begin{itemize}
+%         \item Escaleo de datos de $D_2 O$ a $H_2 O$ 
+%         \item Adimensionalización de los datos
+%         \item Consideración del perfil de potencia no uniforme
+%     \end{itemize}
+%     \item Escaleo fluido-fluido de Ahmad
+%     \item Normalización
+% \end{itemize}
+
+\subsection{Arquitectura del modelo}
+\subsection{Entrenamiento y optimización}
+\begin{itemize}
+    \item Optimización con optuna
+\end{itemize}
+\subsection{Integración e implementación del sistema}
