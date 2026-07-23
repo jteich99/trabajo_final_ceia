@@ -1,0 +1,54 @@
+% Esquema del loop de cálculo iterativo de la potencia límite por DNBR.
+% Incluir en el documento principal con, por ejemplo:
+%   \begin{figure}[h]
+%       \centering
+%       \input{Figures/loop_potencia_dnbr.tex}
+%       \caption{Esquema del loop de cálculo de la potencia límite por DNBR.}
+%       \label{fig:loop_potencia_dnbr}
+%   \end{figure}
+\begin{tikzpicture}[
+    font=\small,
+    >={Latex[length=2mm]},
+    node distance=10mm and 22mm,
+    box/.style={
+        rectangle, rounded corners, draw, thick,
+        fill=blue!8, align=center,
+        text width=60mm, minimum height=6mm,
+        inner sep=1mm
+    },
+    startbox/.style={
+        box, fill=gray!15
+    },
+    decision/.style={
+        diamond, draw, thick, fill=orange!12, aspect=2.2,
+        align=center, text width=30mm, inner sep=1mm
+    },
+    endbox/.style={
+        rectangle, rounded corners, draw, thick,
+        fill=green!12, align=center,
+        text width=20mm, minimum height=8mm, inner sep=1mm
+    },
+    arrow/.style={-, draw, thick},
+]
+
+    % Nodos principales
+    \node[startbox]                        (init)  {Inicialización de potencia con semilla};
+    \node[box, below=of init]              (caudal){Cálculo de caudal másico};
+    \node[box, below=of caudal]            (cobra) {Correr COBRA3-CP};
+    \node[box, below=of cobra]             (extrae){Extraer potencia para DNBR límite};
+    \node[decision, below=of extrae]       (conv)  {¿Convergencia en caudal y potencia?};
+    \node[endbox, right=28mm of conv]      (fin)   {Fin};
+
+    % Flujo principal
+    \draw[->, thick] (init)   -- (caudal);
+    \draw[->, thick] (caudal) -- (cobra);
+    \draw[->, thick] (cobra)  -- (extrae);
+    \draw[->, thick] (extrae) -- (conv);
+    \draw[->, thick] (conv)   -- node[above] {Sí} (fin);
+
+    % Loop de realimentación: si no converge, se vuelve al paso 2
+    \coordinate (loopX) at ($(caudal.west) + (-15mm,0)$);
+    \draw[->, thick] (conv.west) -- (loopX |- conv.west) node[pos=0.35, above] {No}
+        -- (loopX) -- (caudal.west);
+
+\end{tikzpicture}

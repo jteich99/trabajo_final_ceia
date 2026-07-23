@@ -25,6 +25,21 @@
 \usepackage{eso-pic}        % Permite agregar fondos
 \usepackage{hyperref}       % Manejo de hipervínculos y marcadores
 
+% My packages
+\usepackage{nicefrac}
+\usepackage{gensymb}
+\usepackage{amsmath}
+\usepackage{tikz}           % Diagramas vectoriales
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, calc}
+% \usepackage{minted}
+\usepackage[shortcuts]{extdash}
+
+% Optional styling for better readability
+\lstset{
+    basicstyle=\ttfamily,
+    breaklines=true
+}
+
 % Redefinición de caracteres problemáticos en marcadores
 \hypersetup{
     pdftitle={},
@@ -49,10 +64,7 @@
   \def\textunderscore{\_} % Manejo del subrayado en marcadores
 }
 
-% My packages
-\usepackage{nicefrac}
-\usepackage{gensymb}
-\usepackage{amsmath}
+\newcommand{\cna}{CNA\=/UII}
 
 % Definir comandos requeridos por la clase
 \newcommand{\degreename}{Carrera de Especialización en Inteligencia Artificial} % Cambia según tu título
@@ -64,6 +76,11 @@
 %----------------------------------------------------------------------------------------
 
 \begin{document}
+
+% El paquete babel (idioma spanish) activa '<' y '>' como caracteres especiales
+% para comillas angulares («»), lo cual entra en conflicto con la sintaxis de
+% flechas de TikZ ('->', '<-'). Se desactiva ese comportamiento.
+\shorthandoff{<>}
 
 % Configuración de la portada
 \posgrado{Carrera de Especialización en Inteligencia Artificial}
