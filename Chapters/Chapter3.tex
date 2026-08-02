@@ -25,14 +25,14 @@ La distribución de fracción de vacío y MDNBR obtenida se puede observar en la
     \label{fig:hist_void_mdnbr}
 \end{figure}
 
-Al realizar las simulaciones y procesarlas se genera un archivo con extensión \texttt{csv}, el cual tiene las siguientes columnas: \texttt{caso}, \texttt{canal}, \texttt{zh}, \texttt{pa1}, \texttt{...}, \texttt{pa22}, \texttt{pr1}, \texttt{...}, \texttt{pr37}, \texttt{power}, \texttt{void}, \texttt{caudal}, \texttt{temperatura}, \texttt{presion}, \texttt{MDNBR}. Este archivo fue importado como un objeto \texttt{pandas.DataFrame}, de la bilbioteca pandas \citep{reback2020pandas, mckinney2010}.
+Al realizar las simulaciones y procesarlas se genera un archivo con extensión \texttt{csv}, el cual tiene las siguientes columnas: \texttt{caso}, \texttt{canal}, \texttt{zh}, \texttt{pa1}, \texttt{...}, \texttt{pa22}, \texttt{pr1}, \texttt{...}, \texttt{pr37}, \texttt{power}, \texttt{void}, \texttt{caudal}, \texttt{temperatura}, \texttt{presion}, \texttt{MDNBR}. Este archivo fue importado como un objeto \texttt{pandas.DataFrame}, de la bilbioteca pandas.
 
 Se filtraron los resultados a utilizar por el valor de MDNBR y fracción de vacío, para utilizar sólo valores en el rango de interés al calcular las PLC. Los datos por fuera de estos rangos serviran de set adicional de evaluación, para determinar la capacidad de generalización del modelo por fuera del rango entrenado. Se filtraron los casos con MDNBR entre 1.7 y 2.5, o fracción de vacío entre 15\% y 35\%.
 
 Con los resultados filtrados el pipeline es el siguiente:
 \begin{enumerate}
     \item Conversión a tensores (\texttt{torch.tensor(, dtype=torch.float(32))}) para las \textit{features} (todas las variables menos \texttt{MDNBR} y \texttt{void}) y \textit{target}.
-    \item División entre \textit{train} y \textit{test} por medio de \texttt{train\_test\_split} de scikit-learn \citep{pedregosa2011scikit}.
+    \item División entre \textit{train} y \textit{test} por medio de \texttt{train\_test\_split} de scikit-learn.
     \item Normalización de tensores de \textit{features} y \textit{targets} por medio de la función \texttt{plc.scale\_tensors()}, que utiliza por dentro \texttt{StandardScaler()} de scikit-learn.
 \end{enumerate}
 
