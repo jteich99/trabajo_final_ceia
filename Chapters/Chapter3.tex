@@ -2,7 +2,7 @@
 
 \label{Chapter3} 
 
-En este capítulo, se describe el diseño e implementación de los dos modelos desarrollados en este trabajo. Debido a la naturaleza del trabajo, se divide el capítulo en dos secciones, una para la estimación de PLC y otra para la de CHF.
+En este capítulo se describe el diseño e implementación de los dos modelos desarrollados en este trabajo. Debido a la naturaleza del trabajo, se divide el capítulo en dos secciones, una para la estimación de PLC y otra para la de CHF.
 
 \section{Estimación de PLC}
 Intro...
@@ -10,13 +10,15 @@ Intro...
 Archivo \texttt{plc.py} con funciones de ayuda. \textcolor{red}{Nota: lo dejo en el anexo? Vale la pena?}
 
 \subsection{Pipeline de datos}
-Para la estimación de PLC, los datos provienen de simulaciones con COBRA-3CP de estados del reactor simulados para el diseño de la estrategia de recambio de combustibles. Se evaluaron 100 estados del reactor, cada uno implicando 451 simulaciones.
+Para la estimación de PLC, los datos provienen de simulaciones con COBRA-3CP de estados del reactor simulados para el diseño de la estrategia de recambio de combustibles. Se evaluaron 100 estados del reactor, cada uno implica 451 simulaciones.
 
-Debido a que los datos de una estrategia están alrededor de los parámetros de operación del reactor, se agregó una varianza a los parámetros de potencia total, temperatura de entrada, y presión a la salida. Esto fue realizado por medio de un \textit{script} de Python, utilizando las funciones \texttt{random()} y \texttt{randint()} de la biblioteca random, que proveen una distribución uniforme en el rango establecido. Se varió la potencia aumentando la misma entre 5\% y 30\%, con intervalos de 5\%. La temperatura se varío en un intervalo uniforme entre 268 \degree C y 288 \degree C ($\pm$ 10 \degree C respecto de la temperatura nominal de operación), y la presión entre 105 bar y 125 bar ($\pm$ 10 bar respecto de la presión nominal de operación).
+De las simulaciones de COBRA3-CP, se extraen dos conjuntos de información: por un lado la información de entrada al código, y por otro la información de salida del código. La información de entrada al código de interés es: la zona hidráulica de ejecución, el perfil axial de potencia, el perfil por barra o radial de potencia, la potencia total del EECC, el caudal de entrada, la temperatura de entrada y la presión a la salida. En cuanto a la información de salida, se tiene: la fracción de vacío promedio a la salida del canal, y el MDNBR. Esta información es extraída para cada caso y canal.
 
-Las simulaciones se realizaron en paralelo y fueron procesadas al finalizar, para luego borrar el directorio de ejecución. De esta manera se evitó un excesivo volumen de datos en disco que no proveían valor. Se extrajo, para cada caso y canal: la zona hidráulica de ejecución, el perfil axial de potencia, el perfil por barra o radial de potencia, la potencia total del EECC, la fracción de vacío promedio a la salida del canal, el caudal de entrada, la temperatura de entrada, la presión a la salida y el MDNBR.
+Debido a que los datos de una estrategia están alrededor de los parámetros de operación del reactor, se agregó una varianza a los parámetros de potencia total, temperatura de entrada, y presión a la salida. Esto fue realizado por medio de un \textit{script} de Python, con las funciones \texttt{random()} y \texttt{randint()} de la biblioteca random, que proveen una distribución uniforme en el rango establecido. Se varió la potencia con aumentos de entre 5\% y 30\%, con intervalos de 5\%. La temperatura se varío en un intervalo uniforme entre 268 \degree C y 288 \degree C ($\pm$ 10 \degree C respecto de la temperatura nominal de operación), y la presión entre 105 bar y 125 bar ($\pm$ 10 bar respecto de la presión nominal de operación).
 
-La distribución de fracción de vacío y MDNBR obtenida se puede observar en la figura \ref{fig:hist_void_mdnbr}. Se observa que el MDNBR tiene una fuerte dependencia con la ZH. Esto es esperable ya que cada ZH tiene una relación potencia-caudal característica, y los límites de DNBR son mayores cuanto más periferica la ZH. Será entonces un criterio de evaluación del modelo final si logra predecir correctamente para cada ZH la PLC. Por otro lado, la fracción de vacío presenta una distribución uniforme en casi todo el dominio, con un pico en 0, es decir líquido sin vapor a la salida del canal.
+Las simulaciones se realizaron en paralelo y fueron procesadas al finalizar, para luego borrar el directorio de ejecución. De esta manera se evitó un excesivo volumen de datos en disco que no proveían valor.
+
+La distribución de fracción de vacío y MDNBR obtenida se presenta en la figura \ref{fig:hist_void_mdnbr}. Se observa que el MDNBR tiene una fuerte dependencia con la ZH. Esto es esperable ya que cada ZH tiene una relación potencia-caudal característica, y los límites de DNBR son mayores cuanto más periferica la ZH. Es entonces un criterio de evaluación del modelo final la correcta predicción para cada ZH de la PLC. Por otro lado, la fracción de vacío presenta una distribución uniforme en casi todo el dominio, con un pico en 0, es decir líquido sin vapor a la salida del canal.
 
 \begin{figure}[hbt]
     \centering
@@ -25,9 +27,9 @@ La distribución de fracción de vacío y MDNBR obtenida se puede observar en la
     \label{fig:hist_void_mdnbr}
 \end{figure}
 
-Al realizar las simulaciones y procesarlas se genera un archivo con extensión \texttt{csv}, el cual tiene las siguientes columnas: \texttt{caso}, \texttt{canal}, \texttt{zh}, \texttt{pa1}, \texttt{...}, \texttt{pa22}, \texttt{pr1}, \texttt{...}, \texttt{pr37}, \texttt{power}, \texttt{void}, \texttt{caudal}, \texttt{temperatura}, \texttt{presion}, \texttt{MDNBR}. Este archivo fue importado como un objeto \texttt{pandas.DataFrame}, de la bilbioteca pandas.
+Al realizar las simulaciones y procesarlas se generó un archivo con extensión \texttt{csv}, que tiene las siguientes columnas: \texttt{caso}, \texttt{canal}, \texttt{zh}, \texttt{pa1}, \texttt{...}, \texttt{pa22}, \texttt{pr1}, \texttt{...}, \texttt{pr37}, \texttt{power}, \texttt{void}, \texttt{caudal}, \texttt{temperatura}, \texttt{presion}, \texttt{MDNBR}. Este archivo fue importado como un objeto \texttt{pandas.DataFrame}, de la bilbioteca pandas.
 
-Se filtraron los resultados a utilizar por el valor de MDNBR y fracción de vacío, para utilizar sólo valores en el rango de interés al calcular las PLC. Los datos por fuera de estos rangos serviran de set adicional de evaluación, para determinar la capacidad de generalización del modelo por fuera del rango entrenado. Se filtraron los casos con MDNBR entre 1.7 y 2.5, o fracción de vacío entre 15\% y 35\%.
+Se filtraron los resultados a utilizar por el valor de MDNBR y fracción de vacío, para utilizar sólo valores en el rango de interés al calcular las PLC. Los datos por fuera de estos rangos sirven de set adicional de evaluación, para determinar la capacidad de generalización del modelo por fuera del rango entrenado. Se filtraron los casos con MDNBR entre 1.7 y 2.5, o fracción de vacío entre 15\% y 35\%.
 
 Con los resultados filtrados el pipeline es el siguiente:
 \begin{enumerate}
@@ -120,11 +122,11 @@ Adicionalmente, debemos considerar un detalle importante de los ensayos realizad
     \end{cases}
 \end{equation}
 
-Siendo $\Delta H$ el subenfriamiento a la entrada, $\lambda$ el calor latente de vaporización, $\rho_L$ y $\rho_V$ las densidades de la fase líquida y vapor respectivamente, $L$ el largo de la sección de ensayo, $D$ el diámetro de la sección de ensayo, y $\Psi_\mathrm{CHF}$ el número adimensional propuesto específicamente para CHF por Ahmad:
+$\Delta H$ es el subenfriamiento a la entrada, $\lambda$ es el calor latente de vaporización, $\rho_L$ y $\rho_V$ son las densidades de la fase líquida y vapor respectivamente, $L$ es el largo de la sección de ensayo, $D$ es el diámetro de la sección de ensayo, y $\Psi_\mathrm{CHF}$ es el número adimensional propuesto específicamente para CHF por Ahmad:
 \begin{equation}
     \Psi_\mathrm{CHF} = \left[\left(\frac{G\,D}{\mu_L}\right) \cdot \left(\frac{\mu_l^2}{\sigma\,D\,\rho_L}\right)^{\nicefrac{2}{3}} \cdot \left(\frac{\mu_V}{\mu_L}\right)^{\nicefrac{1}{5}} \right],
 \end{equation}
-siendo $G$ el flujo másico por unidad de área, $\mu_L$ y $\mu_V$ las viscosidades dinámicas de la fase líquido y vapor respectivamente, y $\sigma$ la tensión superficial. Esta regla de escaleo se encuentra implementada en un código python, por medio de la función \texttt{scaling\_ahmad()}. \textcolor{red}{Nota: Lo dejo en un anexo?}
+donde $G$ es el flujo másico por unidad de área, $\mu_L$ y $\mu_V$ son las viscosidades dinámicas de la fase líquido y vapor respectivamente, y $\sigma$ es la tensión superficial. Esta regla de escaleo se encuentra implementada en un código python, por medio de la función \texttt{scaling\_ahmad()}. \textcolor{red}{Nota: Lo dejo en un anexo?}
 
 % Una metodología usual al tratar con datos de ensayos es realizar la adimensionalización de los mismos, de esta forma se pueden evaluar ensayos con distintas escalas en las variables utilizadas. En este caso, se propone utilizar como variables adimensionales:
 % \begin{itemize}
