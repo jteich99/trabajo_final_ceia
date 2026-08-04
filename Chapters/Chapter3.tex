@@ -5,9 +5,9 @@
 En este capítulo se describe el diseño e implementación de los dos modelos desarrollados en este trabajo. Debido a la naturaleza del trabajo, se divide el capítulo en dos secciones, una para la estimación de PLC y otra para la de CHF.
 
 \section{Estimación de PLC}
-Intro...
+En esta sección se describe para el modelo estimador de PLC, el pipeline de datos, la arquitectura de la DNN para estimar DNBR y fracción de vacío, su entrenamiento y optimización, y la implementación del modelo para el cálculo de PLC.
 
-Archivo \texttt{plc.py} con funciones de ayuda. \textcolor{red}{Nota: lo dejo en el anexo? Vale la pena?}
+Se construyó un archivo Python llamado \texttt{plc.py} con funciones de ayuda, que permiten realizar el flujo completo en unas pocas líneas.
 
 \subsection{Pipeline de datos}
 Para la estimación de PLC, los datos provienen de simulaciones con COBRA-3CP de estados del reactor simulados para el diseño de la estrategia de recambio de combustibles. Se evaluaron 100 estados del reactor, cada uno implica 451 simulaciones.
@@ -33,27 +33,29 @@ Se filtraron los resultados a utilizar por el valor de MDNBR y fracción de vac�
 
 Con los resultados filtrados el pipeline es el siguiente:
 \begin{enumerate}
-    \item Conversión a tensores (\texttt{torch.tensor(, dtype=torch.float(32))}) para las \textit{features} (todas las variables menos \texttt{MDNBR} y \texttt{void}) y \textit{target}.
+    \item Conversión a tensores (\texttt{torch.tensor(, dtype=torch.float32)}) para las \textit{features} (todas las variables menos \texttt{MDNBR} y \texttt{void}) y \textit{target}.
     \item División entre \textit{train} y \textit{test} por medio de \texttt{train\_test\_split} de scikit-learn.
     \item Normalización de tensores de \textit{features} y \textit{targets} por medio de la función \texttt{plc.scale\_tensors()}, que utiliza por dentro \texttt{StandardScaler()} de scikit-learn.
 \end{enumerate}
 
-\textcolor{red}{Nota para el corrector: tengo que poner los códigos de las funciones de ayuda que arme en un anexo? Acá me parece que ocuparían mucho espacio sin sentido, pero a la vez las funciones tampoco son revolucionarias como para que agreguen valor.\\
-Ídem con funciones de adquicisión de datos. Son funciones que modifican archivos y ejecutan COBRA3-CP. Algo que sólo a mi me interesa porque es parte de mi trabajo.}
+\subsection{Arquitectura del modelo, entrenamiento y optimización}
+El estimador de PLC utiliza una arquitectura estándar de DNN, a partir del módulo \texttt{torch.nn.Sequential} y su método \texttt{add\_module()}. Los hiperparámetros a configurar son: cantidad de capas ocultas, cantidad de neuronas en las capas ocultas, función de activación, \textit{learning rate}, y tamaño del \textit{batch} de entrenamiento. 
 
-\subsection{Arquitectura del modelo}
-% \lstinputlisting[language=Python]{Code/plc_arq.py}
-\begin{itemize}
-    \item Función para armado de arquitectura dinámica
-\end{itemize}
+En la figura \ref{fig:mlp-arquitectura} se esquematiza la arquitectura realizada. La entrada reúne las 63 variables mencionadas previamente: 22 componentes del perfil axial, las 37 componentes del perfil radial, y las condiciones de operación:potencia, caudal, temperatura y presión. A estas se aplica en la capa de entrada una función de activación. Luego se tienen \texttt{L} capas ocultas con \texttt{h} neuronas cada una y la función de activación. Por último la capa de salida tiene 2 variables: MDNBR y fracción de vacío.
 
-Adam \citep{kingma2015adam} como optimizador.
+\input{Figures/mlp_arquitectura.tex}
 
-\subsection{Entrenamiento y optimización}
+Para el armado de la arquitectura se desarrolló la función \texttt{plc.build\_model} que permite en una línea obtener el modelo con los hiperparámetros deseados.
 
-Función de ayuda \texttt{train\_model}.
+Para entrenar al modelo se utilizó Adam \citep{kingma2015adam} como optimizador, debido a su alta capacidad y adopción en casos clásicos de DNN. Como función de pérdida se utilizó la raíz del error cuadrático medio (RMSE, del inglés \textit{Root Mean Squared Errro}), debido a que penaliza fuertemente los errores grandes y tiene magnitud del orden de las variable a optimizar.
 
-Optimización con optuna
+Durante el entrenamiento se evalúa, además de la función de pérdida, el coeficiente de correlación $\text{R}^2$, tanto para el set de entrenamiento como el de evaluación. Al predecir sobre el set de evaluación, se utiliza la condición \texttt{torch.no\_grad()} para evitar que se aprenda de este set de datos y genere \textit{data leakage}. Se desarrolló la función de ayuda \texttt{plc.train\_model} para realizar el entrenamiento sobre la cantidad de épocas deseadas de forma sencilla.
+
+La definición de los hiperparámetros se realiza por medio de su optimización con optuna. Para ello se plantea un estudio de hiperparámetros con 50 \textit{trials} de 200 épocas cada uno. Se consideraron DNN con entre 2 y 15 capas ocultas, de entre 32 y 512 neuronas cada uno, con un \textit{learning rate} de entre $10^{-2}$ y $10^{-5}$ y \textit{batches} de entrenamiento de entre 16 y 236.
+Las funciones de activación consideradas fueron: ReLU \citep{nair2010rectified}, GELU \citep{hendrycks2016gaussian}, SiLU/Swish \citep{elfwing2018sigmoid}, Tanh, Leaky ReLU \citep{maas2013rectifier} y ELU \citep{clevert2015fast}.
+
+En la figura \ref{fig:plc_opt_results} se presentan los resultados de los distintos intentos del proceso de optimización. La arquitectura final se presenta en la tabla \ref{tab:plc_arq_hp}
+
 \begin{figure}[hbt]
     \centering
     \includegraphics[width=0.7\textwidth]{Figures/plc_opt_result.png}
@@ -61,9 +63,44 @@ Optimización con optuna
     \label{fig:plc_opt_results}
 \end{figure}
 
-Las funciones de activación consideradas son: ReLU \citep{nair2010rectified}, GELU \citep{hendrycks2016gaussian}, SiLU/Swish \citep{elfwing2018sigmoid}, Tanh, Leaky ReLU \citep{maas2013rectifier} y ELU \citep{clevert2015fast}.
+\begin{table}[h]
+	\centering
+	\caption{Hiperparámetros de la arquitectura optimizada por optuna.}
+	\begin{tabular}{l c}    
+        \toprule
+        \textbf{Hiperparámetro} & \textbf{Valor} \\
+        \hline
+        Cantidad de capas ocultas & $3$ \\
+        Cantidad de neuronas por capa & $478$ \\
+        \textit{Learning rate} & $1,38 \cdot 10^{-4}$ \\
+        \textit{Batch} & 64 \\
+        Función de activación & ReLU \\
+		\bottomrule
+	\end{tabular}
+	\label{tab:plc_arq_hp}
+\end{table}
 
 \subsection{Integración e implementación del sistema}
+La integración consiste en realizar el lazo de cálculo de PLC de COBRA, pero utilizando la DNN entrenada en su lugar. Se tiene un lazo para cada límite de PLC, pero son idénticos en concepto. Únicamente se debe modificar la variable objetivo según si es criterio de DNB o de fracción de vacío.
+
+El lazo de cálculo se esquematiza en la figura \ref{fig:dnb-dnn-loop}. En la misma se observa que en primer lugar se deben definir las condiciones operativas, esto es, temperatura y presión, y el límite objetivo, ya sea de MDNBR o de fracción de vacío. Luego se realizan dos cálculos, uno de piso y otro de techo, donde se evalúan los flujos de calor mínimo y máximo. Estos valores se establecen de antemano y se deben proveer valores que contengan al flujo de calor correspondiente al límite objetivo, por lo que un rango amplio es recomendable. Se obtiene el valor del límite para el flujo de calor mínimo y máximo, y por el método de la secante se estima el flujo de calor que debería obtener el límite objetivo. Se recalcula el caudal másico con dicho flujo de calor, y se vuelve a estimar el límite. Si se obtiene convergencia tanto en el límite objetivo, como en caudal y flujo de calor, se termina el lazo de cálculo. Si no se obtiene convergencia, se realiza una nueva iteración del método de la secante.
+
+Para calcular el flujo másico en función del flujo de calor, se recurre a la relación caudal-potencia desarrollada por INVAP en \citep{invap_caudal_potencia}, donde para cada ZH y condición operativa se tiene una tabla para interpolar caudal másico a partir de potencia de canal.
+
+    % A partir de las condiciones de operaci\'on se eval\'uan dos casos extremos
+    % --- el piso, con el flujo de calor m\'inimo, y el techo, con el m\'aximo ---
+    % calculando en cada uno el caudal m\'asico correspondiente y prediciendo el
+    % MDNBR con la DNN. Ese par de puntos inicializa el m\'etodo de la secante,
+    % que en cada iteraci\'on propone un nuevo flujo de calor, recalcula el
+    % caudal m\'asico y vuelve a evaluar la red. El lazo se detiene cuando el
+    % MDNBR predicho alcanza el objetivo y, simult\'aneamente, los incrementos
+    % del caudal m\'asico y del flujo de calor entre iteraciones sucesivas caen
+    % por debajo de sus tolerancias $\varepsilon_{G}$ y $\varepsilon_{q}$. El
+    % esquema de red se\~nala los tres pasos que invocan al modelo de la
+    % figura~\ref{fig:mlp-arquitectura}.}
+
+\input{Figures/dnb_dnn_loop.tex}
+
 
 \pagebreak
 \section{Estimación de CHF}

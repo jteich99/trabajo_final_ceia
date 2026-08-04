@@ -6,7 +6,7 @@ En este capítulo se explican los frameworks, arquitecturas y bibliotecas utiliz
 \section{Frameworks y bibliotecas}
 En esta sección se establecen los frameworks y bibliotecas utilizados para resolver los dos problemas planteados en este trabajo: la estimación de PLC y la estimación del CHF.
 
-En primer lugar, la estimación de las PLC se realiza con redes neuronales profundas (DNN, del inglés \textit{Deep Neural Networks}). Esta metodología fue elegida principalmente debido a su elevada capacidad de representar funciones no lineales, característica fundamental para el cálculo de las PLC que presentan un alto grado de no-linealidad. Para su implementación se consideraron dos posibilidades: un modelo que calcule directamente PLC, y un modelo que reemplace el paso realizado por COBRA3-CP en el procedimiento de cálculo. En la figura \ref{fig:loop_potencia_dnbr} se esquematiza el procedimiento de cálculo con COBRA3-CP de la PLC por DNBR. El procedimiento para cálculo de PLC por vacío es similar, pero se aproxima al valor deseado de vacío por el método de la secante.
+En primer lugar, la estimación de las PLC se realiza con redes neuronales profundas (DNN, del inglés \textit{Deep Neural Networks}). Esta metodología fue elegida principalmente debido a su elevada capacidad de representar funciones no lineales, característica fundamental para el cálculo de las PLC que presentan un alto grado de no-linealidad. Para su implementación se consideraron dos posibilidades: un modelo que calcule directamente PLC, y un modelo que reemplace el paso realizado por COBRA3-CP en el procedimiento de cálculo. En la figura \ref{fig:loop_potencia_dnbr} se esquematiza el procedimiento de cálculo con COBRA3-CP de la PLC por DNBR. El procedimiento para cálculo de PLC por vacío es similar, pero se aproxima al valor deseado de vacío por el método de la secante \citep{burden2015numerical}.
 
 \begin{figure}[htbp]
 	\centering
@@ -51,6 +51,7 @@ Para evaluar las propiedades termofísicas del agua se utiliza la biblioteca Coo
 La biblioteca Pandas \citep{reback2020pandas, mckinney2010} se utiliza para la manipulación de datos en formato tabulado.
 Para diversas funciones de transformación de los datos en el \textit{pipeline} se hace uso de la biblioteca Scikit-learn \citep{pedregosa2011scikit}.
 Para graficado de resultados se utilizan las bibliotecas Matplotlib \citep{matplotlib_hunter2007} y Seaborn \citep{seaborn_waskom2021}.
+Para la optimización de los hiperparámetros se utiliza la biblioteca optuna \citep{optuna2019}.
 
 \pagebreak
 
