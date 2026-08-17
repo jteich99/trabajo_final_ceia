@@ -37,7 +37,7 @@ Se realizaron pruebas conceptuales de ambas metodologías, y se identificó una 
 	\caption{Comparación de resultados preliminares de estimación de PLC y DNBR por DNN.}
 \end{figure}
 
-Esta metodología adicionalmente permite una mayor adquisión de datos, dado que cada canal tiene una única PLC, pero se tienen infinitas posibilidades de MDNBR al variar su potencia. Recordando que las DNN pueden ser pensadas como "máquinas de aproximación de funciones, diseñadas para obtener generalización estadísitica" \citep{GOODFELLOW_DEEPLEARNING}, cuanta mayor disponibilidad de datos, mejor el comportamiento final del modelo.
+Esta metodología adicionalmente permite una mayor adquisión de datos, dado que cada canal tiene una única PLC, pero se tienen infinitas posibilidades de MDNBR al variar su potencia. Recordando que las DNN pueden ser pensadas como "máquinas de aproximación de funciones, diseñadas para obtener generalización estadística" \citep{GOODFELLOW_DEEPLEARNING}, cuanta mayor disponibilidad de datos, mejor el comportamiento final del modelo.
 
 También, es de interés en este trabajo analizar la aplicación de reducción de dimensionalidad a partir de las features de los perfiles de potencia axiales y por barra. Para realizar esto, se utiliza una arquitectura \textit{encoder-decoder}. Esta arquitectura consiste de dos DNN: la primera, el \textit{encoder}, reduce la dimensión del vector de entrada; la segunda, el \textit{decoder}, amplifica la dimensión de reducida, para recuperar el vector original. Este tipo de arquitectura permiten encontrar características relevantes, que puede permitir reducir la cantidad de features que necesita de entrada la DNN de estimación de DNBR.
 
@@ -84,4 +84,4 @@ Los datos de los ensayos de Columbia tienen las siguientes variables disponibles
 
 % \section{Infraestructura de cómputo}
 
-En cuanto a infraestructura de cómputo, debido al carácter confidencial de los datos utilizados, se opta por realizar todo el proceso de entrenamiento en un entorno local. Para ello se dispone de dos computadoras, una provista por la empresa NA-SA, con una placa gráfica NVIDIA A2000 y 32GB de RAM, y otra de uso personal del autor, con una placa gráfica NVIDIA RTX 3090 y 64GB de RAM. Ambas computadoras tienen capacidad apta para el trabajo en cuestión. 
+En cuanto a infraestructura de cómputo, debido al carácter confidencial de los datos utilizados, se opta por realizar todo el proceso de entrenamiento en un entorno local. Para ello se dispone de dos computadoras, una provista por la empresa NA-SA, con una placa gráfica NVIDIA A2000 y 32 GB de RAM, y otra de uso personal del autor, con una placa gráfica NVIDIA RTX 3090 y 64 GB de RAM. Ambas computadoras tienen capacidad apta para el trabajo en cuestión. 

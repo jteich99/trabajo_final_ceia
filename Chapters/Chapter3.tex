@@ -5,7 +5,7 @@
 En este capítulo se describe el diseño e implementación de los dos modelos desarrollados en este trabajo. Debido a la naturaleza del trabajo, se divide el capítulo en dos secciones, una para la estimación de PLC y otra para la de CHF.
 
 \section{Estimación de PLC}
-En esta sección se describe para el modelo estimador de PLC, el pipeline de datos, la arquitectura de la DNN para estimar DNBR y fracción de vacío, su entrenamiento y optimización, y la implementación del modelo para el cálculo de PLC.
+En esta sección se describe para el modelo para estimar PLC. Se presentan el pipeline de datos, la arquitectura de la DNN para estimar DNBR y fracción de vacío, su entrenamiento y optimización, y la implementación del modelo para el cálculo de PLC.
 
 Se construyó un archivo Python llamado \texttt{plc.py} con funciones de ayuda, que permiten realizar el flujo completo en unas pocas líneas.
 
@@ -29,7 +29,7 @@ La distribución de fracción de vacío y MDNBR obtenida se presenta en la figur
 
 Al realizar las simulaciones y procesarlas se generó un archivo con extensión \texttt{csv}, que tiene las siguientes columnas: \texttt{caso}, \texttt{canal}, \texttt{zh}, \texttt{pa1}, \texttt{...}, \texttt{pa22}, \texttt{pr1}, \texttt{...}, \texttt{pr37}, \texttt{power}, \texttt{void}, \texttt{caudal}, \texttt{temperatura}, \texttt{presion}, \texttt{MDNBR}. Este archivo fue importado como un objeto \texttt{pandas.DataFrame}, de la bilbioteca pandas.
 
-Se filtraron los resultados a utilizar por el valor de MDNBR y fracción de vacío, para utilizar sólo valores en el rango de interés al calcular las PLC. Los datos por fuera de estos rangos sirven de set adicional de evaluación, para determinar la capacidad de generalización del modelo por fuera del rango entrenado. Se filtraron los casos con MDNBR entre 1.7 y 2.5, o fracción de vacío entre 15\% y 35\%.
+Se filtraron los resultados a utilizar por el valor de MDNBR y fracción de vacío, para utilizar sólo valores en el rango de interés al calcular las PLC. Los datos por fuera de estos rangos sirven de set adicional de evaluación, para determinar la capacidad de generalización del modelo por fuera del rango entrenado. Se filtraron los casos con MDNBR entre 1,7 y 2,5, o fracción de vacío entre 15\% y 35\%.
 
 Con los resultados filtrados el pipeline es el siguiente:
 \begin{enumerate}
@@ -41,7 +41,7 @@ Con los resultados filtrados el pipeline es el siguiente:
 \subsection{Arquitectura del modelo, entrenamiento y optimización}
 El estimador de PLC utiliza una arquitectura estándar de DNN, a partir del módulo \texttt{torch.nn.Sequential} y su método \texttt{add\_module()}. Los hiperparámetros a configurar son: cantidad de capas ocultas, cantidad de neuronas en las capas ocultas, función de activación, \textit{learning rate}, y tamaño del \textit{batch} de entrenamiento. 
 
-En la figura \ref{fig:mlp-arquitectura} se esquematiza la arquitectura realizada. La entrada reúne las 63 variables mencionadas previamente: 22 componentes del perfil axial, las 37 componentes del perfil radial, y las condiciones de operación:potencia, caudal, temperatura y presión. A estas se aplica en la capa de entrada una función de activación. Luego se tienen \texttt{L} capas ocultas con \texttt{h} neuronas cada una y la función de activación. Por último la capa de salida tiene 2 variables: MDNBR y fracción de vacío.
+En la figura \ref{fig:mlp-arquitectura} se esquematiza la arquitectura implementada. La entrada reúne las 63 variables mencionadas previamente: 22 componentes del perfil axial, las 37 componentes del perfil radial, y las condiciones de operación: potencia, caudal, temperatura y presión. A estas se aplica en la capa de entrada una función de activación $\sigma$. A continuación, estas variables ingresan en una red de \texttt{L} capas ocultas con \texttt{h} neuronas cada una, aplicando $\sigma$ en cada nodo. Por último la capa de salida tiene 2 variables: MDNBR y fracción de vacío.
 
 \input{Figures/mlp_arquitectura.tex}
 
@@ -54,7 +54,7 @@ Durante el entrenamiento se evalúa, además de la función de pérdida, el coef
 La definición de los hiperparámetros se realiza por medio de su optimización con optuna. Para ello se plantea un estudio de hiperparámetros con 50 \textit{trials} de 200 épocas cada uno. Se consideraron DNN con entre 2 y 15 capas ocultas, de entre 32 y 512 neuronas cada uno, con un \textit{learning rate} de entre $10^{-2}$ y $10^{-5}$ y \textit{batches} de entrenamiento de entre 16 y 236.
 Las funciones de activación consideradas fueron: ReLU \citep{nair2010rectified}, GELU \citep{hendrycks2016gaussian}, SiLU/Swish \citep{elfwing2018sigmoid}, Tanh, Leaky ReLU \citep{maas2013rectifier} y ELU \citep{clevert2015fast}.
 
-En la figura \ref{fig:plc_opt_results} se presentan los resultados de los distintos intentos del proceso de optimización. La arquitectura final se presenta en la tabla \ref{tab:plc_arq_hp}
+En la figura \ref{fig:plc_opt_results} se presentan los resultados de los distintos intentos del proceso de optimización. La arquitectura final se presenta en la tabla \ref{tab:plc_arq_hp}.
 
 \begin{figure}[hbt]
     \centering
@@ -87,19 +87,9 @@ El lazo de cálculo se esquematiza en la figura \ref{fig:dnb-dnn-loop}. En la mi
 
 Para calcular el flujo másico en función del flujo de calor, se recurre a la relación caudal-potencia desarrollada por INVAP en \citep{invap_caudal_potencia}, donde para cada ZH y condición operativa se tiene una tabla para interpolar caudal másico a partir de potencia de canal.
 
-    % A partir de las condiciones de operaci\'on se eval\'uan dos casos extremos
-    % --- el piso, con el flujo de calor m\'inimo, y el techo, con el m\'aximo ---
-    % calculando en cada uno el caudal m\'asico correspondiente y prediciendo el
-    % MDNBR con la DNN. Ese par de puntos inicializa el m\'etodo de la secante,
-    % que en cada iteraci\'on propone un nuevo flujo de calor, recalcula el
-    % caudal m\'asico y vuelve a evaluar la red. El lazo se detiene cuando el
-    % MDNBR predicho alcanza el objetivo y, simult\'aneamente, los incrementos
-    % del caudal m\'asico y del flujo de calor entre iteraciones sucesivas caen
-    % por debajo de sus tolerancias $\varepsilon_{G}$ y $\varepsilon_{q}$. El
-    % esquema de red se\~nala los tres pasos que invocan al modelo de la
-    % figura~\ref{fig:mlp-arquitectura}.}
-
 \input{Figures/dnb_dnn_loop.tex}
+
+\subsection{Arquitectura de embeddings, entrenamiento y aplicación}
 
 
 \pagebreak
@@ -131,7 +121,7 @@ Si $q''=\mathrm{cte}$, como lo es tanto en los ensayos de un tubo y del bundle d
 \begin{equation}
     x(z) = x_\mathrm{inlet} + \frac{\pi\,D\,q''\,z}{\dot{m}\,h_{fg}},
 \end{equation}
-por lo que el modelo, dado $x(z=1)=x_\mathrm{outlet}$, puede despejar $q''$. Pero esto tiene dos implicancias: en primer lugar el modelo está asumiendo perfil de flujo de calor constante; y en segundo lugar, está considerando que las variables de entrada corresponden a un estado de CHF. Ninguna de estas dos implicancias son deseables, ya que el modelo no podrá generalizar a los casos de interés: cuando no sabemos cuál es el valor del CHF, ni estamos en condición de CHF.
+por lo que el modelo, dado $x(z=1)=x_\mathrm{outlet}$, puede despejar $q''$. Esto tiene dos implicancias: en primer lugar el modelo está asumiendo perfil de flujo de calor constante; y en segundo lugar, está considerando que las variables de entrada corresponden a un estado de CHF. Ninguna de estas dos implicancias son deseables, ya que el modelo no podrá generalizar a los casos de interés: cuando no sabemos cuál es el valor del CHF, ni estamos en condición de CHF.
 
 En la bibliografía clásica de CHF existen dos enfoques: el método de sustitución directa (DSM, del inglés \textit{Direct Substitution Method}) y el método de balance de calor (HBM, del inglés \textit{Heat Balance Method}). El DSM tiene como principal hipótesis que el CHF es un fenómeno local, por lo que utiliza directamente con variables locales para predecir CHF. Esta hipótesis se ha considerado relativamente válida en caso de DNB, como lo sugieren \citep{weisman1983, tong1997boiling, lecorre2010}. Por otro lado, el HBM, como lo indica su nombre, realiza el balance de calor a partir de las condiciones de entrada al tubo.
 Groeneveld et al. evaluaron sus tres versiones de las LUT (1986 \citep{GROENEVELD1986}, 1995 y 2006) mediante ambos métodos, y obtuvieron predicciones más precisas utilizando el HBM. 
