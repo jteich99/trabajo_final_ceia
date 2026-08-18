@@ -9,6 +9,34 @@ Todos los capítulos deben comenzar con un breve párrafo introductorio que indi
 %	SECTION 1
 %----------------------------------------------------------------------------------------
 
+\section{PLC}
+
+En la figura \ref{fig:plc_opt_results} se presentan los resultados de los distintos intentos del proceso de optimización. La arquitectura final se presenta en la tabla \ref{tab:plc_arq_hp}.
+
+\begin{figure}[hbt]
+    \centering
+    \includegraphics[width=0.7\textwidth]{Figures/plc_opt_result.png}
+    \caption{Resultados de los distintos intentos de la optimización.}
+    \label{fig:plc_opt_results}
+\end{figure}
+
+\begin{table}[h]
+	\centering
+	\caption{Hiperparámetros de la arquitectura optimizada por optuna.}
+	\begin{tabular}{l c}    
+        \toprule
+        \textbf{Hiperparámetro} & \textbf{Valor} \\
+        \hline
+        Cantidad de capas ocultas & $3$ \\
+        Cantidad de neuronas por capa & $478$ \\
+        \textit{Learning rate} & $1,38 \cdot 10^{-4}$ \\
+        \textit{Batch} & 64 \\
+        Función de activación & ReLU \\
+		\bottomrule
+	\end{tabular}
+	\label{tab:plc_arq_hp}
+\end{table}
+
 \section{Pruebas funcionales del hardware}
 \label{sec:pruebasHW}
 

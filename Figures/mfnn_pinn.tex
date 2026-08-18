@@ -1,0 +1,169 @@
+% Red neuronal multifidelidad:
+%   - red de baja fidelidad (BF) pre-entrenada, con pesos fijos, que usa solo el
+%     subconjunto de entradas x_1..x_n;
+%   - red de alta fidelidad (AF) informada por la fisica (PINN), que usa todas las
+%     entradas x_1..x_N mas la prediccion u_BF.
+% La columna de entradas se dibuja UNA sola vez y es compartida: las entradas del
+% subconjunto (recuadro sombreado) salen dos veces, hacia la red BF y hacia el bus
+% de todas las entradas, mientras que las restantes salen solo hacia el bus.
+%
+% Fragmento para \input directo (sin el paquete standalone).
+% NO necesita ninguna libreria de TikZ: solo \usepackage{tikz} y \usepackage{amsmath}.
+% Uso tipico:
+%   \begin{figure}[htbp]\centering
+%     \resizebox{\textwidth}{!}{\input{Figures/mfnn_pinn.tex}}
+%     \caption{...}\label{fig:mfnn_pinn}
+%   \end{figure}
+%
+% Notas de implementacion (todas para que el fragmento no dependa del preambulo):
+%  - Sin \usetikzlibrary aqui adentro: ejecutado en modo horizontal (dentro de un
+%    \resizebox) deja ~55pt de espacios que ensanchan la caja del \input y hacen que
+%    \resizebox empequenezca el dibujo; y no se puede encerrar en un grupo o \hbox
+%    para absorberlos porque las definiciones de las librerias son locales.
+%  - Sin la libreria backgrounds: los recuadros de las entradas se dibujan ANTES que
+%    los circulos, de modo que el relleno queda debajo sin necesidad de capas.
+%  - Sin la libreria fit: los recuadros de las redes se dan por coordenadas explicitas.
+%  - Sin la libreria arrows.meta: las puntas son `stealth`, que ya trae pgf. Ademas se
+%    escriben como -stealth y no con la clave >=, para no depender de que babel-spanish
+%    tenga desactivado el shorthand `>`.
+%  - Los tamanos de fuente son absolutos (\fontsize) para que la geometria no dependa
+%    del tamano base del documento que hace el \input.
+%  - El dibujo es casi cuadrado (15.3 x 15.3 cm) para que al escalarlo al ancho del
+%    texto las etiquetas no queden diminutas.
+\begin{figure}[hbtp]
+  \centering
+  \resizebox{\textwidth}{!}{
+\begin{tikzpicture}[
+  chico/.style={font=\fontsize{9}{11}\selectfont},
+  % un unico estilo de circulo: entradas, neuronas y salidas miden todas lo mismo
+  entrada/.style={circle,draw=black!70,fill=white,minimum size=0.9cm,inner sep=0pt,
+                  font=\fontsize{9}{11}\selectfont},
+  entradaG/.style={entrada},
+  neurona/.style={entrada},
+  salida/.style={entrada},
+  syn/.style={draw=black!25,line width=0.3pt},
+  reparto/.style={draw=black!45,line width=0.4pt},
+  flujo/.style={-stealth,draw=black!75,line width=0.8pt},
+  tronco/.style={draw=black!75,line width=0.8pt},
+  bus/.style={-stealth,draw=black!75,line width=1.5pt},
+  bloque/.style={rounded corners=2pt,draw=black!70,align=center,inner sep=5pt,
+                 font=\fontsize{9}{11}\selectfont,text width=3.2cm},
+  perdida/.style={bloque,fill=black!6},
+  barra/.style={rounded corners=2pt,draw=black!70,fill=black!10,
+                minimum width=0.6cm,minimum height=4.4cm,inner sep=0pt},
+  grupoSub/.style={rounded corners=4pt,draw=black!40,fill=black!7},
+  grupoResto/.style={rounded corners=4pt,draw=black!40,dash pattern=on 2pt off 1.5pt},
+  grupoBF/.style={draw=black!45,dashed,rounded corners=6pt},
+  grupoAF/.style={draw=black!70,rounded corners=6pt},
+  etiqueta/.style={font=\fontsize{9}{11}\bfseries\selectfont,align=left,text width=5.2cm},
+  nota/.style={font=\fontsize{8}{9.6}\selectfont,align=left},
+  notac/.style={font=\fontsize{8}{9.6}\selectfont,align=center},
+  bp/.style={-stealth,dashed,draw=black!60,line width=0.8pt},
+]
+
+%=============== COLUMNA DE ENTRADAS (UNICA Y COMPARTIDA) ==============
+% los recuadros van primero para que el relleno quede por debajo de los circulos
+\draw[grupoSub]   (-0.66, 0.09) rectangle (0.66, 4.06);
+\draw[grupoResto] (-0.66,-3.21) rectangle (0.66,-0.39);
+
+% subconjunto que ve la red de baja fidelidad
+\node[entrada]  (e1)  at (0, 3.40) {$x_1$};
+\node[entrada]  (e2)  at (0, 2.35) {$x_2$};
+\node[chico]    (ev1) at (0, 1.55) {$\vdots$};
+\node[entrada]  (en)  at (0, 0.75) {$x_n$};
+% entradas restantes, exclusivas de la red de alta fidelidad
+\node[entradaG] (er1) at (0,-1.05) {$x_{n+1}$};
+\node[chico]    (ev2) at (0,-1.80) {$\vdots$};
+\node[entrada]  (eN)  at (0,-2.55) {$x_N$};
+
+% \node[notac,rotate=90] at (-1.35, 2.02) {primeras $n$\\ entradas};
+% \node[notac,rotate=90] at (-1.35,-1.80) {entradas\\ restantes};
+
+%=================== RED DE BAJA FIDELIDAD (BF) ========================
+\foreach \j/\y in {1/3.07,2/2.02,3/0.97} {
+  \node[neurona] (bf1-\j) at (2.6,\y) {};
+  \node[neurona] (bf2-\j) at (4.1,\y) {};
+}
+\node[salida] (ubf) at (5.6,2.02) {$u_\text{LF}$};
+
+% solo el subconjunto alimenta la red BF
+\foreach \e in {e1,e2,en} {
+  \foreach \j in {1,2,3} { \draw[syn] (\e) -- (bf1-\j); }
+}
+\foreach \i in {1,2,3} {
+  \foreach \j in {1,2,3} { \draw[syn] (bf1-\i) -- (bf2-\j); }
+  \draw[syn] (bf2-\i) -- (ubf);
+}
+
+\draw[grupoBF] (1.83,0.20) rectangle (6.37,3.84);
+\node[etiqueta,anchor=south west] at (1.83,3.84)
+  {Red de baja fidelidad $\theta_\text{LF}$ pre-entrenada};
+
+%=========== BUS CON TODAS LAS ENTRADAS HACIA LA RED AF ================
+% cada entrada, del subconjunto y de las restantes, se reparte al bus
+\coordinate (nodoBus) at (2.6,-3.0);
+\foreach \e in {e1,e2,en,er1,eN} { \draw[reparto] (\e) -- (nodoBus); }
+\fill[black!75] (nodoBus) circle (1.6pt);
+
+\draw[bus,rounded corners=3pt] (nodoBus) -- (5.9,-3.0) -- (5.9,-1.2) -- (7.30,-1.2);
+\node[nota,anchor=north west] at (2.9,-3.4) {todas las entradas\\ $x_1,\dots,x_N$};
+
+%=================== RED DE ALTA FIDELIDAD (AF) ========================
+\node[barra] (concat) at (7.6,0) {};
+\node[nota,rotate=90] at (7.6,0) {concatenación};
+
+\foreach \j/\y in {1/1.70,2/0.57,3/-0.57,4/-1.70} {
+  \node[neurona] (af1-\j) at (8.9,\y) {};
+  \node[neurona] (af2-\j) at (10.4,\y) {};
+}
+\node[salida] (uaf) at (11.9,0) {$u_\text{HF}$};
+
+\draw[flujo] (ubf.east) -- (7.30,1.3);
+\foreach \j in {1,2,3,4} { \draw[syn] (concat.east) -- (af1-\j); }
+\foreach \i in {1,2,3,4} {
+  \foreach \j in {1,2,3,4} { \draw[syn] (af1-\i) -- (af2-\j); }
+  \draw[syn] (af2-\i) -- (uaf);
+}
+
+\draw[grupoAF] (6.98,-2.52) rectangle (12.67,2.52);
+\node[etiqueta,anchor=south west] at (6.98,2.52)
+  {Red de alta fidelidad $\theta_\text{HF}$\\ informada por la física (PINN)};
+
+%=============== RAMAS DE PÉRDIDA (FÍSICA Y DATOS) =====================
+\node[bloque]  (ad)   at (4.6,-6.3)
+  {Derivadas\\ automáticas\\ de $u_\text{HF}$ respecto\\ de las entradas};
+\node[perdida] (lfis) at (4.6,-8.4)
+  {$\mathcal{L}_{\text{fís}}=\big\|\mathcal{R}(u_\text{HF})\big\|^{2}$\\ residuo de la EDP};
+\node[perdida,text width=3.4cm] (ldat) at (8.8,-6.3)
+  {$\mathcal{L}_{\text{datos}}=\big\|u_\text{HF}-u^{*}\big\|^{2}$\\ $u^{*}$: datos medidos};
+\node[perdida,text width=3.4cm] (ltot) at (8.8,-8.4)
+  {$\mathcal{L}=\mathcal{L}_{\text{datos}}+\lambda\,\mathcal{L}_{\text{fís}}$};
+
+% tronco desde u_AF, con derivacion hacia la rama de datos
+\coordinate (bif) at (11.9,-4.9);
+\draw[tronco] (uaf.south) -- (bif);
+\draw[flujo,rounded corners=3pt] (bif) -- (4.6,-4.9) -- (ad.north);
+\fill[black!75] (8.8,-4.9) circle (1.6pt);
+\draw[flujo] (8.8,-4.9) -- (ldat.north);
+
+\draw[flujo] (ad.south)   -- (lfis.north);
+\draw[flujo] (ldat.south) -- (ltot.north);
+\draw[flujo] (lfis.east)  -- (ltot.west);
+
+%=================== RETROPROPAGACIÓN (SOLO RED AF) ====================
+% vuelve por la derecha y entra al costado de la red AF, sin cruzar el tronco
+\draw[bp,rounded corners=3pt]
+  (ltot.east) -- (13.4,-8.4) -- (13.4,-1.8) -- (12.67,-1.8);
+% \node[notac,anchor=north,text width=4.2cm] at (8.8,-9.3)
+%   {retropropagación: sólo se\\ actualizan los pesos $\theta_{AF}$};
+
+%============================ ACLARACIÓN ===============================
+% \node[nota,anchor=north west,text width=4.0cm] at (-1.75,-4.9)
+%   {la red BF sólo usa $x_1,\dots,x_n$; la red AF usa todas las entradas y
+%    además $u_{BF}$};
+
+\end{tikzpicture}
+  }
+  \caption{Esquema de la arquitectura de red neuronal de multifidelidad informada por física.}
+  \label{fig:mfpinn}
+\end{figure}
