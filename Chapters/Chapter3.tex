@@ -65,8 +65,30 @@ Para calcular el flujo másico en función del flujo de calor, se recurre a la r
 
 \input{Figures/dnb_dnn_loop.tex}
 
-\subsection{Arquitectura de embeddings, entrenamiento y aplicación}
 
+\newpage
+\subsection{Arquitectura de embeddings, entrenamiento y aplicación}
+Como se definió en la sección de objetivos \ref{sec:objetivos}, se realizó un análisis de reducción de dimensionalidad de los perfiles de potencia axiales y por barra. Para ello, se plantea una arquitectura de codificador-decodificador (en inglés, \textit{encoder-decoder} o \textit{autoencoder}). Esto permite llevar el vector de entrada, en $\mathbb{R}^n$, a un espacio latente, $\mathbb{R}^d$, de menor dimension, $d<n$. De esta forma, se obtiene una representación compacta del vector de origen, referida en la bibliografía como espacio latente.
+Para lograr esto, el autoencoder se compone de dos DNN. La primera, el encoder, codifica al espacio latente, y la segunda, el decoder, decodifica nuevamente al espacio original. En la figura \ref{fig:autoencoder-embedding} se presenta un esquema del autoencoder.
+
+\input{Figures/autoencoder_embedding.tex}
+
+Se entrenó un autoencoder independiente para cada perfil, ya que se trata de magnitudes de distinta naturaleza y dimensión: el perfil axial, con $n=22$ componentes, y el perfil radial o por barra, con $n=37$ componentes. Los perfiles se extraen del mismo archivo \texttt{csv} descripto en el pipeline de datos, se convierten a tensores de \texttt{torch}, se dividen en \textit{train} y \textit{test} con \texttt{train\_test\_split}, y se normalizan con \texttt{StandardScaler()}, de la misma manera que las \textit{features} del estimador de PLC.
+
+Tanto el codificador como el decodificador se implementaron como DNN con el módulo \texttt{torch.nn.Sequential}, siguiendo el mismo esquema que \texttt{plc.build\allowbreak\_model}. El codificador toma las $n$ componentes del perfil y las reduce progresivamente hasta la capa latente de dimensión $d$, mientras que el decodificador replica la estructura de forma espejada, expandiendo de $d$ a $n$. La capa latente no lleva función de activación, para no restringir el rango del \textit{embedding}, y la capa de salida tampoco, dado que la reconstrucción se realiza sobre variables normalizadas que pueden tomar valores de ambos signos. Los hiperparámetros a configurar son entonces: la dimensión latente $d$, la cantidad de capas ocultas de cada rama, la cantidad de neuronas por capa, la función de activación, el \textit{learning rate} y el tamaño del \textit{batch}.
+
+El entrenamiento es no supervisado: el propio perfil de entrada oficia de \textit{target}, y la función de pérdida es el error cuadrático medio entre la entrada y su reconstrucción, $\mathcal{L}(\phi,\theta)=\lVert\mathbf{x}-\hat{\mathbf{x}}\rVert^{2}$, como se indica en la figura \ref{fig:autoencoder-embedding}. Se utilizó nuevamente el optimizador Adam, con el mismo lazo de entrenamiento por épocas empleado en \texttt{plc.train\_model}.
+
+La elección de $d$ se realizó por barrido, entrenando un autoencoder para cada dimensión latente y comparando el error de reconstrucción sobre el set de evaluación. De esta manera se identifica la menor dimensión que conserva la información relevante del perfil. Una vez entrenado el autoencoder, se descarta el decodificador y se conserva únicamente el codificador, que se aplica sobre los perfiles para reemplazar las 22 y 37 componentes originales por sus respectivos \textit{embeddings} de dimensión $d$. 
+
+Con la nuevas \textit{features} se reentrena el estimador de PLC descripto en las subsecciones anteriores, y en el capítulo \ref{Chapter4} se comparan sus resultados contra los del modelo que utiliza los perfiles completos. 
+
+A partir de la transformación al espacio latente, se pueden evaluar cuales son las componentes que caracterizan a los perfiles de potencia, y como impactan en la PLC. 
+
+\subsection{Criterios de evaluación}
+Para evaluar los modelos predictores de PLC, no basta únicamente con presentar medidas estadísticas del error, como pueden ser el error cuadrático medio (MSE, del inglés \textit{Mean Squared Error}), su raíz (RMSE, del inglés \textit{Root Mean Squared Error}) o error absoluto medio (MAE, del inglés \textit{Mean Absolute Error}). Por la naturaleza de la aplicación de este modelo, debe validarse también el conservadurismo de su predicción, esto es, asegurar con cierto grado de probabilidad y confianza que se predice una PLC por debajo de la referencia. 
+
+Para ello, se aplica un criterio similar al utilizado en el diseño termohidráulico de la \cna{} para calcular el $\mathrm{DNBR}_\mathrm{min}$, descripto en la sección \ref{sec:chf_eval}.
 
 \pagebreak
 \section{Estimación de CHF}
@@ -228,7 +250,8 @@ Para el entrenamiento del modelo, en primer lugar se entrena la \texttt{LFDNN} c
 Luego, con los pesos de la \texttt{LFDNN} congelados, se entrena la \texttt{HFPINN} con la estructura completa de la \texttt{MFPINN}. Para ello se realizaron pruebas para determinar si es necesario, debido a las restricciones tipo PINN, un optimizador de segundo orden como L-BFGS \citep{liu1989lbfgs}. El resultado de las mismas se expone en el capítulo \ref{Chapter4}.
 
 \subsection{Evaluación del modelo}
-Para la evaluación del modelo se utilizaron las métricas estadísticas tradicionales en conjunto con métricas particulares al problema en particular. Las métricas estadísticas utilizadas son el error cuadrático medio (MSE, del inglés \textit{Mean Squared Error}), su raíz (RMSE, del inglés \textit{Root Mean Squared Error}), y el coeficiente de correlación $\mathrm{R}^2$. En cuanto a la métricas particulares al problema, se utiliza el $\mathrm{DNBR}_\mathrm{min}$ del diseño termohidráulico de la \cna{}, explicado en detalle en \citep{IFS_CNA2, invap_thdesign}. Este es el valor para el cual, si la predicción de DNBR está por encima, se asegura con 95\% de probabilidad y confianza que no se tiene DNB. Se define como:
+\label{sec:chf_eval}
+Para la evaluación del modelo se utilizaron las métricas estadísticas tradicionales en conjunto con métricas particulares al problema en particular. Las métricas estadísticas utilizadas son el MSE, RMSE, y el coeficiente de correlación $\mathrm{R}^2$. En cuanto a la métricas particulares al problema, se utiliza el $\mathrm{DNBR}_\mathrm{min}$ del diseño termohidráulico de la \cna{}, explicado en detalle en \citep{IFS_CNA2, invap_thdesign}. Este es el valor para el cual, si la predicción de DNBR está por encima, se asegura con 95\% de probabilidad y confianza que no se tiene DNB. Se define como:
 \begin{equation}
     \mathrm{DNBR}_\mathrm{min} = \overline{\mathrm{DNBR}} + k_{95}\cdot \sigma(\mathrm{DNBR}) ,
 \end{equation}
