@@ -5,20 +5,20 @@
 En este capítulo se describe el diseño e implementación de los dos modelos desarrollados en este trabajo. Debido a la naturaleza del trabajo, se divide el capítulo en dos secciones, una para la estimación de PLC y otra para la de CHF.
 
 \section{Estimación de PLC}
-En esta sección se describe el modelo para estimar PLC. Se presentan el pipeline de datos, la arquitectura de la DNN para estimar DNBR y fracción de vacío, su entrenamiento y optimización, y la implementación del modelo para el cálculo de PLC.
+En esta sección se describe el modelo desarrollado para estimar PLC. Se presentan el pipeline de datos, la arquitectura de la DNN para estimar DNBR y fracción de vacío, su entrenamiento y optimización, y la implementación del modelo para el cálculo de PLC.
 
-Se construyó un archivo Python llamado \texttt{plc.py} con funciones de ayuda, que permiten realizar el flujo completo en unas pocas líneas.
+Se construyó un archivo Python llamado \texttt{plc.py} con funciones auxiliares, empleadas a lo largo del flujo de procesamiento, entrenamiento y evaluación.
 
 \subsection{Pipeline de datos}
-Para la estimación de PLC, los datos provienen de simulaciones con COBRA3-CP de estados del reactor simulados para el diseño de la estrategia de recambio de combustibles. Se evaluaron 100 estados del reactor, cada uno implica 451 simulaciones.
+Para la estimación de PLC, los datos provienen de simulaciones con COBRA3-CP de estados del reactor correspondientes al diseño de la estrategia de recambio de combustibles. Se evaluaron 100 estados del reactor, cada uno implica una simulación por canal refrigerante, es decir, 451 simulaciones.
 
-De las simulaciones de COBRA3-CP, se extraen dos conjuntos de información: por un lado la información de entrada al código, y por otro la información de salida del código. La información de entrada al código de interés es: la zona hidráulica de ejecución, el perfil axial de potencia, el perfil por barra o radial de potencia, la potencia total del EECC, el caudal de entrada, la temperatura de entrada y la presión a la salida. En cuanto a la información de salida, se tiene: la fracción de vacío promedio a la salida del canal, y el MDNBR. Esta información es extraída para cada caso y canal.
+De las simulaciones de COBRA3-CP, se extrajeron dos conjuntos de información: por un lado la información de entrada al código y, por otro la información de salida del código. La información de entrada al código de interés está compuesta por la zona hidráulica de ejecución, el perfil axial de potencia, el perfil por barra o radial de potencia, la potencia total del EECC, el caudal de entrada, la temperatura de entrada y la presión a la salida. En cuanto a la información de salida, se provee la fracción de vacío promedio a la salida del canal, y el MDNBR. Estos valores se extrajeron para cada caso y canal.
 
-Debido a que los datos de una estrategia están alrededor de los parámetros de operación del reactor, se agregó una varianza a los parámetros de potencia total, temperatura de entrada, y presión a la salida. Esto fue realizado por medio de un \textit{script} de Python, con las funciones \texttt{random()} y \texttt{randint()} de la biblioteca random, que proveen una distribución uniforme en el rango establecido. Se varió la potencia con aumentos de entre 5\% y 30\%, con intervalos de 5\%. La temperatura se varió en un intervalo uniforme entre 268 \degree C y 288 \degree C ($\pm$ 10 \degree C respecto de la temperatura nominal de operación), y la presión entre 105 bar y 125 bar ($\pm$ 10 bar respecto de la presión nominal de operación).
+Debido a que los datos de una estrategia están alrededor de los parámetros de operación del reactor, se agregó una varianza a los parámetros de potencia total, temperatura de entrada y presión a la salida. Esto fue realizado por medio de un script de Python, con las funciones \texttt{random()} y \texttt{randint()} de la biblioteca \texttt{random}, que proveen una distribución uniforme en el rango establecido. Se incrementó la potencia con aumentos de entre 5\% y 30\%, con intervalos de 5\%. La temperatura se evaluó dentro de un intervalo uniforme entre 268 \degree C y 288 \degree C ($\pm$ 10 \degree C respecto de la temperatura nominal de operación), y la presión entre 105 bar y 125 bar ($\pm$ 10 bar respecto de la presión nominal de operación). Estos rangos son similares a los utilizados para calcular el límite de operación segura (SDL, del inglés \textit{Safety Design Limit}) en el diseño termohidráulico de la \cna{}.
 
 Las simulaciones se realizaron en paralelo y fueron procesadas al finalizar, para luego borrar el directorio de ejecución. De esta manera se evitó un excesivo volumen de datos en disco que no proveían valor.
 
-La distribución de fracción de vacío y MDNBR obtenida se presenta en la figura \ref{fig:hist_void_mdnbr}. Se observa que el MDNBR tiene una fuerte dependencia con la ZH. Esto es esperable ya que cada ZH tiene una relación potencia-caudal característica, y los límites de DNBR son mayores cuanto más periférica la ZH. Es entonces un criterio de evaluación del modelo final la correcta predicción para cada ZH de la PLC. Por otro lado, la fracción de vacío presenta una distribución uniforme en casi todo el dominio, con un pico en 0, es decir líquido sin vapor a la salida del canal.
+La distribución de fracción de vacío y MDNBR obtenida se presenta en la figura \ref{fig:hist_void_mdnbr}. Se observa que el MDNBR presenta una fuerte dependencia con la ZH. Esto es esperable ya que cada ZH tiene un rango de caudales y una relación potencia-caudal características, y los límites de DNBR aumentan hacia las ZH periféricas. Es entonces un criterio de evaluación del modelo final la correcta predicción para cada ZH de la PLC. Por otro lado, la fracción de vacío presenta una distribución uniforme en casi todo el dominio, con un pico en 0, es decir, condiciones sin presencia de vapor a la salida del canal.
 
 \begin{figure}[hbt]
     \centering
@@ -27,21 +27,21 @@ La distribución de fracción de vacío y MDNBR obtenida se presenta en la figur
     \label{fig:hist_void_mdnbr}
 \end{figure}
 
-Al realizar las simulaciones y procesarlas se generó un archivo con extensión \texttt{csv}, que tiene las siguientes columnas: \texttt{caso}, \texttt{canal}, \texttt{zh}, \texttt{pa1}, \texttt{...}, \texttt{pa22}, \texttt{pr1}, \texttt{...}, \texttt{pr37}, \texttt{power}, \texttt{void}, \texttt{caudal}, \texttt{temperatura}, \texttt{presion}, \texttt{MDNBR}. Este archivo fue importado como un objeto \texttt{pandas.DataFrame}, de la biblioteca pandas.
+Al realizar las simulaciones y procesarlas se generó un archivo con extensión \texttt{csv}, que tiene las siguientes columnas: \texttt{caso}, \texttt{canal}, \texttt{zh}, \texttt{pa1}, \texttt{...}, \texttt{pa22}, \texttt{pr1}, \texttt{...}, \texttt{pr37}, \texttt{power}, \texttt{void}, \texttt{caudal}, \texttt{temperatura}, \texttt{presion}, \texttt{MDNBR}. Este archivo fue importado como un objeto \texttt{pandas.DataFrame}, de la biblioteca Pandas. Las columnas \texttt{caso}, \texttt{canal} y \texttt{zh} se descartaron, las primeras dos debido a que no aportan información y la zona hidráulica debido a que queda unívocamente representada por el caudal.
 
-Se filtraron los resultados a utilizar por el valor de MDNBR y fracción de vacío, para utilizar sólo valores en el rango de interés al calcular las PLC. Los datos por fuera de estos rangos sirven de set adicional de evaluación, para determinar la capacidad de generalización del modelo por fuera del rango entrenado. Se filtraron los casos con MDNBR entre 1,7 y 2,5, o fracción de vacío entre 15\% y 35\%.
+Se filtraron los resultados a utilizar por el valor de MDNBR y fracción de vacío, para utilizar sólo valores en el rango de interés al calcular las PLC. Los datos que exceden estos rangos sirven de set adicional de evaluación, para determinar la capacidad de generalización del modelo ante valores no incluidos en el entrenamiento. Se filtraron los casos con MDNBR entre 1,7 y 2,5, o fracción de vacío entre 15\% y 35\%.
 
 Con los resultados filtrados el pipeline es el siguiente:
 \begin{enumerate}
-    \item Conversión a tensores (\texttt{torch.tensor(, dtype=torch.float32)}) para las \textit{features} (todas las variables menos \texttt{MDNBR} y \texttt{void}) y \textit{target}.
-    \item División entre \textit{train} y \textit{test} por medio de \texttt{train\_test\_split} de scikit-learn.
-    \item Normalización de tensores de \textit{features} y \textit{targets} por medio de la función \texttt{plc.scale\_tensors()}, que utiliza por dentro \texttt{StandardScaler()} de scikit-learn.
+    \item Conversión a tensores (\texttt{torch.tensor(, dtype=torch.float32)}) para las features (todas las variables menos \texttt{MDNBR} y \texttt{void}) y target.
+    \item División entre train y test por medio de \texttt{train\_test\_split} de scikit-learn.
+    \item Normalización de tensores de features y targets por medio de la función \texttt{plc.scale\_tensors()}, que utiliza por dentro \texttt{StandardScaler()} de scikit-learn.
 \end{enumerate}
 
 \subsection{Arquitectura del modelo, entrenamiento y optimización}
-El estimador de PLC utiliza una arquitectura estándar de DNN, a partir del módulo \texttt{torch.nn.Sequential} y su método \texttt{add\_module()}. Los hiperparámetros a configurar son: cantidad de capas ocultas, cantidad de neuronas en las capas ocultas, función de activación, \textit{learning rate}, y tamaño del \textit{batch} de entrenamiento. 
+El estimador de PLC utiliza una arquitectura estándar de DNN, a partir del módulo \texttt{torch.nn.Sequential} y su método \texttt{add\_module()}. Los hiperparámetros a configurar son: cantidad de capas ocultas, cantidad de neuronas en las capas ocultas, función de activación, aplicación de regularización por dropout, learning rate y tamaño del batch de entrenamiento. 
 
-En la figura \ref{fig:mlp-arquitectura} se esquematiza la arquitectura implementada. La entrada reúne las 63 variables mencionadas previamente: 22 componentes del perfil axial, las 37 componentes del perfil radial, y las condiciones de operación: potencia, caudal, temperatura y presión. A estas se aplica en la capa de entrada una función de activación $\sigma$. A continuación, estas variables ingresan en una red de \texttt{L} capas ocultas con \texttt{h} neuronas cada una, que aplican $\sigma$ en cada nodo. Por último la capa de salida tiene 2 variables: MDNBR y fracción de vacío.
+En la figura \ref{fig:mlp-arquitectura} se esquematiza la arquitectura implementada. La entrada reúne las 63 variables mencionadas previamente: 22 componentes del perfil axial, las 37 componentes del perfil radial, y las condiciones termohidráulicas de operación. A estas se aplica en la capa de entrada una función de activación $\sigma$. A continuación, estas variables ingresan en una red de \texttt{L} capas ocultas con \texttt{h} neuronas cada una, que aplican $\sigma$ en cada nodo. Por último, la capa de salida está compuesta por dos variables, el MDNBR y la fracción de vacío.
 
 \input{Figures/mlp_arquitectura.tex}
 
@@ -49,96 +49,97 @@ Para el armado de la arquitectura se desarrolló la función \texttt{plc.build\_
 
 Para entrenar al modelo se utilizó Adam \citep{kingma2015adam} como optimizador, debido a su alta capacidad y adopción en casos clásicos de DNN. Como función de pérdida se utilizó la raíz del error cuadrático medio (RMSE, del inglés \textit{Root Mean Squared Error}), debido a que penaliza fuertemente los errores grandes y tiene magnitud del orden de las variables a optimizar.
 
-Durante el entrenamiento se evalúa, además de la función de pérdida, el coeficiente de correlación $\text{R}^2$, tanto para el set de entrenamiento como el de evaluación. Al predecir sobre el set de evaluación, se utiliza la condición \texttt{torch.no\_grad()} para evitar que se aprenda de este set de datos y genere \textit{data leakage}. Se desarrolló la función de ayuda \texttt{plc.train\_model} para realizar el entrenamiento sobre la cantidad de épocas deseadas de forma sencilla.
+Durante el entrenamiento se evaluó, además de la función de pérdida, el coeficiente de correlación $\text{R}^2$, tanto para el set de entrenamiento como el de evaluación. Al predecir sobre el set de evaluación, se utilizó la condición \texttt{torch.no\_grad()} para evitar que se aprenda de este set de datos y genere data leakage. Se desarrolló la función de ayuda \texttt{plc.train\_model} para realizar el entrenamiento sobre la cantidad de épocas deseadas de forma sencilla.
 
-La definición de los hiperparámetros se realiza por medio de su optimización con optuna. Para ello se plantea un estudio de hiperparámetros con 50 \textit{trials} de 200 épocas cada uno. Se consideraron DNN con entre 2 y 15 capas ocultas, de entre 32 y 512 neuronas cada uno, con un \textit{learning rate} de entre $10^{-2}$ y $10^{-5}$ y \textit{batches} de entrenamiento de entre 16 y 236.
-Las funciones de activación consideradas fueron: ReLU \citep{nair2010rectified}, GELU \citep{hendrycks2016gaussian}, SiLU/Swish \citep{elfwing2018sigmoid}, Tanh, Leaky ReLU \citep{maas2013rectifier} y ELU \citep{clevert2015fast}.
+La definición de los hiperparámetros se realizó por medio de su optimización con Optuna. Para ello se planteó un estudio de hiperparámetros con 50 trials de 200 épocas cada uno. Se consideraron DNN con entre 2 y 15 capas ocultas, de entre 32 y 512 neuronas cada uno, con un learning rate de entre $10^{-2}$ y $10^{-5}$ y batches de entrenamiento de entre 16 y 256.
+Las funciones de activación consideradas fueron ReLU \citep{nair2010rectified}, GELU \citep{hendrycks2016gaussian}, SiLU/Swish \citep{elfwing2018sigmoid}, Tanh, Leaky ReLU \citep{maas2013rectifier} y ELU \citep{clevert2015fast}.
+
+Es importante señalar que la DNN predice dos valores con distinta escala y criticidad. Por lo tanto, es necesario un criterio para equiparar o ponderarlos en el cálculo de la función de pérdida en entrenamiento.
 
 En el capítulo \ref{Chapter4} se presentan los resultados de la optimización realizada.
 
 \subsection{Integración e implementación del sistema}
 La integración consiste en realizar el lazo de cálculo de PLC de COBRA, pero con la DNN entrenada en su lugar. Se tiene un lazo para cada límite de PLC, pero son idénticos en concepto. Únicamente se debe modificar la variable objetivo según si es criterio de DNB o de fracción de vacío.
 
-El lazo de cálculo se esquematiza en la figura \ref{fig:dnb-dnn-loop}. En la misma se observa que en primer lugar se deben definir las condiciones operativas, esto es, temperatura y presión, y el límite objetivo, ya sea de MDNBR o de fracción de vacío. Luego se realizan dos cálculos, uno de piso y otro de techo, donde se evalúan los flujos de calor mínimo y máximo. Estos valores se establecen de antemano y se deben proveer valores que contengan al flujo de calor correspondiente al límite objetivo, por lo que un rango amplio es recomendable. Se obtiene el valor del límite para el flujo de calor mínimo y máximo, y por el método de la secante se estima el flujo de calor que debería obtener el límite objetivo. Se recalcula el caudal másico con dicho flujo de calor, y se vuelve a estimar el límite. Si se obtiene convergencia tanto en el límite objetivo, como en caudal y flujo de calor, se termina el lazo de cálculo. Si no se obtiene convergencia, se realiza una nueva iteración del método de la secante.
+El lazo de cálculo se esquematiza en la figura \ref{fig:dnb-dnn-loop}. Allí se observa que, en primer lugar, se deben definir las condiciones operativas de temperatura y presión, y el límite objetivo, ya sea de MDNBR o de fracción de vacío. Luego se realizan dos cálculos, uno de piso y otro de techo, donde se evalúan los flujos de calor mínimo y máximo. Estos valores se establecen previamente y se deben proveer valores que contengan al flujo de calor correspondiente al límite objetivo, por lo que un rango amplio es recomendable. Se obtiene el valor del límite para el flujo de calor mínimo y máximo y por el método de la secante se estima el flujo de calor que debería obtener el límite objetivo. Se recalcula el caudal másico con dicho flujo de calor, y se vuelve a estimar el límite. Si se obtiene convergencia tanto en el límite objetivo como en caudal y flujo de calor, se termina el lazo de cálculo. Si no se obtiene convergencia, se realiza una nueva iteración del método de la secante.
 
-Para calcular el flujo másico en función del flujo de calor, se recurre a la relación caudal-potencia desarrollada por INVAP en \citep{invap_caudal_potencia}, donde para cada ZH y condición operativa se tiene una tabla para interpolar caudal másico a partir de potencia de canal.
+Para calcular el flujo másico en función del flujo de calor, se recurrió a la relación caudal-potencia desarrollada por INVAP en \citep{invap_caudal_potencia}, donde para cada ZH y condición operativa se tiene una tabla para interpolar caudal másico a partir de potencia de canal.
 
 \input{Figures/dnb_dnn_loop.tex}
 
 
 \newpage
 \subsection{Arquitectura de embeddings, entrenamiento y aplicación}
-Como se definió en la sección de objetivos \ref{sec:objetivos}, se realizó un análisis de reducción de dimensionalidad de los perfiles de potencia axiales y por barra. Para ello, se plantea una arquitectura de codificador-decodificador (en inglés, \textit{encoder-decoder} o \textit{autoencoder}). Esto permite llevar el vector de entrada, en $\mathbb{R}^n$, a un espacio latente, $\mathbb{R}^d$, de menor dimension, $d<n$. De esta forma, se obtiene una representación compacta del vector de origen, referida en la bibliografía como espacio latente.
+Como se definió en la sección de objetivos \ref{sec:objetivos}, se realizó un análisis de reducción de dimensionalidad de los perfiles de potencia axiales y por barra. Para ello, se planteó una arquitectura de codificador-decodificador (en inglés, encoder-decoder o autoencoder). Esto permite llevar el vector de entrada, en $\mathbb{R}^n$, a un espacio latente, $\mathbb{R}^d$, de menor dimensión, $d<n$. De esta forma se obtiene una representación compacta del vector de origen.
 Para lograr esto, el autoencoder se compone de dos DNN. La primera, el encoder, codifica al espacio latente, y la segunda, el decoder, decodifica nuevamente al espacio original. En la figura \ref{fig:autoencoder-embedding} se presenta un esquema del autoencoder.
 
 \input{Figures/autoencoder_embedding.tex}
 
-Se entrenó un autoencoder independiente para cada perfil, ya que se trata de magnitudes de distinta naturaleza y dimensión: el perfil axial, con $n=22$ componentes, y el perfil radial o por barra, con $n=37$ componentes. Los perfiles se extraen del mismo archivo \texttt{csv} descripto en el pipeline de datos, se convierten a tensores de \texttt{torch}, se dividen en \textit{train} y \textit{test} con \texttt{train\_test\_split}, y se normalizan con \texttt{StandardScaler()}, de la misma manera que las \textit{features} del estimador de PLC.
+Se entrenó un autoencoder independiente para cada perfil, ya que se trata de magnitudes de distinta naturaleza y dimensión: el perfil axial, con $n=22$ componentes, y el perfil radial o por barra, con $n=37$ componentes. Los perfiles se extrajeron del mismo archivo \texttt{csv} descripto en el pipeline de datos, se convirtieron a tensores de \texttt{torch}, se dividieron en train y test con \texttt{train\_test\_split}, y se normalizaron con \texttt{StandardScaler()}, de la misma manera que las features del estimador de PLC.
 
-Tanto el codificador como el decodificador se implementaron como DNN con el módulo \texttt{torch.nn.Sequential}, siguiendo el mismo esquema que \texttt{plc.build\allowbreak\_model}. El codificador toma las $n$ componentes del perfil y las reduce progresivamente hasta la capa latente de dimensión $d$, mientras que el decodificador replica la estructura de forma espejada, expandiendo de $d$ a $n$. La capa latente no lleva función de activación, para no restringir el rango del \textit{embedding}, y la capa de salida tampoco, dado que la reconstrucción se realiza sobre variables normalizadas que pueden tomar valores de ambos signos. Los hiperparámetros a configurar son entonces: la dimensión latente $d$, la cantidad de capas ocultas de cada rama, la cantidad de neuronas por capa, la función de activación, el \textit{learning rate} y el tamaño del \textit{batch}.
+Tanto el codificador como el decodificador se implementaron como DNN con el módulo \texttt{torch.nn.Sequential}, siguiendo el mismo esquema que \texttt{plc.build\allowbreak\_model}. El codificador toma las $n$ componentes del perfil y las reduce progresivamente hasta la capa latente de dimensión $d$, mientras que el decodificador replica la estructura de forma espejada, expandiendo de $d$ a $n$. La capa latente no lleva función de activación, para no restringir el rango del embedding, y la capa de salida tampoco, dado que la reconstrucción se realiza sobre variables normalizadas que pueden tomar valores de ambos signos. Los hiperparámetros a configurar son entonces: la dimensión latente $d$, la cantidad de capas ocultas de cada rama, la cantidad de neuronas por capa, la función de activación, el learning rate y el tamaño del batch.
 
-El entrenamiento es no supervisado: el propio perfil de entrada oficia de \textit{target}, y la función de pérdida es el error cuadrático medio entre la entrada y su reconstrucción, $\mathcal{L}(\phi,\theta)=\lVert\mathbf{x}-\hat{\mathbf{x}}\rVert^{2}$, como se indica en la figura \ref{fig:autoencoder-embedding}. Se utilizó nuevamente el optimizador Adam, con el mismo lazo de entrenamiento por épocas empleado en \texttt{plc.train\_model}.
+El entrenamiento es no supervisado: el propio perfil de entrada oficia de target, y la función de pérdida es el error cuadrático medio entre la entrada y su reconstrucción, $\mathcal{L}(\phi,\theta)=\lVert\mathbf{x}-\hat{\mathbf{x}}\rVert^{2}$, como se indica en la figura \ref{fig:autoencoder-embedding}. Se utilizó nuevamente el optimizador Adam, con el mismo lazo de entrenamiento por épocas empleado en \texttt{plc.train\_model}.
 
-La elección de $d$ se realizó por barrido, entrenando un autoencoder para cada dimensión latente y comparando el error de reconstrucción sobre el set de evaluación. De esta manera se identifica la menor dimensión que conserva la información relevante del perfil. Una vez entrenado el autoencoder, se descarta el decodificador y se conserva únicamente el codificador, que se aplica sobre los perfiles para reemplazar las 22 y 37 componentes originales por sus respectivos \textit{embeddings} de dimensión $d$. 
+La elección de $d$ se realizó por barrido, entrenando un autoencoder para cada dimensión latente y comparando el error de reconstrucción sobre el set de evaluación. De esta manera se identificó la menor dimensión que conserva la información relevante del perfil. Una vez entrenado el autoencoder, se descartó el decodificador y se conservó únicamente el codificador, que se aplicó sobre los perfiles para reemplazar las 22 y 37 componentes originales por sus respectivos embeddings de dimensión $d$. 
 
-Con la nuevas \textit{features} se reentrena el estimador de PLC descripto en las subsecciones anteriores, y en el capítulo \ref{Chapter4} se comparan sus resultados contra los del modelo que utiliza los perfiles completos. 
+Con las nuevas features se reentrenó el estimador de PLC descripto en las subsecciones anteriores, y en el capítulo \ref{Chapter4} se comparan sus resultados contra los del modelo que utiliza los perfiles completos. 
 
-A partir de la transformación al espacio latente, se pueden evaluar cuales son las componentes que caracterizan a los perfiles de potencia, y como impactan en la PLC. 
+A partir de la transformación al espacio latente, se pueden evaluar cuáles son las componentes que caracterizan a los perfiles de potencia, y cómo impactan en la PLC. Como referencia, se realizó un análisis análogo por medio de análisis de componentes principales (PCA, del inglés \textit{Principal Component Analysis}) \citep{hotelling1933pca}.
 
-\subsection{Criterios de evaluación}
-Para evaluar los modelos predictores de PLC, no basta únicamente con presentar medidas estadísticas del error, como pueden ser el error cuadrático medio (MSE, del inglés \textit{Mean Squared Error}), su raíz (RMSE, del inglés \textit{Root Mean Squared Error}) o error absoluto medio (MAE, del inglés \textit{Mean Absolute Error}). Por la naturaleza de la aplicación de este modelo, debe validarse también el conservadurismo de su predicción, esto es, asegurar con cierto grado de probabilidad y confianza que se predice una PLC por debajo de la referencia. 
+\subsection{Evaluación del modelo}
+Para evaluar los modelos predictores de PLC, no basta únicamente con presentar medidas estadísticas del error, como pueden ser el error cuadrático medio (MSE, del inglés \textit{Mean Squared Error}), su raíz (RMSE, del inglés \textit{Root Mean Squared Error}) o error absoluto medio (MAE, del inglés \textit{Mean Absolute Error}). Por la naturaleza de la aplicación de este modelo, debe validarse también el conservadurismo de su predicción, esto es, asegurar con cierto grado de probabilidad y confianza que se predice una PLC por debajo de la referencia. Para ello, se aplicó un criterio similar al utilizado en el diseño termohidráulico de la \cna{} para calcular el $\mathrm{DNBR}_\mathrm{min}$, descripto en la sección \ref{sec:chf_eval}. 
 
-Para ello, se aplica un criterio similar al utilizado en el diseño termohidráulico de la \cna{} para calcular el $\mathrm{DNBR}_\mathrm{min}$, descripto en la sección \ref{sec:chf_eval}.
+Se definió el factor de ajuste de PLC, o $F_\mathrm{PLCR}$, que asegura con 95\% de probabilidad y confianza que se está subestimando la PLC. Entonces, se buscó el intervalo de tolerancia que con 95\% confianza contiene al 95\% de las predicciones por debajo del valor real. 
+Se requiere el factor de tolerancia o $k$, y en este caso, dada la alta cantidad de muestras, se puede tomar el límite con infinitas muestras. Para 95\% de confianza, 95\% de probabilidad e infinitas muestras, se obtiene $k_{95/95}=1,645$. Entonces, $F_\mathrm{PLC}$ se obtiene según la ecuación \ref{eq:f_plc},
+\begin{equation}
+    \label{eq:f_plc}
+    \frac{1}{F_\mathrm{PLC}} = \overline{R} + k_{95/95} \cdot \sigma(R),
+\end{equation}
+siendo $R$ el cociente entre el valor predicho y el de referencia de la PLC.
+
+Definido el factor que permite asegurar una predicción conservativa, se evaluó el margen de potencia perdido al realizar la predicción por el método propuesto. 
 
 \pagebreak
 \section{Estimación de CHF}
-En esta sección se presenta el modelo de multifidelidad informado por física para estimar CHF. Se presenta el pipeline de datos, la arquitectura del modelo y la metodología para su evaluación.
+En esta sección se presenta el modelo de multifidelidad informado por física para estimar CHF. Se explica el pipeline de datos, la arquitectura del modelo y la metodología para su evaluación.
 
-Se desarrollaron múltiples códigos Python para ayudar con el desarrollo de las distintas tareas necesarias, a saber: \texttt{chf.py}, \texttt{ahmad\_scaling.py}, \texttt{softmin.py}, \texttt{import\_cobra.py}. 
+Se desarrollaron múltiples códigos Python destinados a tareas auxiliares del proceso de cálculo, entre ellos: \texttt{chf.py}, \texttt{ahmad\_scaling.py}, \texttt{softmin.py}, \texttt{import\_cobra.py}. 
 
 \subsection{Pipeline de datos}
 Los datos disponibles para estimación de CHF se dividen en tres fuentes:
 \begin{itemize}
-    \item Datos de ensayo en tubo, utilizados por Groeneveld para sus LUT (versión 2006).
-    \item Datos de ensayos de la Universidad de Columbia, sobre el bundle de la CNA-UII.
-    \item Datos de simulaciones de COBRA3-CP, que modelan la geometría y condiciones de los ensayos de la Universidad de Columbia.
+    \item Datos de ensayo en tubo, utilizados por Groeneveld para sus LUT (versión 2006). $24\,579$ observaciones.
+    \item Datos de ensayos de la Universidad de Columbia, sobre el bundle de la \cna{}. $146$ observaciones.
+    \item Datos de simulaciones de COBRA3-CP, que modelan la geometría y condiciones de los ensayos de la Universidad de Columbia. $1\,322\,760$ observaciones, de $146$ ensayos $\times 151$ nodos axiales $\times 60$ subcanales.
 \end{itemize}
-Estas fuentes tienen distintas características. Los datos de ensayos experimentales tienen una disponibilidad similar de datos, aunque los ensayos de bundle conllevan una mayor complejidad geométrica, propia del bundle, que podría ser tenida en cuenta por el modelo. Es posible realizar \textit{data augmentation} de los datos experimentales por medio de modelos y relaciones termodinámicas. Por otro lado, las simulaciones permiten obtener datos muy detallados, tanto espacialmente como en variables termodinámicas informadas.
+Estas fuentes tienen distintas características. Ambas fuentes experimentales tienen una disponibilidad similar, aunque los ensayos de bundle conllevan una mayor complejidad geométrica, propia del bundle, que podría ser tenida en cuenta por el modelo. Es posible realizar data augmentation de los datos experimentales por medio de modelos y relaciones termodinámicas. Por otro lado, las simulaciones permiten obtener datos muy detallados, tanto espacialmente como en variables termodinámicas informadas. En este trabajo se consideran a los datos de las simulaciones como un dato de alta fidelidad. En rigor, las simulaciones de COBRA3-CP están sujetas a error. Se han observado en la práctica diferencias respecto de ensayos, en particular en cuanto al mezclado entre subcanales y el efecto del separador. Puesto que el trabajo busca proponer y validar una metodología, la hipótesis de COBRA3-CP como fuente de verdad resulta válida. En caso de ser usada como metodología de predicción de CHF en la práctica, los cambios en modelos termohidráulicos de COBRA3-CP deben acompañarse del reentrenamiento del modelo de predicción de CHF.
 
-Por otro lado, se debe definir con cautela qué \textit{features} dar al modelo para predecir CHF. Si se considera que no hay pérdidas de calor, la evolución de la entalpía del fluido en función de la coordenada $z$ va a venir dada por:
+A su vez, se debe definir con cautela qué features ingresan al modelo para predecir CHF. Si se considera que no hay pérdidas de calor, la evolución de la entalpía del fluido en función de la coordenada $z$ se expresa mediante la ecuación \ref{eq:hz}.
 \begin{equation}
     h(z) = h_\mathrm{inlet} + \frac{\pi\,D}{\dot{m}} \int_0^z q''\,dz'.
     \label{eq:hz}
 \end{equation}
-Por otro lado, el título termodinámico de equilibrio se relaciona con la entalpía de la siguiente forma:
+Por otro lado, el título termodinámico de equilibrio se relaciona con la entalpía según la ecuación \ref{eq:xz}.
 \begin{equation}
     x(z) = \frac{h(z) - h_f}{h_{fg}}.
     \label{eq:xz}
 \end{equation}
-Si $q''=\mathrm{cte}$, como lo es tanto en los ensayos de un tubo y del bundle de la \cna{}, al reemplazar \ref{eq:hz} en \ref{eq:xz} se tiene:
+Si $q''=\mathrm{cte}$, como lo es tanto en los ensayos de un tubo y del bundle de la \cna{}, al reemplazar la ecuación \ref{eq:hz} en la \ref{eq:xz} se obtiene la ecuación \ref{eq:xz_lineal},
 \begin{equation}
+    \label{eq:xz_lineal}
     x(z) = x_\mathrm{inlet} + \frac{\pi\,D\,q''\,z}{\dot{m}\,h_{fg}},
 \end{equation}
-por lo que el modelo, dado $x(z=1)=x_\mathrm{outlet}$, puede despejar $q''$. Esto tiene dos implicancias: en primer lugar el modelo está asumiendo perfil de flujo de calor constante; y en segundo lugar, está considerando que las variables de entrada corresponden a un estado de CHF. Ninguna de estas dos implicancias son deseables, ya que el modelo no podrá generalizar a los casos de interés: cuando no se conoce el valor del CHF, ni se tiene un perfil de potencia uniforme.
+por lo que el modelo, dado $x(z=1)=x_\mathrm{outlet}$, puede despejar $q''$. Esto tiene dos implicancias: en primer lugar el modelo asume un perfil de flujo de calor constante; y en segundo lugar, considera que las variables de entrada corresponden a un estado de CHF. Ninguna de estas dos implicancias es deseable, ya que el modelo no podrá generalizar a los casos de interés, es decir, cuando no se conoce el valor del CHF ni se tiene un perfil de potencia uniforme.
 
 En la bibliografía clásica de CHF existen dos enfoques: el método de sustitución directa (DSM, del inglés \textit{Direct Substitution Method}) y el método de balance de calor (HBM, del inglés \textit{Heat Balance Method}). El DSM tiene como principal hipótesis que el CHF es un fenómeno local, por lo que utiliza directamente variables locales para predecir CHF. Esta hipótesis se ha considerado relativamente válida en caso de DNB, como lo sugieren \citep{weisman1983, tong1997boiling, lecorre2010}. Por otro lado, el HBM, como lo indica su nombre, realiza el balance de calor a partir de las condiciones de entrada al tubo.
-Groeneveld et al. evaluaron sus tres versiones de las LUT (1986 \citep{GROENEVELD1986}, 1995 y 2006) mediante ambos métodos, y obtuvieron predicciones más precisas mediante el HBM. 
-Sin embargo, el DSM es el más utilizado en la práctica, y el más adecuado para su aplicación en códigos termohidráulicos, como señala Siman\=/Tov \citep{SIMANTOV1996}. Esto se debe, por un lado, a su simplicidad, y por otro, a que los ensayos realizados en geometrías reales (de bundle) informan las condiciones promedio, mientras que el CHF ocurre a nivel de subcanal. Las condiciones locales a nivel de subcanal pueden ser estimadas por medio de códigos de subcanal como COBRA3-CP, pero esto agregaría un error de la herramienta de cálculo que sería deseable evitar.
+Groeneveld et al. evaluaron sus tres versiones de las LUT (1986 \citep{GROENEVELD1986}, 1995 \citep{GROENEVELD1996} y 2006 \citep{GROENEVELD2007}) mediante ambos métodos, y obtuvieron predicciones más precisas mediante el HBM. 
+Sin embargo, el DSM es el más utilizado en la práctica, y el más adecuado para su aplicación en códigos termohidráulicos, como señala Siman\=/Tov \citep{SIMANTOV1996}. Esto se debe, por un lado, a su simplicidad y, por otro, a que los ensayos realizados en geometrías reales (de bundle) informan las condiciones promedio, mientras que el CHF ocurre a nivel de subcanal. Las condiciones locales a nivel de subcanal pueden ser estimadas por medio de códigos de subcanal como COBRA3-CP, pero esto agregaría un error de la herramienta de cálculo que sería deseable evitar.
 Adicionalmente, el DSM es el método utilizado en la estimación de CHF para el bundle de la \cna{}, por medio de las LUT 1995 y los TMF de INVAP.
 
-% Entonces, en este trabajo, se analizarán dos \textit{pipelines} de datos, ambos basadas en DSM. En primer lugar considerar las mismas entradas que toma el método actual: \textcolor{red}{completar con lo que toma la LUT + lo que toman los factores de correccion de Groeneveld y los TMF de INVAP. Hay algunos datos que son específicos de la corrección de bundle.}. A este pipeline lo llamaremos \texttt{pipeline vanilla}.
-
-% En segundo lugar, se realizará una transformación de las variables en números adimensionales, y se evaluará por medio de regularización y validación cruzada su relevancia. Las variables planteadas en este pipeline son: \textcolor{red}{completar!! Tener en cuenta que algunos datos son particulares de bundle (distancia al separador por ej)}. 
-% \begin{equation}
-%     \mathrm{We} = 
-% \end{equation}
-% \begin{equation}
-%     \mathrm{Re} = 
-% \end{equation}
-% A este pipeline lo llamaremos \texttt{pipeline novel}.
-
-Adicionalmente, se debe considerar un detalle importante de los ensayos realizados en la Universidad de Columbia. La mayoría de estos ensayos fueron realizados en agua liviana ($H_2 O$), pero una serie de los mismos fue realizada en agua pesada ($D_2 O$), el fluido de trabajo de la \cna{}. Esto impone la necesidad de traducir los ensayos a un único fluido. Debido a que tradicionalmente los ensayos se han hecho con agua liviana en vistas de reactores PWR (del inglés, \textit{Pressurized Water Reactors}), y que los ensayos en un tubo se realizaron con agua liviana, tradicionalmente se escaló el ensayo de agua pesada a agua liviana. Luego, la predicción de CHF para agua liviana se debe escalar a agua pesada, para poder predecir las condiciones dentro del reactor. En este trabajo se continúa con esta línea de trabajo. El escaleo de propiedades entre fluidos es dependiente del fenómeno estudiado, en particular, para CHF se utiliza la regla de escaleo de Ahmad \citep{ahmad1973}. Esta regla de escaleo propone cuatro números adimensionales a conservar entre el fluido ``prototipo''  y el fluido ``modelo'':
+Adicionalmente, se debe considerar un detalle importante de los ensayos realizados en la Universidad de Columbia. La mayoría de estos ensayos fueron realizados en agua liviana ($H_2 O$), pero una serie de ellos fue realizada en agua pesada ($D_2 O$), el fluido de trabajo de la \cna{}. Esto impone la necesidad de traducir los ensayos a un único fluido. Debido a que tradicionalmente los ensayos se han hecho con agua liviana en vistas de reactores PWR (del inglés, \textit{Pressurized Water Reactors}), y que los ensayos en un tubo se realizaron con agua liviana, la práctica habitual es escalar el ensayo de agua pesada a agua liviana. Luego, la predicción de CHF para agua liviana se debe escalar a agua pesada, para poder predecir las condiciones dentro del reactor. En este trabajo se adopta el mismo criterio. El escaleo de propiedades entre fluidos es dependiente del fenómeno estudiado, en particular, para CHF se utiliza la regla de escaleo de Ahmad \citep{ahmad1973}. Esta regla de escaleo propone cuatro números adimensionales a conservar entre el fluido ``prototipo''  y el fluido ``modelo'', como se muestra en la ecuación \ref{eq:ahmad1}.
 \begin{equation}
+    \label{eq:ahmad1}
     \begin{cases}
         \left( \Psi_\mathrm{CHF} \right)_\mathrm{prototipo} = \left( \Psi_\mathrm{CHF} \right)_\mathrm{modelo}, \\
         \left( \nicefrac{\Delta H}{\lambda} \right)_\mathrm{prototipo} = \left( \nicefrac{\Delta H}{\lambda} \right)_\mathrm{modelo}, \\ 
@@ -147,31 +148,34 @@ Adicionalmente, se debe considerar un detalle importante de los ensayos realizad
     \end{cases}
 \end{equation}
 
-$\Delta H$ es el subenfriamiento a la entrada, $\lambda$ es el calor latente de vaporización, $\rho_L$ y $\rho_V$ son las densidades de la fase líquida y vapor respectivamente, $L$ es el largo de la sección de ensayo, $D$ es el diámetro de la sección de ensayo, y $\Psi_\mathrm{CHF}$ es el número adimensional propuesto específicamente para CHF por Ahmad:
+$\Delta H$ es el subenfriamiento a la entrada, $\lambda$ es el calor latente de vaporización, $\rho_L$ y $\rho_V$ son las densidades de la fase líquida y vapor respectivamente, $L$ es el largo de la sección de ensayo, $D$ es el diámetro de la sección de ensayo, y $\Psi_\mathrm{CHF}$ es el número adimensional propuesto específicamente para CHF por Ahmad, expresado en la ecuación \ref{eq:ahmad2},
 \begin{equation}
+    \label{eq:ahmad2}
     \Psi_\mathrm{CHF} = \left[\left(\frac{G\,D}{\mu_L}\right) \cdot \left(\frac{\mu_L^2}{\sigma\,D\,\rho_L}\right)^{\nicefrac{2}{3}} \cdot \left(\frac{\mu_V}{\mu_L}\right)^{\nicefrac{1}{5}} \right],
 \end{equation}
-donde $G$ es el flujo másico por unidad de área, $\mu_L$ y $\mu_V$ son las viscosidades dinámicas de la fase líquido y vapor respectivamente, y $\sigma$ es la tensión superficial. Esta regla de escaleo se encuentra implementada en un código python, por medio de la función \texttt{scaling\_ahmad()}.
+donde $G$ es el flujo másico por unidad de área, $\mu_L$ y $\mu_V$ son las viscosidades dinámicas de la fase líquido y vapor respectivamente, y $\sigma$ es la tensión superficial. Esta regla de escaleo se encuentra implementada en un código de Python, por medio de la función \texttt{scaling\_ahmad()}. Se resuelve el sistema implícito planteado por medio de la herramienta \texttt{scipy.optimize.fsolve}.
 
 Al aplicar una arquitectura de red neuronal de multifidelidad, el pipeline se divide en dos: el pipeline para entrenar la DNN de baja fidelidad a partir de los datos de ensayos en tubo; y el pipeline para entrenar la PINN de alta fidelidad con los datos de los ensayos de la Universidad de Columbia y las simulaciones en COBRA3-CP de ellos.
 
-Como se mencionó previamente, los datos de ensayos en tubo proveen los siguientes labels: diámetro, longitud, presión a la salida, flujo másico, título termodinámico a la salida, entalpía a la entrada, flujo de calor y temperatura de entrada. De éstos, se utilizan la presión a la salida \texttt{p}, el flujo másico \texttt{G}, el título termodinámico a la salida \texttt{x} y el cociente entre la longitud y el diámetro \texttt{LD}.
+Como se mencionó en la sección \ref{sec:datasets}, los datos de ensayos en tubo proveen los siguientes labels: diámetro, longitud, presión a la salida, flujo másico, título termodinámico a la salida, entalpía a la entrada, flujo de calor y temperatura de entrada. De estos, se utilizaron la presión a la salida \texttt{p}, el flujo másico \texttt{G}, el título termodinámico a la salida \texttt{x} y el cociente entre la longitud y el diámetro \texttt{LD}.
 
-Para el pipeline de alta fidelidad, de las simulaciones de COBRA se extrae, en cada nodo axial, para cada subcanal y en promedio en el bundle: diferencia de presión respecto de la salida (en $[\mathrm{bar}]$), entalpía (en $[\nicefrac{\mathrm{kJ}}{\mathrm{kg}}]$), temperatura (en $[\mathrm{C}]$), título termodinámico, fracción de vapor, caudal másico (en $[\nicefrac{\mathrm{kg}}{\mathrm{s}}]$) y flujo másico (en $[\nicefrac{\mathrm{kg}}{\mathrm{m}^2\,\mathrm{s}}]$). Luego se realiza un aumento de la información en cada uno de los nodos. Se agrega la siguiente información: 
+Para el pipeline de alta fidelidad, de las simulaciones de COBRA se extrajo, en cada nodo axial, para cada subcanal y en promedio en el bundle: diferencia de presión respecto de la salida (en $[\mathrm{bar}]$), entalpía (en $[\nicefrac{\mathrm{kJ}}{\mathrm{kg}}]$), temperatura (en $[\mathrm{C}]$), título termodinámico, fracción de vapor, caudal másico (en $[\nicefrac{\mathrm{kg}}{\mathrm{s}}]$) y flujo másico (en $[\nicefrac{\mathrm{kg}}{\mathrm{m}^2\,\mathrm{s}}]$). Luego se realizó un aumento de la información en cada uno de los nodos. Se agregó la siguiente información: 
 \begin{itemize}
-    \item presión en el nodo, ya que se debe evaluar en condiciones locales;
-    \item distancia axial al último separador adimensionalizada, para que la red pueda tener en cuenta el efecto del separador;
-    \item desbalance entre título local y título promedio del bundle, para que la red pueda contemplar que un subcanal con alto título rodeado de subcanales fríos retrasará el DNB gracias a la transferencia lateral de masa;
-    \item factor de pico máximo del subcanal, ya que no todos los subcanales están expuestos a la misma potencia;
-    \item relación entre perímetro calefaccionado y mojado del subcanal, para distinguir entre distintos tipos geométricos de subcanal;
-    \item derivadas respecto de la posición axial de la presión, la entalpía, la temperatura, el título termodinámico y el flujo másico, serán utilizadas para la formulación de pérdida informada por física en la PINN. 
+    \item Presión en el nodo, ya que se debe evaluar en condiciones locales.
+    \item Distancia axial al último separador adimensionalizada (\texttt{z\_sep\_adim}), para que la red pueda tener en cuenta el efecto del separador.
+    \item Desbalance entre título local y título promedio del bundle (\texttt{x\_disbalance}), para que la red pueda contemplar que un subcanal con alto título rodeado de subcanales fríos retrasará el DNB gracias a la transferencia lateral de masa.
+    \item Factor de pico máximo del subcanal (\texttt{f\_pico}), ya que no todos los subcanales están expuestos a la misma potencia.
+    \item Relación entre perímetro calefaccionado y mojado del subcanal (\texttt{p\_heat\allowbreak\_wet}), para distinguir entre distintos tipos geométricos de subcanal.
+    \item Derivadas respecto de la posición axial de la presión, la entalpía, la temperatura, el título termodinámico y el flujo másico, que serán utilizadas para la formulación de pérdida informada por física en la PINN.
 \end{itemize}
 
-A continuación se describe la metodología para obtener cada una de estas variables. La presión en el nodo se computa como la suma entre la diferencia de presión en el nodo en cuestión y la presión a la salida. La distancia axial al último separador adimensionalizada se calcula a partir de las posiciones adimensionalizadas de los separadores en la sección de ensayo, tomadas de \citep{recopilacion_columbia}. Se adimensionaliza la posición del nodo con la longitud total, y se busca el separador más próximo aguas arriba. Para el desbalance entre el título local y el título promedio en el bundle, se computa la resta entre el título en el nodo y el título promedio del bundle a la misma altura. Los factores de pico se toman de \citep{recopilacion_columbia}, y se asigna a cada subcanal el máximo al que está expuesto, es decir, el factor de pico de la corona de barras más exterior a la que está en contacto. La relación de perímetro calefaccionado y mojado depende del subcanal, y se toma de las entradas de COBRA3-CP, para luego aplicarse a cada nodo según su subcanal. 
+A continuación se describe la metodología para obtener cada una de estas variables. La presión en cada nodo resulta de sumar la diferencia registrada en ese punto al valor a la salida. La distancia al último separador se obtiene al adimensionalizar la posición axial del nodo con la longitud total y buscar el separador más próximo aguas arriba, a partir de las ubicaciones relevadas en la sección de ensayo \citep{recopilacion_columbia}. El desbalance de título surge de restar, al valor local del nodo, el promedio del bundle a la misma altura. Los factores de pico provienen también de \citep{recopilacion_columbia}: a cada subcanal se le asigna el máximo al que está expuesto, es decir, el de la corona de barras más exterior con la que limita. Por último, la relación entre perímetro calefaccionado y mojado se extrae de las entradas de COBRA3-CP, que la definen por tipo de subcanal, y se replica en todos los nodos correspondientes. 
 
-Las derivadas de las variables mencionadas respecto de la coordenada axial se calculan por medio de la función \texttt{numpy.gradient}, que calcula de forma numérica el gradiente de un dado \texttt{numpy.array} respecto de otro, evaluado en los valores de este último.
+Las derivadas de las variables mencionadas respecto de la coordenada axial se calcularon por medio de la función \texttt{numpy.gradient}, que calcula de forma numérica el gradiente de un dado \texttt{numpy.array} respecto de otro, evaluado en los valores de este último.
 
-Ya que la red de multifidelidad realiza predicción tanto con la red de baja fidelidad como con la de alta fidelidad a partir de las mismas entradas, las redes deben ser entrenadas a partir de datos escalados de la misma manera. En la figura \ref{fig:eda_cobra_groeneveld} se comparan entre los datos de ensayos de un tubo y los datos de todos los puntos de los ensayos numéricos con COBRA3-CP, los gráficos de densidad de probabilidad para las 4 variables de mayor interés: flujo másico, presión, temperatura y título termodinámico. Se observa que los puntos de las simulaciones de COBRA3-CP tienen un mayor \textit{bias} hacia flujos másicos elevados; los valores de presión se encuentran concentrados alrededor de las 5 presiones de ensayo distintivas; la temperatura se concentra en valores elevados; y el título termodinámico tiene una distribución más concentrada en valores menores a 0, esperable al considerar todos los puntos de la sección ensayada a la que ingresa líquido subenfriado. Los casos de ensayos de un tubo presentan distribuciones casi uniformes en presión y temperatura.  
+El vector final de features de la \texttt{HFPINN} contiene las mismas features que la \texttt{LFDNN}, y además, la predicción de la \texttt{LFDNN}, \texttt{z\_sep\_adim}, \texttt{x\_disbalance}, \texttt{f\_pico} y \texttt{p\_heat\_wet}.
+
+Ya que la red de multifidelidad realiza predicción tanto con la red de baja fidelidad como con la de alta fidelidad a partir de las mismas entradas, las redes deben ser entrenadas a partir de datos escalados de la misma manera. En la figura \ref{fig:eda_cobra_groeneveld} se comparan los gráficos de densidad de probabilidad correspondientes a los datos de ensayos de un tubo y a los puntos obtenidos mediante simulaciones con COBRA3-CP. La comparación se realiza para las cuatro variables de mayor interés: flujo másico, presión, temperatura y título termodinámico. Se observa que los puntos de las simulaciones de COBRA3-CP tienen un mayor bias hacia flujos másicos elevados; los valores de presión se encuentran concentrados alrededor de las 5 presiones de ensayo distintivas; la temperatura se concentra en valores elevados; y el título termodinámico tiene una distribución más concentrada en valores menores a 0, esperable al considerar todos los puntos de la sección ensayada a la que ingresa líquido subenfriado. Los casos de ensayos de un tubo presentan distribuciones casi uniformes en presión y temperatura.  
 
 \begin{figure}[hbtp]
     \centering
@@ -182,20 +186,31 @@ Ya que la red de multifidelidad realiza predicción tanto con la red de baja fid
 
 Entonces, se deben combinar los tensores de datos de entrenamiento de los datos de un tubo y de las simulaciones de COBRA3-CP para conformar el \texttt{Standard\allowbreak Scaler}. Las features adicionales que utiliza la red de alta fidelidad se escalan independientemente, por medio de un \texttt{Standard\allowbreak Scaler}. Para el valor del CHF también se pueden tener diferencias importantes, pero se realiza un escaleo independiente de las distribuciones, mediante la aplicación del logaritmo natural.
 
+Para la aplicación final del modelo, se debe agregar un factor de corrección por perfil de potencia no uniforme. Este factor toma distintas formas en la bibliografía, como el propuesto por Groeneveld \citep{GROENEVELD1986} o por Tong \citep{tong1997boiling}. Para mantener consistencia respecto de la metodología actual, se utiliza el de Groeneveld, que se computa según la ecuación \ref{eq:f_axial_power},
+\begin{equation}
+    \label{eq:f_axial_power}
+    K_5 = \begin{cases}
+        \frac{\overline{q}}{q_\mathrm{local}} & x>0 \\
+        1 & x<0
+    \end{cases}.
+\end{equation}
+Es evidente que, en el caso de flujo uniforme, $K_5=1\,\forall x$.
+
 \subsection{Arquitectura del modelo}
-Como se explicó previamente, el modelo planteado es una red de multifidelidad informada por física; se la denotará \texttt{MFPINN}. La \texttt{MFPINN} está compuesta por dos redes, una de baja fidelidad y otra de alta fidelidad. La de baja fidelidad es entrenada para predecir CHF en geometría de tubo, a partir de los datos crudos de las LUT de Groeneveld, y se la denotará \texttt{LFDNN}. Esta no tendrá información física, ya que se tiene una gran cantidad de datos, y un enfoque puro sobre ellos es suficiente. Su entrenamiento se realiza de forma previa, y sus pesos quedan congelados. Por otro lado, la componente de alta fidelidad sí utiliza información física, y se la denotará \texttt{HFPINN}. Los datos para su entrenamiento serán las simulaciones con COBRA3-CP de los ensayos experimentales de la Universidad de Columbia. En la figura \ref{fig:mfpinn} se presenta un esquema de la arquitectura de \texttt{MFPINN} explicada.
+Como se explicó previamente en la sección \ref{sec:frameworks}, el modelo planteado es una red de multifidelidad informada por física; se la denotará \texttt{MFPINN}. La \texttt{MFPINN} está compuesta por dos redes, una de baja fidelidad y otra de alta fidelidad. La de baja fidelidad es entrenada para predecir CHF en geometría de tubo, a partir de los datos crudos de las LUT de Groeneveld, y se la denotará \texttt{LFDNN}. Esta no tendrá información física, ya que se tiene una gran cantidad de datos, y un enfoque puro sobre ellos es suficiente. Su entrenamiento se realiza de forma previa, y sus pesos quedan congelados. Por otro lado, la componente de alta fidelidad sí utiliza información física, y se la denotará \texttt{HFPINN}. Los datos para su entrenamiento serán las simulaciones con COBRA3-CP de los ensayos experimentales de la Universidad de Columbia. En la figura \ref{fig:mfpinn} se presenta un esquema de la arquitectura de \texttt{MFPINN} explicada.
 
 \input{Figures/mfnn_pinn.tex}
 
-La \texttt{HFPINN} entrena con los datos de las simulaciones con COBRA3-CP; cada una de ellas provee datos en 151 nodos axiales y 60 subcanales, para un total de 9060 datos por ensayo. Por otro lado, la información provista por los ensayos de Columbia provee 1 dato por ensayo, correspondiente al punto, desconocido, en el que comienza el DNB. Se tiene entonces un desajuste de dimensionalidad entre el producto de la red al evaluar en los ensayos numéricos y lo medido en los ensayos reales:
+La \texttt{HFPINN} entrena con los datos de las simulaciones con COBRA3-CP; cada una de ellas provee datos en 151 nodos axiales y 60 subcanales, para un total de $9\,060$ datos por ensayo. Por otro lado, la información provista por los ensayos de Columbia contiene 1 dato por ensayo, correspondiente al punto desconocido en el que comienza el DNB. Se tiene entonces un desajuste de dimensionalidad entre el producto de la red al evaluar en los ensayos numéricos y lo medido en los ensayos reales:
 \begin{equation}
     \underbrace{\mathbf{y} \in \mathbb{R}^{9060}}_{\text{campo predicho}}
     \quad\longrightarrow\quad
     \underbrace{\hat{y} \in \mathbb{R}}_{\text{campo medido}}.
     \label{eq:dim_red}
 \end{equation}
-La flecha en la ecuación \ref{eq:dim_red} es la reducción de dimensionalidad que se debe hacer antes de poder comparar contra los datos experimentales. La elección natural es el mínimo, ya que el DNB ocurre en el nodo más limitante del bundle. Pero, en cuanto a la optimización numérica, la utilización del mínimo es poco eficiente, e incluso puede hacer imposible el entrenamiento de un modelo de red neuronal, ya que el mínimo genera un gradiente \textit{one-hot}:
+La flecha en la ecuación \ref{eq:dim_red} es la reducción de dimensionalidad que se debe hacer antes de poder comparar contra los datos experimentales. La elección natural es el mínimo, ya que el DNB ocurre en el nodo más limitante del bundle. Pero, en cuanto a la optimización numérica, la utilización del mínimo es poco eficiente, e incluso puede hacer imposible el entrenamiento de un modelo de red neuronal, ya que el mínimo genera un gradiente one-hot, como se expone en la ecuación \ref{eq:grad_min}.
 \begin{equation}
+    \label{eq:grad_min}
     \frac{\partial}{\partial y_j}\min_i y_i =
     \begin{cases}
     1 & \text{si } j = \arg\min_i y_i \\
@@ -204,55 +219,95 @@ La flecha en la ecuación \ref{eq:dim_red} es la reducción de dimensionalidad q
 \end{equation}
 De esta forma el optimizador sólo recibe información del punto mínimo. Adicionalmente, al comenzar el entrenamiento, el punto que resulta mínimo es completamente aleatorio, por lo que es muy fácil condicionar negativamente la red y que esta no pueda salir del mínimo inicial.
 
-Se plantea entonces utilizar un enfoque de mínimo suave o \textit{softmin}, que permita utilizar una mayor cantidad de nodos para el aprendizaje. Un problema similar que utiliza este enfoque es el promedio ponderado o \textit{attention pooling} propuesto por Ilse \citep{ilse2018attention} en el contexto de MIL (del inglés, \textit{Multiple Instance Learning}). Se propone utilizar un softmin de la forma:
+Se plantea entonces utilizar un enfoque de mínimo suave o softmin, que permita utilizar una mayor cantidad de nodos para el aprendizaje. Un problema similar que utiliza este enfoque es el promedio ponderado o attention pooling propuesto por Ilse \citep{ilse2018attention} en el contexto de MIL (del inglés, \textit{Multiple Instance Learning}). Se propone utilizar el softmin expuesto en la ecuación \ref{eq:softmin},
 \begin{equation}
+    \label{eq:softmin}
     \mathrm{softmin}_\tau (\mathbf{y}) = \sum_i w_i y_i,
 \end{equation}
-donde $w_i$ son los pesos para ponderar las distintas predicciones. En el trabajo de Ilse los pesos se aprenden con una red de atención aparte, pero en este trabajo se utiliza el propio campo predicho, a través de la función softmax de Bridle \citep{bridle1990softmax} y el parámetro de temperatura propuesto por Hinton, Vinyals y Dean \citep{hinton2015distilling}:
+donde $w_i$ son los pesos para ponderar las distintas predicciones. En el trabajo de Ilse los pesos se aprenden con una red de atención aparte, pero en este trabajo se utiliza el propio campo predicho, a través de la función softmax de Bridle \citep{bridle1990softmax} y el parámetro de temperatura propuesto por Hinton, Vinyals y Dean \citep{hinton2015distilling}, según la ecuación \ref{eq:softmax_w}.
 \begin{equation}
+    \label{eq:softmax_w}
     w_i = \mathrm{softmax}\left(-\frac{\mathbf{y}}{\tau}\right)_i .
 \end{equation}
-De esta forma, los nodos con baja predicción se ponderan con un mayor peso que los nodos con predicciones altas. El sesgo de esta concentración es controlado por el parámetro de temperatura $\tau$, que viene dado a partir del desvío estándar del vector de predicción:
+De esta forma, los nodos con baja predicción se ponderan con un mayor peso que los nodos con predicciones altas. El sesgo de esta concentración es controlado por el parámetro de temperatura $\tau$, que se obtiene a partir del desvío estándar del vector de predicción, según la ecuación \ref{eq:tau}.
 \begin{equation}
+    \label{eq:tau}
     \tau = \alpha \cdot \mathrm{std}(\mathbf{y}).
 \end{equation}
-El parámetro $\alpha$ permite controlar la temperatura con la evolución del entrenamiento, y se lo controla por medio de un recocido o \textit{annealing}, que lo recorre geométricamente desde $\alpha_0$ hasta $\alpha_f$.
+El parámetro $\alpha$ permite controlar la temperatura con la evolución del entrenamiento, y se lo controla por medio de un recocido o annealing, que lo recorre geométricamente desde $\alpha_0$ hasta $\alpha_f$.
 
-Para evaluar si la temperatura $\tau$ a la que converge el entrenamiento es o no correcta, se debe analizar sobre cuántos nodos se está promediando realmente. Para ello, se computa el número efectivo de nodos, que viene dado por la exponencial de la entropía de los pesos:
+Para evaluar si la temperatura $\tau$ a la que converge el entrenamiento es o no correcta, se debe analizar sobre cuántos nodos se está promediando realmente. Para ello, se computa el número efectivo de nodos, que se define como la exponencial de la entropía de los pesos, presentada en la ecuación \ref{eq:n_eff}.
 \begin{equation}
+    \label{eq:n_eff}
     N_\mathrm{eff} = \exp\left[ -\sum_i w_i\,\log(w_i) \right].
 \end{equation}
-Esta definición es el número de Hill de orden 1 \citep{hill1973diversity}, la forma estándar de obtener un conteo efectivo a partir de una entropía. Si el entrenamiento es satisfactorio, $N_\mathrm{eff}$ debe ser menor a 5 para su final.
+Esta definición es el número de Hill de orden 1 \citep{hill1973diversity}, la forma estándar de obtener un conteo efectivo a partir de una entropía. Si el entrenamiento es satisfactorio, $N_\mathrm{eff}$ debe ser menor a 5 hacia el final del entrenamiento.
 
 Esta metodología, además de solucionar el problema del gradiente one-hot, tiene la ventaja de, al ser una combinación convexa de los $y_i$, estar acotada superiormente por la media de la predicción. Esto asegura que el valor predicho sea un valor físicamente válido y sin sesgo dependiente de la cantidad de nodos utilizados.
 
-En cuanto a la información física que se le brindará a la \texttt{HFPINN}, se debe notar que no es posible hacer un planteo tradicional de PINN que provea una ecuación diferencial de conservación de alguna cantidad como función de pérdida. Esto es así puesto que la variable a predecir, el CHF, no responde a una ecuación de conservación, sino que es una propiedad del estado termodinámico y la geometría. Se podría realizar el ejercicio de proveer a la red de, por ejemplo, la ecuación de conservación de la energía. Esto haría que la red aprenda que siempre que le den un set de datos locales, los mismos corresponden a una condición de CHF, ya que la red fue entrenada con casos en que se tiene DNB. Pero en el campo de aplicación del modelo, se busca estimar el CHF sin estar en DNB.
+En cuanto a la información física que se le brindará a la \texttt{HFPINN}, se debe notar que no es posible hacer un planteo tradicional de PINN que provea una ecuación diferencial de conservación de alguna cantidad como función de pérdida. Esto es así puesto que la variable a predecir, el CHF, no responde a una ecuación de conservación, sino que es una propiedad del estado termodinámico y la geometría. Se podría realizar el ejercicio de proveer a la red de, por ejemplo, la ecuación de conservación de la energía. Esto haría que la red aprenda que siempre que le den un set de datos locales, estos corresponden a una condición de CHF, ya que la red fue entrenada con casos en que se tiene DNB. Pero en el campo de aplicación del modelo, se busca estimar el CHF sin estar en DNB.
 
-Se plantean entonces, distintos tipos de ecuaciones diferenciales a satisfacer por el modelo. Se tendrán relaciones monotónicas, de derivada cruzada, de convexidad y de coincidencia entre la predicción del modelo y la simulación de COBRA3-CP.
+Se plantean entonces, distintos tipos de ecuaciones diferenciales a satisfacer por el modelo. Se tendrán relaciones:
+\begin{itemize}
+    \item Monotónicas, presentadas en la ecuación \ref{eq:pde_mon},
+    \begin{equation}
+        \label{eq:pde_mon}
+        \frac{d\,\mathrm{CHF}}{di} \lessgtr 0.
+    \end{equation}
+    \item De derivada cruzada, presentadas en la ecuación \ref{eq:pde_cruz},
+    \begin{equation}
+        \label{eq:pde_cruz}
+        \frac{d^2\,\mathrm{CHF}}{di\,dj} \lessgtr 0.
+    \end{equation}
+    \item De convexidad, presentadas en la ecuación \ref{eq:pde_convex},
+    \begin{equation}
+        \label{eq:pde_convex}
+        \frac{d^2\,\mathrm{CHF}}{di^2} > 0.
+    \end{equation}
+    \item De coincidencia entre la predicción del modelo y la simulación de COBRA3-CP.
+\end{itemize}
 
-Las relaciones monotónicas del CHF con las variables de entrada implementadas son: positiva con el flujo másico, negativa con el título termodinámico y negativa con la presión. Estas relaciones tienen fundamento físico y aseguran que las salidas de la red en condiciones de extrapolación mantengan sentido físico. Vale aclarar que esta última es válida para el rango de aplicación de reactores PWR o PHWR, es decir, por encima de 100 bar.
+Las relaciones monotónicas del CHF con las variables de entrada implementadas son: positiva con el flujo másico, negativa con el título termodinámico y negativa con la presión. Estas relaciones tienen fundamento físico y aseguran que las salidas de la red en condiciones de extrapolación mantengan sentido físico. Es importante señalar que esta última es válida para el rango de aplicación de reactores PWR o PHWR, es decir, por encima de 100 bar.
 
 Se implementa una relación negativa con la derivada cruzada respecto del flujo másico y el título termodinámico, fundamentada en que a mayor flujo másico, la caída del CHF con el título termodinámico es más pronunciada. Esto es consistente con las estimaciones de las LUT de Groeneveld.
 
-En cuanto a la relación de convexidad, se plantea una derivada segunda positiva del CHF respecto del título termodinámico para la zona de alto título ($x>0,2$). Si bien de la figura \ref{fig:eda_cobra_groeneveld} puede afirmarse que se tienen pocos datos que se encuentran en esa región, esta restricción es útil en puntos de colocación para asegurar que el modelo no obtiene resultados indeseados al extrapolar fuera de los datos de entrenamiento.
+En cuanto a la relación de convexidad, se plantea una derivada segunda positiva del CHF respecto del título termodinámico para la zona de alto título ($x>0,2$). Si bien de la figura \ref{fig:eda_cobra_groeneveld} puede afirmarse que se tienen pocos datos que se encuentran en esa región, esta restricción es útil en puntos de colocación para asegurar que el modelo no obtenga resultados indeseados al extrapolar fuera de los datos de entrenamiento.
 
-Por último, se realiza la comparación de la derivada axial del valor predicho de CHF calculada por dos métodos. En primer lugar se computa la derivada observada como:
+Por último, se realiza la comparación de la derivada axial del valor predicho de CHF calculada por dos métodos. En primer lugar se computa la derivada observada según la ecuación \ref{eq:dchf_obs}.
 \begin{equation}
+    \label{eq:dchf_obs}
     \left. \frac{d\mathrm{CHF}}{dz} \right|_\text{obs} = \frac{\mathrm{CHF}_{z_{i+1}} - \mathrm{CHF}_{z_{i}}}{z_{i+1} - z_i}.
 \end{equation}
-Luego la derivada por regla de la cadena viene dada por:
+Luego, la derivada por regla de la cadena se computa según la ecuación \ref{eq:dchf_cadena},
 \begin{equation}
+    \label{eq:dchf_cadena}
     \left. \frac{d\mathrm{CHF}}{dz} \right|_\text{cadena} = \sum_{j\in\mathrm{feats}} \frac{\partial \mathrm{CHF}}{\partial j} \frac{dj}{dz} ,
 \end{equation}
-donde las derivadas de las variables respecto de la coordenada axial $\nicefrac{dj}{dz}$ fueron computadas previamente a partir de los resultados de las simulaciones con COBRA3-CP. De esta manera se penaliza que la red invente dependencias axiales que no provengan de las condiciones locales, y de alguna forma, es una expresión de la hipótesis de condiciones locales como PDE.
+donde las derivadas de las variables respecto de la coordenada axial $\nicefrac{dj}{dz}$ fueron computadas previamente a partir de los resultados de las simulaciones con COBRA3-CP. De esta manera se penaliza que la red invente dependencias axiales que no provengan de las condiciones locales, y, de alguna forma, es una expresión de la hipótesis de condiciones locales como PDE.
+
+La evaluación de este conjunto de ecuaciones diferenciales se realiza sobre un set de datos aparte, tradicionalmente llamado puntos de colocación. Se formó un espacio de puntos de colocación con los límites inferiores y superiores de cada variable, y se expandió cada uno en un 10\% de la media de la variable. De esta forma el espacio permite evaluar la extrapolación del modelo por fuera de los datos rotulados. Se estableció el doble de puntos de colocación que de observaciones de simulaciones de COBRA3-CP, lo que resulta en un total de $2\,645\,520$ puntos.
+
+La pérdida total entonces se compone de las componentes de la ecuación \ref{eq:loss_chf},
+\begin{equation}
+    \label{eq:loss_chf}
+    \mathcal{L} = \mathcal{L}_\mathrm{data} + \lambda_\mathrm{mon} \sum_i \mathcal{L}_{\mathrm{mon},i} + \lambda_\mathrm{cruz} \mathcal{L}_\mathrm{cruz} + \lambda_\mathrm{convex} \mathcal{L}_\mathrm{convex} + \lambda_\mathrm{coinc} \mathcal{L}_\mathrm{coinc},
+\end{equation}
+donde los $\lambda$ son los factores de peso de las PDE. Estos factores de peso se optimizan para obtener resultados que respeten las relaciones postuladas por fuera del rango de operación de los ensayos experimentales.
 
 Para el entrenamiento del modelo, en primer lugar se entrena la \texttt{LFDNN} con sus datos. Su entrenamiento es estándar y puede realizarse con optimizador Adam y métrica MSE.
-Luego, con los pesos de la \texttt{LFDNN} congelados, se entrena la \texttt{HFPINN} con la estructura completa de la \texttt{MFPINN}. Para ello se realizaron pruebas para determinar si es necesario, debido a las restricciones tipo PINN, un optimizador de segundo orden como L-BFGS \citep{liu1989lbfgs}. El resultado de las mismas se expone en el capítulo \ref{Chapter4}.
+Luego, con los pesos de la \texttt{LFDNN} congelados, se entrena la \texttt{HFPINN} con la estructura completa de la \texttt{MFPINN}. Para ello se realizaron pruebas para determinar si es necesario, debido a las restricciones tipo PINN, un optimizador de segundo orden como L-BFGS \citep{liu1989lbfgs}. Sus resultados se exponen en el capítulo \ref{Chapter4}.
+
+Al igual que para el predictor de PLC, se realizó la optimización de los hiperparámetros de la arquitectura por medio de Optuna. Los resultados de la optimización junto al modelo final se presentan en el capítulo \ref{Chapter4}. 
 
 \subsection{Evaluación del modelo}
 \label{sec:chf_eval}
-Para la evaluación del modelo se utilizaron las métricas estadísticas tradicionales en conjunto con métricas particulares al problema en particular. Las métricas estadísticas utilizadas son el MSE, RMSE, y el coeficiente de correlación $\mathrm{R}^2$. En cuanto a la métricas particulares al problema, se utiliza el $\mathrm{DNBR}_\mathrm{min}$ del diseño termohidráulico de la \cna{}, explicado en detalle en \citep{IFS_CNA2, invap_thdesign}. Este es el valor para el cual, si la predicción de DNBR está por encima, se asegura con 95\% de probabilidad y confianza que no se tiene DNB. Se define como:
+Para la evaluación del modelo se utilizaron las métricas estadísticas tradicionales en conjunto con métricas particulares al problema. Las métricas estadísticas utilizadas son el MSE, RMSE, y el coeficiente de correlación $\mathrm{R}^2$. 
+
+En cuanto a la métricas específicas al problema, se utilizó el $\mathrm{DNBR}_\mathrm{min}$ del diseño termohidráulico de la \cna{}, explicado en detalle en \citep{IFS_CNA2, invap_thdesign}. Este es el valor para el que, si la predicción de DNBR está por encima, se asegura con 95\% de probabilidad y confianza que no se tiene DNB. Se define según la ecuación \ref{eq:dnbr_min},
 \begin{equation}
+    \label{eq:dnbr_min}
     \mathrm{DNBR}_\mathrm{min} = \overline{\mathrm{DNBR}} + k_{95}\cdot \sigma(\mathrm{DNBR}) ,
 \end{equation}
-donde DNBR son las predicciones en las condiciones de los ensayos de la Universidad de Columbia, y $k_{95}$ es el intervalo de tolerancia de una distribución normal para asegurar 95\% de probabilidad y confianza según la cantidad de observaciones \citep{nist_e_handbook_tolerance}. Se compara con la metodología actual (LUT + TMF), que obtiene $\mathrm{DNBR}_\mathrm{min} = 1,21$.
+donde DNBR son las predicciones en las condiciones de los ensayos de la Universidad de Columbia, y $k_{95}$ es el intervalo de tolerancia de una distribución normal para asegurar 95\% de probabilidad y confianza según la cantidad de observaciones \citep{nist_e_handbook_tolerance, natrella1963experimental}. Se comparó con la metodología actual (LUT + TMF), que obtiene $\mathrm{DNBR}_\mathrm{min} = 1,21$ considerando todo el set de datos.
+
+Otro criterio a utilizar para evaluar el modelo, es la evolución predicha de CHF en función de las distintas variables. Esto no se restringe únicamente a las variables de entrenamiento del modelo, sino que también es importante verificar la evolución predicha de CHF respecto de la longitud axial. Además, la predicción de la ubicación del punto más limitante de la sección de ensayo para una dada condición deberá ubicarse sobre el final de esta. Esto permite afirmar que el modelo realiza una predicción con sentido físico. 
