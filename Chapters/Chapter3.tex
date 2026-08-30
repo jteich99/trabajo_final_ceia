@@ -10,6 +10,7 @@ En esta sección se describe el modelo desarrollado para estimar PLC. Se present
 Se construyó un archivo Python llamado \texttt{plc.py} con funciones auxiliares, empleadas a lo largo del flujo de procesamiento, entrenamiento y evaluación.
 
 \subsection{Pipeline de datos}
+\label{sec:plc_pipeline}
 Para la estimación de PLC, los datos provienen de simulaciones con COBRA3-CP de estados del reactor correspondientes al diseño de la estrategia de recambio de combustibles. Se evaluaron 100 estados del reactor, cada uno implica una simulación por canal refrigerante, es decir, 451 simulaciones.
 
 De las simulaciones de COBRA3-CP, se extrajeron dos conjuntos de información: por un lado, la información de entrada al código y, por otro, la información de salida del código. La información de entrada al código de interés está compuesta por la zona hidráulica de ejecución, el perfil axial de potencia, el perfil por barra o radial de potencia, la potencia total del EECC, el caudal de entrada, la temperatura de entrada y la presión a la salida. En cuanto a la información de salida, se provee la fracción de vacío promedio a la salida del canal, y el MDNBR. Estos valores se extrajeron para cada caso y canal.
@@ -39,6 +40,7 @@ Con los resultados filtrados el pipeline es el siguiente:
 \end{enumerate}
 
 \subsection{Arquitectura del modelo, entrenamiento y optimización}
+\label{sec:plc_arq}
 El estimador de PLC utiliza una arquitectura estándar de DNN, a partir del módulo \texttt{torch.nn.Sequential} y su método \texttt{add\_module()}. Los hiperparámetros a configurar son cantidad de capas ocultas, cantidad de neuronas en las capas ocultas, función de activación, aplicación de regularización por dropout, learning rate y tamaño del batch de entrenamiento. 
 
 En la figura \ref{fig:mlp-arquitectura} se esquematiza la arquitectura implementada. La entrada reúne las 63 variables mencionadas previamente: 22 componentes del perfil axial, las 37 componentes del perfil radial, y las condiciones termohidráulicas de operación. A estas se aplica en la capa de entrada una función de activación $\sigma$. A continuación, estas variables ingresan en una red de \texttt{L} capas ocultas con \texttt{h} neuronas cada una, que aplican $\sigma$ en cada nodo. Por último, la capa de salida está compuesta por dos variables, el MDNBR y la fracción de vacío.
@@ -59,6 +61,7 @@ Es importante señalar que la DNN predice dos valores con distinta escala y crit
 En el capítulo \ref{Chapter4} se presentan los resultados de la optimización realizada.
 
 \subsection{Integración e implementación del sistema}
+\label{sec:plc_integracion}
 La integración consiste en realizar el lazo de cálculo de PLC de COBRA, pero con la DNN entrenada en su lugar. Se tiene un lazo para cada límite de PLC, pero son idénticos en concepto. Únicamente se debe modificar la variable objetivo según si el criterio es de DNB o de fracción de vacío.
 
 El lazo de cálculo se esquematiza en la figura \ref{fig:dnb-dnn-loop}. Allí se observa que, en primer lugar, se deben definir las condiciones operativas de temperatura y presión, y el límite objetivo, ya sea de MDNBR o de fracción de vacío. Luego se realizan dos cálculos, uno de piso y otro de techo, donde se evalúan los flujos de calor mínimo y máximo. Estos valores se establecen previamente y deben contener al flujo de calor correspondiente al límite objetivo, por lo que un rango amplio es recomendable. Se obtiene el valor del límite para el flujo de calor mínimo y máximo y por el método de la secante se estima el flujo de calor que debería obtener el límite objetivo. Se recalcula el caudal másico con dicho flujo de calor, y se vuelve a estimar el límite. Si se obtiene convergencia tanto en el límite objetivo como en caudal y flujo de calor, se termina el lazo de cálculo. Si no se obtiene convergencia, se realiza una nueva iteración del método de la secante.
@@ -88,9 +91,10 @@ Con las nuevas features se reentrenó el estimador de PLC descripto en las subse
 A partir de la transformación al espacio latente, se pueden evaluar cuáles son las componentes que caracterizan a los perfiles de potencia, y cómo impactan en la PLC. Como referencia, se realizó un análisis análogo por medio de análisis de componentes principales (PCA, del inglés \textit{Principal Component Analysis}) \citep{hotelling1933pca}.
 
 \subsection{Evaluación del modelo}
+\label{sec:plc_evaluacion}
 Para evaluar los modelos predictores de PLC, no basta únicamente con presentar medidas estadísticas del error, como pueden ser el error cuadrático medio (MSE, del inglés \textit{Mean Squared Error}), su raíz (RMSE, del inglés \textit{Root Mean Squared Error}) o error absoluto medio (MAE, del inglés \textit{Mean Absolute Error}). Por la naturaleza de la aplicación de este modelo, debe validarse también el conservadurismo de su predicción, esto es, asegurar con cierto grado de probabilidad y confianza que se predice una PLC por debajo de la referencia. Para ello, se aplicó un criterio similar al utilizado en el diseño termohidráulico de la \cna{} para calcular el $\mathrm{DNBR}_\mathrm{min}$, descripto en la sección \ref{sec:chf_eval}. 
 
-Se definió el factor de ajuste de PLC, o $F_\mathrm{PLCR}$, que asegura con 95\% de probabilidad y confianza que se subestima la PLC. Entonces, se buscó el intervalo de tolerancia que con 95\% confianza contiene al 95\% de las predicciones por debajo del valor real. 
+Se definió el factor de ajuste de PLC, o $F_\mathrm{PLC}$, que asegura con 95\% de probabilidad y confianza que se subestima la PLC. Entonces, se buscó el intervalo de tolerancia que con 95\% confianza contiene al 95\% de las predicciones por debajo del valor real. 
 Se requería el factor de tolerancia o $k$ y, en este caso, dada la alta cantidad de muestras, se pudo tomar el límite con infinitas muestras. Para 95\% de confianza, 95\% de probabilidad e infinitas muestras, se obtuvo $k_{95/95}=1,645$. Entonces, $F_\mathrm{PLC}$ se obtiene según la ecuación \ref{eq:f_plc},
 \begin{equation}
     \label{eq:f_plc}
