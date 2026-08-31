@@ -128,6 +128,8 @@ Se observa un rendimiento muy bueno, especialmente para las ZZHH 4 y 5, donde la
 
 Por último, en la tabla \ref{tab:plc_tiempos} se presenta un resumen de los tiempos de cómputo para el cálculo de PLC. Los resultados son contundentes: la mejora o \textit{speedup} del proceso de cálculo alcanza una media de entre $8409$ y $9519$ para DNBR, y de entre $2197$ y $2486$ para fracción de vacío. El tiempo total de cómputo pasó de las 380 h con COBRA3-CP a tan solo alrededor de 4 minutos con la DNN. Esto sustenta el valor de este modelo, que no solo logra una predicción de las PLC con un error acotado, sino que además requiere un tiempo de cómputo varios órdenes de magnitud inferior. Adicionalmente, vale mencionar que no se implementó ningún tipo de lógica adicional para lograr un cómputo más eficiente por medio de la DNN, como el procesamiento en \textit{batch}. Se computaron todos los casos en serie, tanto en CPU como en GPU. Aquí se tienen oportunidades de mejora, como se explica en el capítulo \ref{Chapter5}.
 
+\textbf{FALTA COMENTARIO DE MÁRGEN DE POTENCIA PERDIDO.}
+
 \begin{figure}[H]
     \centering
     % \includegraphics[width=\textwidth]{Figures/plc_pred_corr.png}
@@ -180,6 +182,26 @@ Por último, en la tabla \ref{tab:plc_tiempos} se presenta un resumen de los tie
 		\bottomrule
 	\end{tabular}
 	\label{tab:plc_tiempos}
+\end{table}
+
+\begin{table}[H]
+	\centering
+	\caption{Márgen pérdido medio y máximo por utilizar DNN, según zona hidráulica y total.}
+	\begin{tabular}{c | c c | c c } 
+        \toprule \hline
+        \multirow{3}{*}{\textbf{Zona Hidráulica}} & \multicolumn{4}{c}{\textbf{Márgen perdido [\%]}} \\ \cline{2-5}
+        & \multicolumn{2}{c|}{\textbf{DNBR}} & \multicolumn{2}{c}{\textbf{Fracción de vacío}} \\
+          & media & máximo & media & máximo \\ \hline
+        1 & 1.56 & 4.56 & 2.58 & 5.22 \\
+        2 & 1.35 & 4.29 & 1.05 & 2.28 \\
+        3 & 1.88 & 5.37 & 0.74 & 1.87 \\
+        4 & 0.58 & 2.12 & 0.41 & 1.25 \\
+        5 & 0.38 & 1.37 & 0.24 & 0.89 \\ \hline
+        \textbf{total} & 0.71 & 2.34 & 0.54 & 1.45 \\
+        \hline
+		\bottomrule
+	\end{tabular}
+	\label{tab:plc_f}
 \end{table}
 
 \subsection{Aplicación de embeddings}
