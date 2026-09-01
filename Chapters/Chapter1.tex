@@ -59,11 +59,11 @@ El DNB es un cambio en el patrón de flujo que se desarrolla dentro de los canal
 
 \begin{figure}[htbp]
 	\centering
-	\includegraphics[width=.9\textwidth]{./Figures/nukiyama.jpg}
+	\includegraphics[width=.9\textwidth]{./Figures/curva_nukiyama.png}
 	\caption{Curva de Nukiyama\protect\footnotemark{}.}
 	\label{fig:nukiyama}
 \end{figure}
-\footnotetext{Imagen tomada de \url{https://www.sciencedirect.com/topics/engineering/pool-boiling-curve}.}
+\footnotetext{Imagen tomada y traducida de \url{https://www.sciencedirect.com/topics/engineering/pool-boiling-curve}.}
 
 \section{Contexto y motivación}
 Uno de los cálculos más importantes en el diseño termohidráulico de un reactor PHWR es la estimación de las PLC. Este cálculo puede requerir más de un millón de ejecuciones durante cada iteración del diseño de una estrategia de recambio de EECC, lo que implica un alto costo computacional. Por lo tanto, obtener una herramienta que permita computar de manera eficiente las PLC e identificar los casos más críticos a ser evaluados con los códigos termohidráulicos es de elevado interés. Dado que se cuenta con una amplia variedad de cálculos realizados por la División de Termohidráulica con el código COBRA3-CP \citep{cobra3cp}, es factible plantear una herramienta basada en redes neuronales que permita estimar de manera preliminar las PLC con una alta eficiencia computacional. Debido a que los casos de interés para el diseño son los casos más limitantes, una herramienta que permita la selección de ellos de forma rápida y eficiente permitiría reducir los tiempos de cómputo en órdenes de magnitud.
