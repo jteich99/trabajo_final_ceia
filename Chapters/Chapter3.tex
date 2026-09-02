@@ -2,7 +2,7 @@
 
 \label{Chapter3} 
 
-En este capítulo se describe el diseño e implementación de los dos modelos desarrollados en este trabajo. Debido a la naturaleza del trabajo, se divide el capítulo en dos secciones, una para la estimación de PLC y otra para la de CHF.
+En este capítulo se describe el diseño e implementación de los dos modelos desarrollados en este trabajo. Debido a ello, se divide el capítulo en dos secciones, una para la estimación de PLC y otra para la de CHF.
 
 \section{Estimación de PLC}
 En esta sección se describe el modelo desarrollado para estimar PLC. Se presentan el pipeline de datos, la arquitectura de la DNN para estimar DNBR y fracción de vacío, su entrenamiento y optimización, y la implementación del modelo para el cálculo de PLC.
@@ -202,11 +202,11 @@ Es evidente que, en el caso de flujo uniforme, $K_5=1\,\forall x$.
 
 \newpage
 \subsection{Arquitectura del modelo}
-Como se explicó previamente en la sección \ref{sec:frameworks}, el modelo planteado es una red de multifidelidad informada por física; se la denota \texttt{MFPINN}. La \texttt{MFPINN} está compuesta por dos redes, una de baja fidelidad y otra de alta fidelidad. La de baja fidelidad es entrenada para predecir CHF en geometría de tubo, a partir de los datos crudos de las LUT de Groeneveld, y se la denota \texttt{LFDNN}. Esta no incorpora información física, ya que se cuenta con una gran cantidad de datos, y un enfoque puro sobre ellos resulta suficiente. Su entrenamiento se realiza de forma previa, y sus pesos quedan congelados. Por otro lado, la componente de alta fidelidad sí utiliza información física, y se la denota \texttt{HFPINN}. Los datos para su entrenamiento son las simulaciones ron COBRA3-CP de los ensayos experimentales de la Universidad de Columbia. En la figura \ref{fig:mfpinn} se presenta un esquema de la arquitectura de \texttt{MFPINN} explicada.
+Como se explicó en la sección \ref{sec:frameworks}, el modelo planteado es una red de multifidelidad informada por física; se la denota \texttt{MFPINN}. La \texttt{MFPINN} está compuesta por dos redes, una de baja fidelidad y otra de alta fidelidad. La de baja fidelidad es entrenada para predecir CHF en geometría de tubo, a partir de los datos crudos de las LUT de Groeneveld, y se la denota \texttt{LFDNN}. Esta no incorpora información física, ya que se cuenta con una gran cantidad de datos, y un enfoque puro sobre ellos resulta suficiente. Su entrenamiento se realiza de forma previa, y sus pesos quedan congelados. Por otro lado, la componente de alta fidelidad sí utiliza información física, y se la denota \texttt{HFPINN}. Los datos para su entrenamiento son las simulaciones ron COBRA3-CP de los ensayos experimentales de la Universidad de Columbia. En la figura \ref{fig:mfpinn} se presenta un esquema de la arquitectura de \texttt{MFPINN} explicada.
 
 \input{Figures/mfnn_pinn.tex}
 
-La \texttt{HFPINN} entrena con los datos de las simulaciones con COBRA3-CP; cada una de ellas provee datos en 151 nodos axiales y 60 subcanales, para un total de $9\,060$ datos por ensayo. Por otro lado, la información provista por los ensayos de Columbia contiene 1 dato por ensayo, correspondiente al punto desconocido en el que comienza el DNB. Se tiene entonces un desajuste de dimensionalidad entre el producto de la red al evaluar en los ensayos numéricos y lo medido en los ensayos reales:
+La \texttt{HFPINN} entrena con los datos de las simulaciones con COBRA3-CP; cada una de ellas provee datos en 151 nodos axiales y 60 subcanales, para un total de $9\,060$ datos por ensayo. Por otro lado, la información provista por los ensayos de Columbia contiene 1 dato por ensayo, correspondiente al punto desconocido en el que comienza el DNB. Se tiene entonces un desajuste de dimensionalidad entre el producto de la red al evaluar en los ensayos numéricos y lo medido en los ensayos reales, expuesto en la ecuación \ref{eq:dim_red}.
 \begin{equation}
     \underbrace{\mathbf{y} \in \mathbb{R}^{9060}}_{\text{campo predicho}}
     \quad\longrightarrow\quad
@@ -244,7 +244,7 @@ El parámetro $\alpha$ permite controlar la temperatura con la evolución del en
 
 Para evaluar si la temperatura $\tau$ a la que converge el entrenamiento es o no correcta, se debe analizar sobre cuántos nodos se promedia realmente. Para ello, se computa el número efectivo de nodos, que se define como la exponencial de la entropía de los pesos, presentada en la ecuación \ref{eq:n_eff}.
 \begin{equation}
-    \label{eq:n_effreciba}
+    \label{eq:n_eff}
     N_\mathrm{eff} = \exp\left[ -\sum_i w_i\,\log(w_i) \right].
 \end{equation}
 Esta definición es el número de Hill de orden 1 \citep{hill1973diversity}, la forma estándar de obtener un conteo efectivo a partir de una entropía. Si el entrenamiento es satisfactorio, $N_\mathrm{eff}$ debe ser menor a 5 hacia el final del entrenamiento.
@@ -314,6 +314,7 @@ En cuanto a la métricas específicas al problema, se utilizó el $\mathrm{DNBR}
     \label{eq:dnbr_min}
     \mathrm{DNBR}_\mathrm{min} = \overline{\mathrm{DNBR}} + k_{95}\cdot \sigma(\mathrm{DNBR}) ,
 \end{equation}
-donde DNBR son las predicciones en las condiciones de los ensayos de la Universidad de Columbia, y $k_{95}$ es el intervalo de tolerancia de una distribución normal para asegurar 95\% de probabilidad y confianza según la cantidad de observaciones \citep{nist_e_handbook_tolerance, natrella1963experimental}. Se comparó con la metodología actual (LUT + TMF), que obtiene $\mathrm{DNBR}_\mathrm{min} = 1,21$ al considerar todo el set de datos.
+donde DNBR son las predicciones en las condiciones de los ensayos de la Universidad de Columbia, y $k_{95}$ es el intervalo de tolerancia de una distribución normal para asegurar 95\% de probabilidad y confianza según la cantidad de observaciones \citep{nist_e_handbook_tolerance, natrella1963experimental}. 
+% Se comparó con la metodología actual (LUT + TMF), que obtiene $\mathrm{DNBR}_\mathrm{min} = 1,21$ al considerar todo el set de datos.
 
 Otro criterio utilizado para evaluar el modelo fue la evolución predicha de CHF en función de las distintas variables. Esto no se restringe únicamente a las variables de entrenamiento del modelo, sino que también es importante verificar la evolución predicha de CHF respecto de la longitud axial. Además, la predicción de la ubicación del punto más limitante de la sección de ensayo para una dada condición debe ubicarse sobre el final de esta. Esto permite afirmar que el modelo realiza una predicción con sentido físico. 
