@@ -203,6 +203,20 @@ Por último, en la tabla \ref{tab:plc_tiempos} se presenta un resumen de los tie
     \item Comparación con caso anterior.
 \end{itemize}
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Figures/embeddings_axial_componentes_latente.png}
+    \caption{Gráficos de perfiles axiales con valores más altos, medianos y bajos de cada componente del espacio latente.}
+    \label{fig:embeddings_axial}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Figures/embeddings_radial_componentes_latente.png}
+    \caption{Gráficos de perfiles radiales con valores más altos, medianos y bajos de cada componente del espacio latente.}
+    \label{fig:embeddings_radial}
+\end{figure}
+
 \begin{table}[H]
 	\centering
 	\caption{Media y desvío estándar del error con signo para cada objetivo, para modelos con embeddings.}
@@ -237,9 +251,9 @@ Por último, en la tabla \ref{tab:plc_tiempos} se presenta un resumen de los tie
         & \multicolumn{2}{c}{\textbf{DNBR}} & \multicolumn{2}{c}{\textbf{Fracción de vacío}} \\
           & medio & máximo & medio & máximo \\ \hline
         Base & 0.71 & 2.34 & 0.54 & 1.45 \\
-        Emb. perfil axial       &  &  &  &  \\
-        Emb. perfil por barras  &  &  &  &  \\
-        Emb. ambos perfiles     &  &  &  &  \\
+        Emb. perfil axial       & 0,84 & 3,05 & 0,13 & 0,39 \\
+        Emb. perfil por barras  & 0,61 & 1,83 & 0,15 & 0,38 \\
+        Emb. ambos perfiles     & 0,99 & 3,96 & 0,10 & 0,40 \\
 		\bottomrule
 	\end{tabular}
 	\label{tab:plc_emb_margen_perdido}
