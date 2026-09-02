@@ -55,14 +55,12 @@ Es interesante que la tendencia general de la predicción de vacío es de sobrep
 \begin{table}[H]
 	\centering
 	\caption{Media y desvío estándar del error con signo para cada objetivo.}
-	\begin{tabular}{c | c c | c c} 
+	\begin{tabular}{c c c c c} 
         \toprule
-        \hline
-        \multirow{2}{*}{\textbf{Conjunto}} & \multicolumn{2}{c|}{\textbf{DNBR}} & \multicolumn{2}{|c}{\textbf{Fracción de vacío}} \\
+        \multirow{2}{*}{\textbf{Conjunto}} & \multicolumn{2}{c}{\textbf{DNBR}} & \multicolumn{2}{c}{\textbf{Fracción de vacío}} \\
                 & media     & $\sigma$  & media & $\sigma$  \\
         Train   & -0,006    & 0,021     & 0,018 & 0,040     \\
         Test    & -0,006    & 0,017     & 0,018 & 0,032     \\
-        \hline
 		\bottomrule
 	\end{tabular}
 	\label{tab:plc_errors_dnbr_vacio}
@@ -71,11 +69,10 @@ Es interesante que la tendencia general de la predicción de vacío es de sobrep
 \begin{table}[H]
 	\centering
 	\caption{Media y desvío estándar del error con signo para cada objetivo, segmentado por rangos de cada objetivo.}
-	\begin{tabular}{c c | c c | c c} 
+	\begin{tabular}{c c c c c c} 
         \toprule
-        \hline
         \multirow{3}{1.5cm}{\textbf{Objetivo}} & \multirow{3}{*}{\textbf{Rango}} & \multicolumn{4}{c}{\textbf{Conjunto}} \\
-        &                                               & \multicolumn{2}{c |}{Train} & \multicolumn{2}{c}{Test} \\ 
+        &                                               & \multicolumn{2}{c}{Train} & \multicolumn{2}{c}{Test} \\ 
         &                                               & media & $\sigma$  & media & $\sigma$  \\
         \multirow{5}{1.5cm}{DNBR}               
                         &$   <1,7$  & 0,003 &   0,004   & 0,000 &  0,008    \\ 
@@ -91,7 +88,6 @@ Es interesante que la tendencia general de la predicción de vacío es de sobrep
                         &$ 0,35-0,6$  &  0,007 & 0,021 & 0,007 & 0,027 \\
                         &$     >0,6$  &  0,031 & 0,022 & 0,024 & 0,014 \\
 
-        \hline
 		\bottomrule
 	\end{tabular}
 	\label{tab:plc_errors_dnbr_vacio_segmentado}
@@ -141,17 +137,15 @@ Por último, en la tabla \ref{tab:plc_tiempos} se presenta un resumen de los tie
 \begin{table}[H]
 	\centering
 	\caption{Media y desvío estándar de cociente predicho-real, y factor de 95\% de probabilidad y confianza. Por zona hidráulica.}
-	\begin{tabular}{c | c c c | c c c } 
+	\begin{tabular}{c c c c c c c } 
         \toprule
-        \hline
-        \multirow{2}{*}{\textbf{Zona Hidráulica}} & \multicolumn{3}{c|}{\textbf{DNBR}} & \multicolumn{3}{c}{\textbf{Fracción de vacío}} \\
+        \multirow{2}{*}{\textbf{Zona Hidráulica}} & \multicolumn{3}{c}{\textbf{DNBR}} & \multicolumn{3}{c}{\textbf{Fracción de vacío}} \\
             & media & $\sigma$  & F     & media & $\sigma$  & F     \\
         1 & 1,047 & 0,015 & 0,933 & 1,008 & 0,004 & 0,985 \\
         2 & 1,025 & 0,010 & 0,961 & 1,003 & 0,002 & 0,993 \\
         3 & 1,018 & 0,010 & 0,967 & 1,002 & 0,002 & 0,995 \\
         4 & 1,003 & 0,003 & 0,991 & 1,001 & 0,002 & 0,996 \\
         5 & 1,001 & 0,002 & 0,995 & 1,001 & 0,001 & 0,997 \\
-        \hline
 		\bottomrule
 	\end{tabular}
 	\label{tab:plc_f}
@@ -160,11 +154,10 @@ Por último, en la tabla \ref{tab:plc_tiempos} se presenta un resumen de los tie
 \begin{table}[H]
 	\centering
 	\caption{Tiempos de cómputo para cálculo de PLC.}
-	\begin{tabular}{l l | c c c | c c} 
+	\begin{tabular}{l l c c c c c} 
         \toprule
-        \hline
-        & & \multicolumn{3}{c|}{\textbf{Tiempo}} & \multicolumn{2}{c}{\multirow{2}{*}{\textbf{Mejora}}} \\
-        & & \multirow{2}{*}{\textbf{COBRA3-CP [s]}} & \multicolumn{2}{c|}{\textbf{DNN [ms]}} &  \\
+        & & \multicolumn{3}{c}{\textbf{Tiempo}} & \multicolumn{2}{c}{\multirow{2}{*}{\textbf{Mejora}}} \\
+        & & \multirow{2}{*}{\textbf{COBRA3-CP [s]}} & \multicolumn{2}{c}{\textbf{DNN [ms]}} &  \\
         & &                                     & CPU & GPU & CPU & GPU \\
         \hline
         \multirow{4}{1.5cm}{DNBR}   
@@ -178,7 +171,6 @@ Por último, en la tabla \ref{tab:plc_tiempos} se presenta un resumen de los tie
                                 & media         & 6,09      & 2,46  & 2,80  & 2486  & 2197\\
                                 & máximo        & 14,70     & 5,70  & 6,69  & 5955  & 5385\\
                                 & \textbf{total}& 74 h     & 108 s & 120 s & 2479  & 2224\\
-        \hline
 		\bottomrule
 	\end{tabular}
 	\label{tab:plc_tiempos}
@@ -187,21 +179,20 @@ Por último, en la tabla \ref{tab:plc_tiempos} se presenta un resumen de los tie
 \begin{table}[H]
 	\centering
 	\caption{Márgen pérdido medio y máximo por utilizar DNN, según zona hidráulica y total.}
-	\begin{tabular}{c | c c | c c } 
-        \toprule \hline
+	\begin{tabular}{c c c c c } 
+        \toprule
         \multirow{3}{*}{\textbf{Zona Hidráulica}} & \multicolumn{4}{c}{\textbf{Márgen perdido [\%]}} \\ \cline{2-5}
-        & \multicolumn{2}{c|}{\textbf{DNBR}} & \multicolumn{2}{c}{\textbf{Fracción de vacío}} \\
-          & media & máximo & media & máximo \\ \hline
+        & \multicolumn{2}{c}{\textbf{DNBR}} & \multicolumn{2}{c}{\textbf{Fracción de vacío}} \\
+          & medio & máximo & medio & máximo \\ \hline
         1 & 1.56 & 4.56 & 2.58 & 5.22 \\
         2 & 1.35 & 4.29 & 1.05 & 2.28 \\
         3 & 1.88 & 5.37 & 0.74 & 1.87 \\
         4 & 0.58 & 2.12 & 0.41 & 1.25 \\
         5 & 0.38 & 1.37 & 0.24 & 0.89 \\ \hline
         \textbf{total} & 0.71 & 2.34 & 0.54 & 1.45 \\
-        \hline
 		\bottomrule
 	\end{tabular}
-	\label{tab:plc_f}
+	\label{tab:plc_margen_perdido}
 \end{table}
 
 \subsection{Aplicación de embeddings}
@@ -211,6 +202,48 @@ Por último, en la tabla \ref{tab:plc_tiempos} se presenta un resumen de los tie
     \item Aplicación a la arquitectura ganadora anterior. 3 casos.
     \item Comparación con caso anterior.
 \end{itemize}
+
+\begin{table}[H]
+	\centering
+	\caption{Media y desvío estándar del error con signo para cada objetivo, para modelos con embeddings.}
+	\begin{tabular}{l c c c c c} 
+        \toprule
+        \multirow{2}{*}{\textbf{Modelo}} & \multirow{2}{*}{\textbf{Conjunto}} & \multicolumn{2}{c}{\textbf{DNBR}} & \multicolumn{2}{c}{\textbf{Fracción de vacío}} \\
+        &         & media     & $\sigma$  & media & $\sigma$  \\ \hline
+        \multirow{2}{*}{Base}
+        & Train   &  -0,006    & 0,021     & 0,018 & 0,040 \\
+        & Test    &  -0,006    & 0,017     & 0,018 & 0,032 \\ \hline
+        \multirow{2}{*}{Emb. perfil axial}
+        & Train   & -0,002 & 0,018 & -0,002 & 0,021 \\
+        & Test    & -0,001 & 0,020 & -0,002 & 0,022   \\   \hline
+        \multirow{2}{*}{Emb. perfil por barras}
+        & Train   & 0,001 & 0,013 & -0,006 & 0,021 \\
+        & Test    & 0,001 & 0,014 & -0,006 & 0,022 \\   \hline
+        \multirow{2}{*}{Emb. ambos perfiles}
+        & Train   & 0,000 & 0,017 & -0,011 & 0,016 \\
+        & Test    & 0,000 & 0,020 & -0,010 & 0,017 \\
+
+		\bottomrule
+	\end{tabular}
+	\label{tab:plc_emb_errors_dnbr_vacio}
+\end{table}
+
+\begin{table}[H]
+	\centering
+	\caption{Márgen pérdido medio y máximo por utilizar DNN y embeddings, según zona hidráulica y total.}
+	\begin{tabular}{c c c c c} 
+        \toprule
+        \multirow{3}{*}{\textbf{Modelo}} & \multicolumn{4}{c}{\textbf{Márgen perdido [\%]}} \\ \cline{2-5}
+        & \multicolumn{2}{c}{\textbf{DNBR}} & \multicolumn{2}{c}{\textbf{Fracción de vacío}} \\
+          & medio & máximo & medio & máximo \\ \hline
+        Base & 0.71 & 2.34 & 0.54 & 1.45 \\
+        Emb. perfil axial       &  &  &  &  \\
+        Emb. perfil por barras  &  &  &  &  \\
+        Emb. ambos perfiles     &  &  &  &  \\
+		\bottomrule
+	\end{tabular}
+	\label{tab:plc_emb_margen_perdido}
+\end{table}
 
 \newpage
 \section{Estimación de CHF}
