@@ -73,6 +73,7 @@ Para calcular el flujo másico en función del flujo de calor, se recurrió a la
 
 \newpage
 \subsection{Arquitectura de embeddings, entrenamiento y aplicación}
+\label{sec:arq_embeddings}
 Como se definió en la sección de objetivos \ref{sec:objetivos}, se realizó un análisis de reducción de dimensionalidad de los perfiles de potencia axiales y por barra. Para ello, se planteó una arquitectura de codificador-decodificador (en inglés, encoder-decoder o autoencoder). Esto permite llevar el vector de entrada, en $\mathbb{R}^n$, a un espacio latente, $\mathbb{R}^d$, de menor dimensión, $d<n$. De esta forma se obtiene una representación compacta del vector de origen.
 Para lograr esto, el autoencoder se compone de dos DNN. La primera, el encoder, codifica al espacio latente, y la segunda, el decoder, decodifica nuevamente al espacio original. En la figura \ref{fig:autoencoder-embedding} se presenta un esquema del autoencoder.
 
