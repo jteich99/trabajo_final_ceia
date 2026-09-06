@@ -273,8 +273,24 @@ En el caso de la PLC por fracción de vacío, es sabido que depende de la integr
 \newpage
 \section{Estimación de CHF}
 
-\subsection{Optimización de hiperparámetros}
+A continuación, se analizan los resultados para el modelo de estimación de CHF. En primer lugar, es importante realizar un análisis sobre las variables de entrada al modelo, ya que un uso sin evaluación equivale a un modelo de caja negra, que no permite comprender el comportamiento del modelo ni su relación con la física del fenómeno. 
+Citando a von Neumann: ``Con cuatro parámetros puedo ajustar un elefante, y con cinco puedo hacer que mueva su trompa''\footnotemark{} \citep{dyson2004meeting}.
+\footnotetext{Traducido de la frase original en inglés: \textit{With four parameters I can fit an elephant, and with five I can make him wiggle his trunk.}}
 
-\subsection{Resultados de CHF}
+Luego se presenta un análisis sobre la arquitectura del modelo. Nuevamente, ya que el trabajo propone una sobreposición de arquitecturas, es importante evaluar la contribución de cada cambio, con la referencia de un modelo simple y de la metodología actual.
 
-\subsection{Comparativa de metodologías}
+\subsection{Análisis de variables de entrada}
+
+Las variables de entrada propuestas en la sección \ref{sec:chf_pipeline} fueron el flujo másico, la presión, el título termodinámico, la relación de largo calefaccionado con diámetro hidráulico, la distancia adimensional al separador aguas arriba, el desbalance de título termodinámico respecto del medio del bundle, el factor de pico de potencia y la relación entre perímetro calefaccionado y mojado del subcanal. 
+
+Las primeras cuatro variables son las clásicas utilizadas por la LUT de Groeneveld, y se pueden considerar como las más importantes para la predicción de CHF. Las cuatro variables restantes fueron propuestas en este trabajo, y se debe evaluar su contribución al modelo.
+
+
+
+\subsection{Análisis de arquitectura}
+
+% \subsection{Optimización de hiperparámetros}
+
+% \subsection{Resultados de CHF}
+
+% \subsection{Comparativa de metodologías}
