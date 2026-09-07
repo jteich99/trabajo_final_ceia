@@ -273,11 +273,36 @@ En el caso de la PLC por fracción de vacío, es sabido que depende de la integr
 \newpage
 \section{Estimación de CHF}
 
-A continuación, se analizan los resultados para el modelo de estimación de CHF. En primer lugar, es importante realizar un análisis sobre las variables de entrada al modelo, ya que un uso sin evaluación equivale a un modelo de caja negra, que no permite comprender el comportamiento del modelo ni su relación con la física del fenómeno. 
+A continuación, se analizan los resultados para el modelo de estimación de CHF.
+En primer lugar, se presenta un análisis sobre la arquitectura del modelo. Ya que el trabajo propone una sobreposición de arquitecturas, es importante evaluar la contribución de cada cambio, con la referencia de un modelo simple y de la metodología actual.
+
+Luego, es importante realizar un análisis sobre las variables de entrada al modelo, ya que un uso sin evaluación equivale a un modelo de caja negra, que no permite comprender su comportamiento ni su relación con la física del fenómeno. 
 Citando a von Neumann: ``Con cuatro parámetros puedo ajustar un elefante, y con cinco puedo hacer que mueva su trompa''\footnotemark{} \citep{dyson2004meeting}.
 \footnotetext{Traducido de la frase original en inglés: \textit{With four parameters I can fit an elephant, and with five I can make him wiggle his trunk.}}
 
-Luego se presenta un análisis sobre la arquitectura del modelo. Nuevamente, ya que el trabajo propone una sobreposición de arquitecturas, es importante evaluar la contribución de cada cambio, con la referencia de un modelo simple y de la metodología actual.
+\subsection{Análisis de arquitectura}
+Para realizar el análisis sobre la arquitectura del modelo, se planteó utilizar sólo las variables utilizadas tradicionalmente en la predicción de CHF por las LUT de Groeneveld. Estas son el flujo másico, la presión, el título termodinámico y la relación de largo calefaccionado con diámetro hidráulico. Las primeras tres corresponden a las variables necesarias para interpolar dentro de la LUT, y la cuarta para transformar la predicción a la geometría de bundle. Vale aclarar que Groeneveld propone factores de corrección que utilizan algunas de las variables adicionales propuestas, para más detalles ver el Apéndice \ref{appendix_groeneveld}.
+
+Las arquitecturas comparadas son las siguientes:
+\begin{itemize}
+    \item DNN tradicional entrenada directamente sobre las simulaciones con \break\mbox{COBRA3-CP} de los ensayos de la Universidad de Columbia. Es un \textit{baseline} de si las arquitecturas más complejas empleadas conllevan una mejora de precisión. También debe evaluarse su comportamiento en regiones no entrenadas y poner en tela de juicio si sus predicciones llevan un sustento físico.
+    % \item DNN tradicional, entrenada directamente sobre las simulaciones con \nobreak COBRA3-CP de los ensayos de la Universidad de Columbia.
+    \item \texttt{LFDNN} entrenada sobre los ensayos en un tubo utilizados para conformar las LUT 2006 de Groeneveld. Esto permite tener un baseline del aporte de la predicción de CHF en un tubo y la contribución en la arquitectura de multifidelidad.
+    \item \texttt{MFDNN}, conjunción de la \texttt{LFDNN} y la \texttt{HFDNN}. Esta última entrenada sobre las simualciones de COBRA3--CP de los ensayos de la Universidad de Columbia, y con la entrada de la predicción de la \texttt{LFDNN}.
+    \item \texttt{MFPINN}, igual a la \texttt{MFDNN} pero aplicando las relaciones físicas descriptas en la sección \ref{sec:chf_arq}.
+\end{itemize}
+
+Para lograr una evaluación no sólo de la capacidad de los modelos en representar la información con la que fueron entrenados, se planteó entrenar a los modelos con los casos menos exigentes desde el CHF. Entonces, para dividir entre los conjuntos de entrenamiento y prueba, se utilzaron en entrenamiento aquellos ensayos con un flujo másico superior a $4\,000\,\nicefrac{\mathrm{kg}}{\mathrm{m}^2\mathrm{s}}$. La división se grafica en la figura \ref{fig:chf_div_train_test}. Adicionalmente al flujo másico, se presenta contra el título termodinámico, donde se observa que la división también implica dejar en evaluación a los ensayos que presentaron CHF a mayor título.
+
+\begin{figure}[hbtp]
+    \centering
+    \includegraphics[width=\textwidth]{Figures/chf_division_train_test.png}
+    \caption{División de los datos de CHF de la Universidad de Columbia en entrenamiento y evaluación, según flujo másico.}
+    \label{fig:chf_div_train_test}
+\end{figure}
+
+
+Las arquitecturas se evaluaron en su predicción de CHF de forma tradicional, y adicionalmente por medio del $\mathrm{DNBR}_\mathrm{min}$, según explicado en la sección \ref{sec:chf_eval}.
 
 \subsection{Análisis de variables de entrada}
 
@@ -286,8 +311,6 @@ Las variables de entrada propuestas en la sección \ref{sec:chf_pipeline} fueron
 Las primeras cuatro variables son las clásicas utilizadas por la LUT de Groeneveld, y se pueden considerar como las más importantes para la predicción de CHF. Las cuatro variables restantes fueron propuestas en este trabajo, y se debe evaluar su contribución al modelo.
 
 
-
-\subsection{Análisis de arquitectura}
 
 % \subsection{Optimización de hiperparámetros}
 

@@ -204,6 +204,7 @@ Es evidente que, en el caso de flujo uniforme, $K_5=1\,\forall x$.
 
 \newpage
 \subsection{Arquitectura del modelo}
+\label{sec:chf_arq}
 Como se explicó en la sección \ref{sec:frameworks}, el modelo planteado es una red de multifidelidad informada por física; se la denota \texttt{MFPINN}. La \texttt{MFPINN} está compuesta por dos redes, una de baja fidelidad y otra de alta fidelidad. La de baja fidelidad es entrenada para predecir CHF en geometría de tubo, a partir de los datos crudos de las LUT de Groeneveld, y se la denota \texttt{LFDNN}. Esta no incorpora información física, ya que se cuenta con una gran cantidad de datos, y un enfoque puro sobre ellos resulta suficiente. Su entrenamiento se realiza de forma previa, y sus pesos quedan congelados. Por otro lado, la componente de alta fidelidad sí utiliza información física, y se la denota \texttt{HFPINN}. Los datos para su entrenamiento son las simulaciones ron COBRA3-CP de los ensayos experimentales de la Universidad de Columbia. En la figura \ref{fig:mfpinn} se presenta un esquema de la arquitectura de \texttt{MFPINN} explicada.
 
 \input{Figures/mfnn_pinn.tex}
@@ -272,33 +273,66 @@ Se plantearon entonces distintos tipos de ecuaciones diferenciales a satisfacer 
         \label{eq:pde_convex}
         \frac{d^2\,\mathrm{CHF}}{di^2} > 0.
     \end{equation}
-    \item De coincidencia entre la predicción del modelo y la simulación de COBRA3-CP.
+    % \item De coincidencia entre la predicción del modelo y la simulación de COBRA3-CP.
 \end{itemize}
 
-Las relaciones monotónicas del CHF con las variables de entrada implementadas son positiva con el flujo másico, negativa con el título termodinámico y negativa con la presión. Estas relaciones tienen fundamento físico y aseguran que las salidas de la red en condiciones de extrapolación mantengan sentido físico. Es importante señalar que esta última es válida para el rango de aplicación de reactores PWR o PHWR, es decir, por encima de 100 bar.
+Se partió de tener ciertas hipótesis de relaciones a aplicar, según conceptos básicos de transferencia de calor y masa. Como relaciones monotónicas se propuso una relación positiva con el flujo másico, negativa con el título termodinámico y negativa con la presión. 
 
-Se implementó una relación negativa con la derivada cruzada respecto del flujo másico y el título termodinámico, fundamentada en que a mayor flujo másico, la caída del CHF con el título termodinámico es más pronunciada. Esto es consistente con las estimaciones de las LUT de Groeneveld.
+Para asegurar el uso correcto de las mismas y asegurar su cumplimiento en el rango de aplicación, se utilizaron los datos de los ensayos en un tubo como evidencia fundamental o \textit{ground truth}. En la figuras \ref{fig:groeneveld_g}, \ref{fig:groeneveld_x} y \ref{fig:groeneveld_p} se presentan las tendencias del CHF con el flujo másico, el título termodinámico y la presión respectivamente. 
+Analizando la relación con el flujo másico, se evidencia en la figura \ref{fig:groeneveld_g} que la tendencia no es positiva en todo el rango. Se tiene ouuna tendencia negativa para títulos termodinámicos mayores a $0,15$ hasta aproximadamente $3\,000\,\nicefrac{\mathrm{kg}}{\mathrm{m}^2\mathrm{s}}$.
+Entonces, se planteó modificar la relación oroginalmente planteada para ser negativa en el rango de $x>0,15$ y $G<3\,000\,\nicefrac{\mathrm{kg}}{\mathrm{m}^2\mathrm{s}}$, y positiva en el resto del dominio.
 
-En cuanto a la relación de convexidad, se planteó una derivada segunda positiva del CHF respecto del título termodinámico para la zona de alto título ($x>0,2$). Si bien de la figura \ref{fig:eda_cobra_groeneveld} puede afirmarse que se tienen pocos datos que se encuentran en esa región, esta restricción es útil en puntos de colocación para asegurar que el modelo no obtenga resultados indeseados al extrapolar fuera de los datos de entrenamiento.
+Luego, en la figura \ref{fig:groeneveld_x} se evidencia la clara tendencia negativa del CHF con el título termodinámico.
+Por último, en la figura \ref{fig:groeneveld_p} observamos que en el rango de operación de los ensayos con presiones mayores a $60\mathrm{bar}$ se tiene una tendencia decreciente del CHF con la presión. 
 
-Por último, se realiza la comparación de la derivada axial del valor predicho de CHF calculada por dos métodos. En primer lugar se computa la derivada observada según la ecuación \ref{eq:dchf_obs}.
-\begin{equation}
-    \label{eq:dchf_obs}
-    \left. \frac{d\mathrm{CHF}}{dz} \right|_\text{obs} = \frac{\mathrm{CHF}_{z_{i+1}} - \mathrm{CHF}_{z_{i}}}{z_{i+1} - z_i}.
-\end{equation}
-Luego, la derivada por regla de la cadena se computa según la ecuación \ref{eq:dchf_cadena},
-\begin{equation}
-    \label{eq:dchf_cadena}
-    \left. \frac{d\mathrm{CHF}}{dz} \right|_\text{cadena} = \sum_{j\in\mathrm{feats}} \frac{\partial \mathrm{CHF}}{\partial j} \frac{dj}{dz} ,
-\end{equation}
-donde las derivadas de las variables respecto de la coordenada axial $\nicefrac{dj}{dz}$ fueron computadas previamente a partir de los resultados de las simulaciones con COBRA3-CP. De esta manera se penaliza que la red invente dependencias axiales que no provengan de las condiciones locales, y, de alguna forma, es una expresión de la hipótesis de condiciones locales como PDE.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{Figures/groeneveld_tendencia_g.png}
+    \caption{Tendencia del CHF con el flujo másico, para los datos de los ensayos en un tubo recopilados por Groeneveld \citep{USNRC2019NUREGKM0011, GROENEVELD2007}.}
+    \label{fig:groeneveld_g}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{Figures/groeneveld_tendencia_x.png}
+    \caption{Tendencia del CHF con el título termodinámico, para los datos de los ensayos en un tubo recopilados por Groeneveld \citep{USNRC2019NUREGKM0011, GROENEVELD2007}.}
+    \label{fig:groeneveld_x}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{Figures/groeneveld_tendencia_p.png}
+    \caption{Tendencia del CHF con la presión, para los datos de los ensayos en un tubo recopilados por Groeneveld \citep{USNRC2019NUREGKM0011, GROENEVELD2007}.}
+    \label{fig:groeneveld_p}
+\end{figure}
+
+% Las relaciones monotónicas del CHF con las variables de entrada implementadas son positiva con el flujo másico, negativa con el título termodinámico y negativa con la presión. Estas relaciones tienen fundamento físico y aseguran que las salidas de la red en condiciones de extrapolación mantengan sentido físico. Es importante señalar que esta última es válida para el rango de aplicación de reactores PWR o PHWR, es decir, por encima de 100 bar.
+
+Se implementó una relación negativa con la derivada cruzada respecto del flujo másico y el título termodinámico, fundamentada en que a mayor flujo másico, la caída del CHF con el título termodinámico es más pronunciada. Esto es consistente con la bibliografía y lo observado en la figura \ref{fig:groeneveld_x}.
+
+En cuanto a la relación de convexidad, se planteó una derivada segunda positiva del CHF respecto del título termodinámico para la zona de alto título ($x>0,2$). Esta relación es consistente con la bibliografía, y se puede ver en la figura \ref{fig:groeneveld_x}. Si bien de la figura \ref{fig:eda_cobra_groeneveld} puede afirmarse que se tienen pocos datos que se encuentran en esa región, esta restricción es útil en puntos de colocación para asegurar que el modelo no obtenga resultados indeseados al extrapolar fuera de los datos de entrenamiento.
+
+% Por último, se realiza la comparación de la derivada axial del valor predicho de CHF calculada por dos métodos. En primer lugar se computa la derivada observada según la ecuación \ref{eq:dchf_obs}.
+% \begin{equation}
+%     \label{eq:dchf_obs}
+%     \left. \frac{d\mathrm{CHF}}{dz} \right|_\text{obs} = \frac{\mathrm{CHF}_{z_{i+1}} - \mathrm{CHF}_{z_{i}}}{z_{i+1} - z_i}.
+% \end{equation}
+% Luego, la derivada por regla de la cadena se computa según la ecuación \ref{eq:dchf_cadena},
+% \begin{equation}
+%     \label{eq:dchf_cadena}
+%     \left. \frac{d\mathrm{CHF}}{dz} \right|_\text{cadena} = \sum_{j\in\mathrm{feats}} \frac{\partial \mathrm{CHF}}{\partial j} \frac{dj}{dz} ,
+% \end{equation}
+% donde las derivadas de las variables respecto de la coordenada axial $\nicefrac{dj}{dz}$ fueron computadas previamente a partir de los resultados de las simulaciones con COBRA3-CP. De esta manera se penaliza que la red invente dependencias axiales que no provengan de las condiciones locales, y, de alguna forma, es una expresión de la hipótesis de condiciones locales como PDE.
 
 La evaluación de este conjunto de ecuaciones diferenciales se realizó sobre un set de datos aparte, tradicionalmente llamado puntos de colocación. Se formó un espacio de puntos de colocación con los límites inferiores y superiores de cada variable, y se expandió cada uno en un 10\% de la media de la variable. De esta forma el espacio permitió evaluar la extrapolación del modelo por fuera de los datos rotulados. Se estableció el doble de puntos de colocación que de observaciones de simulaciones de COBRA3-CP, lo que resultó en un total de $2\,645\,520$ puntos.
 
 La pérdida total entonces se compone de las componentes de la ecuación \ref{eq:loss_chf},
 \begin{equation}
     \label{eq:loss_chf}
-    \mathcal{L} = \mathcal{L}_\mathrm{data} + \lambda_\mathrm{mon} \sum_i \mathcal{L}_{\mathrm{mon},i} + \lambda_\mathrm{cruz} \mathcal{L}_\mathrm{cruz} + \lambda_\mathrm{convex} \mathcal{L}_\mathrm{convex} + \lambda_\mathrm{coinc} \mathcal{L}_\mathrm{coinc},
+    \mathcal{L} = \mathcal{L}_\mathrm{data} + \lambda_\mathrm{mon} \sum_i \mathcal{L}_{\mathrm{mon},i} + \lambda_\mathrm{cruz} \mathcal{L}_\mathrm{cruz} + \lambda_\mathrm{convex} \mathcal{L}_\mathrm{convex}
+    %  + \lambda_\mathrm{coinc} \mathcal{L}_\mathrm{coinc}
+    ,
 \end{equation}
 donde los $\lambda$ son los factores de peso de las PDE. Estos factores de peso se optimizaron para obtener resultados que respeten las relaciones postuladas por fuera del rango de operación de los ensayos experimentales.
 
@@ -316,7 +350,7 @@ En cuanto a la métricas específicas al problema, se utilizó el $\mathrm{DNBR}
     \label{eq:dnbr_min}
     \mathrm{DNBR}_\mathrm{min} = \overline{\mathrm{DNBR}} + k_{95}\cdot \sigma(\mathrm{DNBR}) ,
 \end{equation}
-donde DNBR son las predicciones en las condiciones de los ensayos de la Universidad de Columbia, y $k_{95}$ es el intervalo de tolerancia de una distribución normal para asegurar 95\% de probabilidad y confianza según la cantidad de observaciones \citep{nist_e_handbook_tolerance, natrella1963experimental}. 
+donde DNBR son las predicciones en las condiciones de los ensayos de la Universidad de Columbia, y $k_{95}$ es el intervalo de tolerancia de una distribución normal para asegurar 95\% de probabilidad y confianza según la cantidad de observaciones \citep{nist_e_handbook_tolerance, natrella1963experimental}. Es importante destacar que el cómputo de esta métrica tiene dos hipótesis: que la distribución es normal, y que está centrada. Esto último se debe asegurar por medio de un factor de centrado.
 % Se comparó con la metodología actual (LUT + TMF), que obtiene $\mathrm{DNBR}_\mathrm{min} = 1,21$ al considerar todo el set de datos.
 
 Otro criterio utilizado para evaluar el modelo fue la evolución predicha de CHF en función de las distintas variables. Esto no se restringe únicamente a las variables de entrenamiento del modelo, sino que también es importante verificar la evolución predicha de CHF respecto de la longitud axial. Además, la predicción de la ubicación del punto más limitante de la sección de ensayo para una dada condición debe ubicarse sobre el final de esta. Esto permite afirmar que el modelo realiza una predicción con sentido físico. 
