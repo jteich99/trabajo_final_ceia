@@ -30,7 +30,7 @@ La distribución de fracción de vacío y MDNBR obtenida se presenta en la figur
 
 Al realizar las simulaciones y procesarlas se generó un archivo con extensión \texttt{csv}, que tiene las siguientes columnas: \texttt{caso}, \texttt{canal}, \texttt{zh}, \texttt{pa1}, \texttt{...}, \texttt{pa22}, \texttt{pr1}, \texttt{...}, \texttt{pr37}, \texttt{power}, \texttt{void}, \texttt{caudal}, \texttt{temperatura}, \texttt{presion}, \texttt{MDNBR}. Este archivo fue importado como un objeto \texttt{pandas.DataFrame}, de la biblioteca Pandas. Las columnas \texttt{caso}, \texttt{canal} y \texttt{zh} se descartaron, las primeras dos debido a que no aportan información y la zona hidráulica debido a que queda unívocamente representada por el caudal.
 
-Se filtraron los resultados a utilizar por el valor de MDNBR y fracción de vacío, para utilizar sólo valores en el rango de interés al calcular las PLC. Los datos que exceden estos rangos sirvieron de set adicional de evaluación, para determinar la capacidad de generalización del modelo ante valores no incluidos en el entrenamiento. Se filtraron los casos con MDNBR entre 1,7 y 2,5, o fracción de vacío entre 15\% y 35\%.
+Se filtraron los resultados a utilizar por el valor de MDNBR y fracción de vacío, para utilizar solo valores en el rango de interés al calcular las PLC. Los datos que exceden estos rangos sirvieron de set adicional de evaluación, para determinar la capacidad de generalización del modelo ante valores no incluidos en el entrenamiento. Se filtraron los casos con MDNBR entre 1,7 y 2,5, o fracción de vacío entre 15\% y 35\%.
 
 Con los resultados filtrados el pipeline es el siguiente:
 \begin{enumerate}
@@ -51,9 +51,9 @@ Para el armado de la arquitectura se desarrolló la función \texttt{plc.build\_
 
 Para entrenar al modelo se utilizó Adam \citep{kingma2015adam} como optimizador, debido a su alta capacidad y adopción en casos clásicos de DNN. Como función de pérdida se utilizó la raíz del error cuadrático medio (RMSE, del inglés \textit{Root Mean Squared Error}), debido a que penaliza fuertemente los errores grandes y tiene magnitud del orden de las variables a optimizar.
 
-Durante el entrenamiento se evaluó, además de la función de pérdida, el coeficiente de correlación $\text{R}^2$, tanto para el set de entrenamiento como el de evaluación. Al predecir sobre el set de evaluación, se utilizó la condición \texttt{torch.no\_grad()} para evitar que se aprenda de este set de datos y genere data leakage. Se desarrolló la función de ayuda \texttt{plc.train\_model} para realizar el entrenamiento sobre la cantidad de épocas deseadas de forma sencilla.
+Durante el entrenamiento se evaluó, además de la función de pérdida, el coeficiente de correlación $\text{R}^2$, tanto para el set de entrenamiento como el de evaluación. Al predecir sobre el set de evaluación, se utilizó la condición \texttt{torch.no\_grad()} para desactivar el cálculo de gradientes y evitar que se aprenda de este set de datos, generando data leakage. Se desarrolló la función de ayuda \texttt{plc.train\_model} para realizar el entrenamiento sobre la cantidad de épocas deseadas de forma sencilla.
 
-La definición de los hiperparámetros se realizó por medio de su optimización con Optuna. Para ello se planteó un estudio de hiperparámetros con 50 trials de 200 épocas cada uno. Se consideraron DNN con entre 2 y 15 capas ocultas, de entre 32 y 512 neuronas cada uno, con un learning rate de entre $10^{-2}$ y $10^{-5}$ y batches de entrenamiento de entre 16 y 256.
+La definición de los hiperparámetros se realizó por medio de su optimización con Optuna. Para ello se planteó un estudio de hiperparámetros con 50 trials de 200 épocas cada uno. Se consideraron DNN con entre 2 y 15 capas ocultas, de entre 32 y 512 neuronas cada una, con un learning rate de entre $10^{-2}$ y $10^{-5}$ y batches de entrenamiento de entre 16 y 256.
 Las funciones de activación consideradas fueron ReLU \citep{nair2010rectified}, GELU \citep{hendrycks2016gaussian}, SiLU/Swish \citep{elfwing2018sigmoid}, Tanh, Leaky ReLU \citep{maas2013rectifier} y ELU \citep{clevert2015fast}.
 
 Es importante señalar que la DNN predice dos valores con distinta escala y criticidad. Por lo tanto, es necesario un criterio para equiparar o ponderarlos en el cálculo de la función de pérdida en entrenamiento.
@@ -165,7 +165,7 @@ Al aplicar una arquitectura de red neuronal de multifidelidad, el pipeline se di
 
 Como se mencionó en la sección \ref{sec:datasets}, los datos de ensayos en tubo proveen los siguientes labels: diámetro, longitud, presión a la salida, flujo másico, título termodinámico a la salida, entalpía a la entrada, flujo de calor y temperatura de entrada. De estos, se utilizaron la presión a la salida \texttt{p}, el flujo másico \texttt{G}, el título termodinámico a la salida \texttt{x} y el cociente entre la longitud y el diámetro \texttt{LD}.
 
-Para el pipeline de alta fidelidad, de las simulaciones de COBRA se extrajo, en cada nodo axial, para cada subcanal y en promedio en el bundle, diferencia de presión respecto de la salida (en $[\mathrm{bar}]$), entalpía (en $[\nicefrac{\mathrm{kJ}}{\mathrm{kg}}]$), temperatura (en $[\mathrm{C}]$), título termodinámico, fracción de vapor, caudal másico (en $[\nicefrac{\mathrm{kg}}{\mathrm{s}}]$) y flujo másico (en $[\nicefrac{\mathrm{kg}}{\mathrm{m}^2\,\mathrm{s}}]$). Luego se realizó un aumento de la información en cada uno de los nodos. Se agregó la siguiente información: 
+Para el pipeline de alta fidelidad, de las simulaciones de COBRA se extrajo, en cada nodo axial, para cada subcanal y en promedio en el bundle, diferencia de presión respecto de la salida (en $\mathrm{bar}$), entalpía (en $\nicefrac{\mathrm{kJ}}{\mathrm{kg}}$), temperatura (en $\mathrm{C}$), título termodinámico, fracción de vapor, caudal másico (en $\nicefrac{\mathrm{kg}}{\mathrm{s}}$) y flujo másico (en $\nicefrac{\mathrm{kg}}{\mathrm{m}^2\,\mathrm{s}}$). Luego se realizó un aumento de la información en cada uno de los nodos. Se agregó la siguiente información: 
 \begin{itemize}
     \item Presión en el nodo, ya que se debe evaluar en condiciones locales.
     \item Distancia axial al último separador adimensionalizada (\texttt{z\_sep\_adim}), para que la red pueda tener en cuenta el efecto del separador.
@@ -175,7 +175,7 @@ Para el pipeline de alta fidelidad, de las simulaciones de COBRA se extrajo, en 
     \item Derivadas respecto de la posición axial de la presión, la entalpía, la temperatura, el título termodinámico y el flujo másico, que se utilizan para la formulación de pérdida informada por física en la PINN.
 \end{itemize}
 
-A continuación se describe la metodología para obtener cada una de estas variables. La presión en cada nodo resultó de sumar la diferencia registrada en ese punto al valor a la salida. La distancia al último separador se obtuvo al adimensionalizar la posición axial del nodo con la longitud total y buscar el separador más próximo aguas arriba, a partir de las ubicaciones relevadas en la sección de ensayo \citep{recopilacion_columbia}. El desbalance de título surgió de restar, al valor local del nodo, el promedio del bundle a la misma altura. Los factores de pico provienen también de \citep{recopilacion_columbia}: a cada subcanal se le asignó el máximo al que está expuesto, es decir, el de la corona de barras más exterior con la que limita. Por último, la relación entre perímetro calefaccionado y mojado se extrajo de las entradas de COBRA3-CP, que la definen por tipo de subcanal, y se replicó en todos los nodos correspondientes. 
+A continuación, se describe la metodología para obtener cada una de estas variables. La presión en cada nodo resultó de sumar la diferencia registrada en ese punto al valor a la salida. La distancia al último separador se obtuvo al adimensionalizar la posición axial del nodo con la longitud total y buscar el separador más próximo aguas arriba, a partir de las ubicaciones relevadas en la sección de ensayo \citep{recopilacion_columbia}. El desbalance de título surgió de restar, al valor local del nodo, el promedio del bundle a la misma altura. Los factores de pico provienen también de \citep{recopilacion_columbia}: a cada subcanal se le asignó el máximo al que está expuesto, es decir, el de la corona de barras más exterior con la que limita. Por último, la relación entre perímetro calefaccionado y mojado se extrajo de las entradas de COBRA3-CP, que la definen por tipo de subcanal, y se replicó en todos los nodos correspondientes. 
 
 Las derivadas de las variables mencionadas respecto de la coordenada axial se calcularon por medio de la función \texttt{numpy.gradient}, que calcula de forma numérica el gradiente de un dado \texttt{numpy.array} respecto de otro, evaluado en los valores de este último.
 
@@ -205,11 +205,11 @@ Es evidente que, en el caso de flujo uniforme, $K_5=1\,\forall x$.
 \newpage
 \subsection{Arquitectura del modelo}
 \label{sec:chf_arq}
-Como se explicó en la sección \ref{sec:frameworks}, el modelo planteado es una red de multifidelidad informada por física; se la denota \texttt{MFPINN}. La \texttt{MFPINN} está compuesta por dos redes, una de baja fidelidad y otra de alta fidelidad. La de baja fidelidad es entrenada para predecir CHF en geometría de tubo, a partir de los datos crudos de las LUT de Groeneveld, y se la denota \texttt{LFDNN}. Esta no incorpora información física, ya que se cuenta con una gran cantidad de datos, y un enfoque puro sobre ellos resulta suficiente. Su entrenamiento se realiza de forma previa, y sus pesos quedan congelados. Por otro lado, la componente de alta fidelidad sí utiliza información física, y se la denota \texttt{HFPINN}. Los datos para su entrenamiento son las simulaciones ron COBRA3-CP de los ensayos experimentales de la Universidad de Columbia. En la figura \ref{fig:mfpinn} se presenta un esquema de la arquitectura de \texttt{MFPINN} explicada.
+Como se explicó en la sección \ref{sec:frameworks}, el modelo planteado es una red de multifidelidad informada por física; se la denota \texttt{MFPINN}. La \texttt{MFPINN} está compuesta por dos redes, una de baja fidelidad y otra de alta fidelidad. La de baja fidelidad es entrenada para predecir CHF en geometría de tubo, a partir de los datos crudos de las LUT de Groeneveld, y se la denota \texttt{LFDNN}. Esta no incorpora información física, ya que se cuenta con una gran cantidad de datos, y un enfoque puro sobre ellos resulta suficiente. Su entrenamiento se realiza de forma previa, y sus pesos quedan congelados. Por otro lado, la componente de alta fidelidad sí utiliza información física, y se la denota \texttt{HFPINN}. Los datos para su entrenamiento son las simulaciones con COBRA3-CP de los ensayos experimentales de la Universidad de Columbia. En la figura \ref{fig:mfpinn} se presenta un esquema de la arquitectura de \texttt{MFPINN} explicada.
 
 \input{Figures/mfnn_pinn.tex}
 
-La \texttt{HFPINN} entrena con los datos de las simulaciones con COBRA3-CP; cada una de ellas provee datos en 151 nodos axiales y 60 subcanales, para un total de $9\,060$ datos por ensayo. Por otro lado, la información provista por los ensayos de Columbia contiene 1 dato por ensayo, correspondiente al punto desconocido en el que comienza el DNB. Se tiene entonces un desajuste de dimensionalidad entre el producto de la red al evaluar en los ensayos numéricos y lo medido en los ensayos reales, expuesto en la ecuación \ref{eq:dim_red}.
+La \texttt{HFPINN} entrena con los datos de las simulaciones con COBRA3-CP; cada una de ellas provee datos en 151 nodos axiales y 60 subcanales, para un total de $9\,060$ datos por ensayo. Por otro lado, la información provista por los ensayos de Columbia contiene un dato por ensayo, correspondiente al punto desconocido en el que comienza el DNB. Se tiene entonces un desajuste de dimensionalidad entre el producto de la red al evaluar en los ensayos numéricos y lo medido en los ensayos reales, expuesto en la ecuación \ref{eq:dim_red}.
 \begin{equation}
     \underbrace{\mathbf{y} \in \mathbb{R}^{9060}}_{\text{campo predicho}}
     \quad\longrightarrow\quad
@@ -226,7 +226,7 @@ La flecha en la ecuación \ref{eq:dim_red} es la reducción de dimensionalidad q
     0 & \text{en caso contrario}
     \end{cases}.
 \end{equation}
-De esta forma el optimizador sólo recibe información del punto mínimo. Adicionalmente, al comenzar el entrenamiento, el punto que resulta mínimo es completamente aleatorio, por lo que es muy fácil condicionar negativamente la red y que esta no pueda salir del mínimo inicial.
+De esta forma el optimizador solo recibe información del punto mínimo. Adicionalmente, al comenzar el entrenamiento, el punto que resulta mínimo es completamente aleatorio, por lo que es muy fácil condicionar negativamente la red y que esta no pueda salir del mínimo inicial.
 
 Se planteó entonces utilizar un enfoque de mínimo suave o softmin, que permita utilizar una mayor cantidad de nodos para el aprendizaje. Un problema similar que utiliza este enfoque es el promedio ponderado o attention pooling propuesto por Ilse \citep{ilse2018attention} en el contexto de MIL (del inglés, \textit{Multiple Instance Learning}). Se propuso utilizar el softmin expuesto en la ecuación \ref{eq:softmin},
 \begin{equation}
@@ -243,7 +243,7 @@ De esta forma, los nodos con baja predicción se ponderan con un mayor peso que 
     \label{eq:tau}
     \tau = \alpha \cdot \mathrm{std}(\mathbf{y}).
 \end{equation}
-El parámetro $\alpha$ permite controlar la temperatura con la evolución del entrenamiento, y se lo controla por medio de un recocido o annealing, que lo recorre geométricamente desde $\alpha_0$ hasta $\alpha_f$.
+El parámetro $\alpha$ permite controlar la temperatura con la evolución del entrenamiento y se lo controla por medio de un recocido o annealing, que lo recorre geométricamente desde $\alpha_0$ hasta $\alpha_f$.
 
 Para evaluar si la temperatura $\tau$ a la que converge el entrenamiento es o no correcta, se debe analizar sobre cuántos nodos se promedia realmente. Para ello, se computa el número efectivo de nodos, que se define como la exponencial de la entropía de los pesos, presentada en la ecuación \ref{eq:n_eff}.
 \begin{equation}
@@ -325,7 +325,7 @@ En cuanto a la relación de convexidad, se planteó una derivada segunda positiv
 % \end{equation}
 % donde las derivadas de las variables respecto de la coordenada axial $\nicefrac{dj}{dz}$ fueron computadas previamente a partir de los resultados de las simulaciones con COBRA3-CP. De esta manera se penaliza que la red invente dependencias axiales que no provengan de las condiciones locales, y, de alguna forma, es una expresión de la hipótesis de condiciones locales como PDE.
 
-La evaluación de este conjunto de ecuaciones diferenciales se realizó sobre un set de datos aparte, tradicionalmente llamado puntos de colocación. Se formó un espacio de puntos de colocación con los límites inferiores y superiores de cada variable, y se expandió cada uno en un 10\% de la media de la variable. De esta forma el espacio permitió evaluar la extrapolación del modelo por fuera de los datos rotulados. Se estableció el doble de puntos de colocación que de observaciones de simulaciones de COBRA3-CP, lo que resultó en un total de $2\,645\,520$ puntos.
+La evaluación de este conjunto de ecuaciones diferenciales se realizó sobre un set de datos independiente, tradicionalmente llamado puntos de colocación. Se formó un espacio de puntos de colocación con los límites inferiores y superiores de cada variable, y se expandió cada uno en un 10\% de la media de la variable. De esta forma el espacio permitió evaluar la extrapolación del modelo por fuera de los datos rotulados. Se estableció el doble de puntos de colocación que de observaciones de simulaciones de COBRA3-CP, lo que resultó en un total de $2\,645\,520$ puntos.
 
 La pérdida total entonces se compone de las componentes de la ecuación \ref{eq:loss_chf},
 \begin{equation}
@@ -343,7 +343,7 @@ Al igual que para el predictor de PLC, se realizó la optimización de los hiper
 
 \subsection{Evaluación del modelo}
 \label{sec:chf_eval}
-Para la evaluación del modelo se utilizaron las métricas estadísticas tradicionales en conjunto con métricas particulares al problema. Las métricas estadísticas utilizadas son el MSE, RMSE, y el coeficiente de correlación $\mathrm{R}^2$. 
+Para la evaluación del modelo se utilizaron las métricas estadísticas tradicionales en conjunto con métricas particulares al problema. Las métricas estadísticas utilizadas son el MSE, RMSE, y el coeficiente de determinación $\mathrm{R}^2$. 
 
 En cuanto a la métricas específicas al problema, se utilizó el $\mathrm{DNBR}_\mathrm{min}$ del diseño termohidráulico de la \cna{}, explicado en detalle en \citep{IFS_CNA2, invap_thdesign}. Este es el valor para el que, si la predicción de DNBR está por encima, se asegura con 95\% de probabilidad y confianza que no se tiene DNB. Se define según la ecuación \ref{eq:dnbr_min},
 \begin{equation}

@@ -4,7 +4,7 @@
 \label{Chapter4}
 
 \section{Estimación de PLC}
-A continuación, se presentan los resultados para el modelo de estimación de PLC: la optimización de hiperparámetros, las predicciones de DNBR y fracción de vacío del mejor modelo, y la estimación de PLC por ambos criterios.
+A continuación, se presentan los resultados para el modelo de estimación de PLC: la optimización de hiperparámetros, las predicciones de DNBR y fracción de vacío del mejor modelo y la estimación de PLC por ambos criterios.
 
 \subsection{Optimización de hiperparámetros}
 Como se mencionó en la sección \ref{sec:plc_arq}, la optimización de hiperparámetros se realizó por medio de la biblioteca Optuna. Las métricas objetivo se establecieron por separado para cada criterio. Para el DNBR se utilizó el error porcentual medio, mientras que para la fracción de vacío se usó el error absoluto medio escalado 100 veces. Esta decisión se tomó al considerar que la fracción de vacío tiene valor exactamente 0 para un porcentaje importante de los datos, y con el objetivo de lograr una contribución equitativa de ambos criterios al rendimiento del modelo. De esta forma, se obtiene un único modelo con error similar en ambos criterios, y se evita entrenar un modelo por criterio.
@@ -37,7 +37,7 @@ La figura \ref{fig:plc_opt_results} muestra los resultados durante el proceso de
 
 \subsection{Resultados de DNBR y fracción de vacío}
 
-En esta sección, se evalúan los resultados del modelo en cuanto a la predicción de DNBR y fracción de vacío. En la figura \ref{fig:plc_results_dnbr_vacio} se presentan los gráficos de valores predichos contra reales, para los conjuntos de test y train. Se observa una buena predicción del modelo en ambos objetivos, y una distribución equivalente entre conjuntos. No obstante, se aprecia una tendencia a subestimar la fracción de vacío en la región cercana a 25\%.
+En esta sección, se evalúan los resultados del modelo en cuanto a la predicción de DNBR y fracción de vacío. En la figura \ref{fig:plc_results_dnbr_vacio} se presentan los gráficos de valores predichos contra reales, para los conjuntos de test y train. Se observa una buena predicción del modelo en ambos objetivos y una distribución equivalente entre conjuntos. No obstante, se aprecia una tendencia a subestimar la fracción de vacío en la región cercana a 25\%.
 
 \begin{figure}[H]
     \centering
@@ -145,7 +145,7 @@ Se observa un buen desempeño, especialmente para las ZZHH 4 y 5, donde la nube 
 	\label{tab:plc_f}
 \end{table}
 
-En la tabla \ref{tab:plc_tiempos} se presenta un resumen de los tiempos de cómputo para el cálculo de PLC. Los resultados son contundentes: la mejora o \textit{speedup} del proceso de cálculo alcanza una media de entre $8409$ y $9519$ para DNBR, y de entre $2197$ y $2486$ para fracción de vacío. El tiempo total de cómputo pasó de las 380 h con COBRA3-CP a tan solo alrededor de 4 minutos con la DNN. Esto sustenta el valor de este modelo, que no solo logra una predicción de las PLC con un error acotado, sino que además requiere un tiempo de cómputo varios órdenes de magnitud inferior. Por otra parte, no se implementaron lógicas adicionales para lograr un cómputo más eficiente por medio de la DNN, como el procesamiento en \textit{batch}. Se computaron todos los casos en serie, tanto en CPU como en GPU. Aquí se tienen oportunidades de mejora, como se explica en el capítulo \ref{Chapter5}.
+En la tabla \ref{tab:plc_tiempos} se presenta un resumen de los tiempos de cómputo para el cálculo de PLC. Los resultados son contundentes: la mejora o \textit{speedup} del proceso de cálculo alcanza una media de entre $8409$ y $9519$ para DNBR, y de entre $2197$ y $2486$ para fracción de vacío. El tiempo total de cómputo pasó de las 380 h con COBRA3-CP a tan solo alrededor de 4 minutos con la DNN. Esto sustenta el valor de este modelo, que no solo logra una predicción de las PLC con un error acotado, sino que además requiere un tiempo de cómputo varios órdenes de magnitud inferior. Por otra parte, no se implementaron lógicas adicionales para lograr un cómputo más eficiente por medio de la DNN, como el procesamiento en \textit{batch}. Se computaron todos los casos en serie, tanto en CPU como en GPU. Estos aspectos representan oportunidades de mejora, como se explica en el capítulo \ref{Chapter5}.
 
 \begin{table}[H]
 	\centering
@@ -213,14 +213,14 @@ En la figura \ref{fig:embeddings_radial} se presenta la figura análoga para el 
     \label{fig:embeddings_axial}
 \end{figure}
 
+Al entrenar el \textit{encoder}, se evaluó la arquitectura del predictor de PLC, pero con el espacio latente de los perfiles de potencia como entradas. Se plantearon tres modelos, utilizando el espacio latente del perfil axial, del perfil por barras y ambos espacios latentes. En la tabla \ref{tab:plc_emb_errors_dnbr_vacio} se presentan la media y desvío estándar del error con signo, para los tres modelos con \textit{embeddings} y el modelo base. Los tres modelos presentan una reducción de la media del error en ambas variables objetivo. En cuanto al desvío estándar, para DNBR no se obtiene una reducción significativa, pero para fracción de vacío se reduce a aproximadamente la mitad. Es importante señalar que el modelo con \textit{embeddings} para el perfil por barras y para ambos perfiles presenta una media positiva del error de DNBR. Por otro lado, los tres modelos presentan un error medio negativo para la fracción de vacío. Estos dos puntos son un resultado no conservativo, aunque no de forma excesiva.
+
 \begin{figure}[hbtp]
     \centering
     \includegraphics[width=\textwidth]{Figures/embeddings_radial_componentes_latente.png}
     \caption{Gráficos de perfiles radiales con valores más altos, medianos y bajos de cada componente del espacio latente.}
     \label{fig:embeddings_radial}
 \end{figure}
-
-Al entrenar el \textit{encoder}, se evaluó la arquitectura del predictor de PLC, pero con el espacio latente de los perfiles de potencia como entradas. Se plantearon tres modelos, utilizando el espacio latente del perfil axial, del perfil por barras y ambos espacios latentes. En la tabla \ref{tab:plc_emb_errors_dnbr_vacio} se presentan la media y desvío estándar del error con signo, para los tres modelos con \textit{embeddings} y el modelo base. Los tres modelos presentan una reducción de la media del error en ambas variables objetivo. En cuanto al desvío estándar, para DNBR no se obtiene una reducción significativa, pero para fracción de vacío se reduce a aproximadamente la mitad. Es importante señalar que el modelo con \textit{embeddings} para el perfil por barras y para ambos perfiles presenta una media positiva del error de DNBR. Por otro lado, los tres modelos presentan un error medio negativo para la fracción de vacío. Estos dos puntos son un resultado no conservativo, aunque no de forma excesiva.
 
 \begin{table}[H]
 	\centering
@@ -249,7 +249,7 @@ Al entrenar el \textit{encoder}, se evaluó la arquitectura del predictor de PLC
 
 En la tabla \ref{tab:plc_emb_margen_perdido} se presenta el margen perdido total para el modelo base y los tres modelos con \textit{embeddings}. En cuanto al DNBR, solo el modelo con \textit{embeddings} para el perfil por barras presenta una reducción del margen perdido. Para el margen perdido de fracción de vacío se obtiene una reducción en los tres modelos.
 
-Se estima que la reducción en la PLC por DNBR al utilizar el espacio latente del perfil por barras proviene de la dimensión muy elevada de dicho perfil, considerando la información que representa. Al reducir su dimensión, la DNN tendría mayor capacidad de centrar recursos en otras variables de entrada. 
+Se estima que la reducción en la PLC por DNBR al utilizar el espacio latente del perfil por barras proviene de la dimensión muy elevada de dicho perfil, al considerar la información que representa. Al reducir su dimensión, la DNN tendría mayor capacidad de centrar recursos en otras variables de entrada. 
 
 En el caso de la PLC por fracción de vacío, es sabido que depende de la integral de la energía entregada y no de condiciones locales. Por lo tanto, variables de entrada globales como las componentes del espacio latente presentan una ventaja esperable en su predicción.
 
@@ -258,7 +258,7 @@ En el caso de la PLC por fracción de vacío, es sabido que depende de la integr
 	\caption{Margen perdido medio y máximo por utilizar DNN y \textit{embeddings}, según zona hidráulica y total.}
 	\begin{tabular}{c c c c c} 
         \toprule
-        \multirow{3}{*}{\textbf{Modelo}} & \multicolumn{4}{c}{\textbf{Márgen perdido [\%]}} \\ \cline{2-5}
+        \multirow{3}{*}{\textbf{Modelo}} & \multicolumn{4}{c}{\textbf{Margen perdido [\%]}} \\ \cline{2-5}
         & \multicolumn{2}{c}{\textbf{DNBR}} & \multicolumn{2}{c}{\textbf{Fracción de vacío}} \\
           & medio & máximo & medio & máximo \\ \hline
         Base & 0,71 & 2,34 & 0,54 & 1,45 \\
