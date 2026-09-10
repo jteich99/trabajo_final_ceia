@@ -304,6 +304,91 @@ Para lograr una evaluación que no se limitara a la capacidad de los modelos de 
 
 Las arquitecturas se evaluaron en su predicción de CHF de forma tradicional, y adicionalmente por medio del $\mathrm{DNBR}_\mathrm{min}$, según lo explicado en la sección \ref{sec:chf_eval}.
 
+\begin{table}[H]
+	\centering
+	\caption{}
+	\begin{tabular}{c c c c c c} 
+        \toprule
+        \textbf{Modelo} & \textbf{Conjunto} & $f_c$ & $\overline{\mathrm{DNBR}}$ & $\sigma(\mathrm{DNBR})$ & $\mathrm{DNBR}_\mathrm{min}$ \\ \hline
+        \multirow{2}{*}{DNN}     
+                & Entrenamiento & \multirow{2}{*}{}
+                                        &  &  &  \\
+                & Evaluación    &       &  &  &  \\
+        \multirow{2}{*}{LFDNN}     
+                & Entrenamiento & \multirow{2}{*}{1.084}
+                                        & 1.000 & 0.131 & 1.259 \\
+                & Evaluación    &       & 1.022 & 0.183 & 1.384 \\
+        \multirow{2}{*}{MFDNN}     
+                & Entrenamiento & \multirow{2}{*}{}
+                                        &  &  &  \\
+                & Evaluación    &       &  &  &  \\
+        \multirow{2}{*}{MFPINN}     
+                & Entrenamiento & \multirow{2}{*}{}
+                                        &  &  &  \\
+                & Evaluación    &       &  &  &  \\
+		\bottomrule
+	\end{tabular}
+	\label{tab:}
+\end{table}
+
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+\begin{table}[H]
+	\centering
+	\caption{}
+	\begin{tabular}{c | C{1cm} | C{1cm} | C{1cm} | C{2cm} | C{2cm}} 
+        \toprule
+        \multirow{2}{*}{\textbf{Modelo MFPINN}} & \multicolumn{3}{c|}{\textbf{Monotonicidad}} & \multirow{2}{=}{\centering \textbf{Derivada cruzada}} & \multirow{2}{=}{\centering \textbf{Derivada segunda}} \\
+        & x & G & p & & \\ \hline
+        a & X & X & X & X & X \\
+        b & X & X & X &   &   \\
+        b1& X &   &   &   &   \\
+        b2&   & X &   &   &   \\
+        b3&   &   & X &   &   \\
+        c &   &   &   & X &   \\
+        d &   &   &   &   & X \\
+		\bottomrule
+	\end{tabular}
+	\label{tab:}
+\end{table}
+
+
+\begin{figure}[h]
+    \centering
+    
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Figures/chf_distribucion_dnn.png}
+        \caption{Modelo de DNN tradicional.}
+        \label{fig:chf_dnbrmin_dist_dnn}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{Figures/chf_distribucion_mfdnn.png}
+        \caption{Modelo de MFDNN.}
+        \label{fig:chf_dnbrmin_dist_mfdnn}
+    \end{subfigure}
+    
+    % \begin{subfigure}[b]{0.48\textwidth}
+    %     \centering
+    %     \includegraphics[width=\textwidth]{example-image-a}
+    %     \caption{}
+    %     % \label{fig:chf_dnbrmin_dist}
+    % \end{subfigure}
+    % \hfill
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{example-image-b}
+        \caption{}
+        % \label{fig:chf_dnbrmin_dist}
+    \end{subfigure}
+
+    \caption{Distribución de probabilidad de $\mathrm{DNBR}_\mathrm{min}$ para \mbox{$N=50$} modelos entrenados de cada tipo.}
+    \label{fig:chf_dnbrmin_dist}
+\end{figure}
+
+\newpage
 \subsection{Análisis de variables de entrada}
 
 Las variables de entrada propuestas en la sección \ref{sec:chf_pipeline} fueron el flujo másico, la presión, el título termodinámico, la relación de largo calefaccionado con diámetro hidráulico, la distancia adimensional al separador aguas arriba, el desbalance de título termodinámico respecto del valor medio del \textit{bundle}, el factor de pico de potencia y la relación entre perímetro calefaccionado y mojado del subcanal. 
