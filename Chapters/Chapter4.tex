@@ -274,13 +274,165 @@ En el caso de la PLC por fracción de vacío, es sabido que depende de la integr
 \section{Estimación de CHF}
 
 A continuación, se analizan los resultados para el modelo de estimación de CHF.
-En primer lugar, se presenta un análisis sobre la arquitectura del modelo. Ya que el trabajo propone una superposición de arquitecturas, es importante evaluar la contribución de cada cambio, con la referencia de un modelo simple y de la metodología actual.
+En primer lugar se presenta el modelo predictor de CHF para geometría de tubo, a partir de los datos recopilados por Groeneveld \citep{GROENEVELD2007, USNRC2019NUREGKM0011}. Esto permite establecer una base sólida con la cual los modelos de multifidelidad corrigen la estimación para un tubo de forma no-lineal.
 
-Luego, es importante analizar las variables de entrada al modelo, ya que su uso sin evaluación equivale a un modelo de caja negra, que no permite comprender su comportamiento ni su relación con la física del fenómeno. 
-Citando a von Neumann: ``Con cuatro parámetros puedo ajustar un elefante, y con cinco puedo hacer que mueva su trompa''\footnotemark{} \citep{dyson2004meeting}.
-\footnotetext{Traducido de la frase original en inglés: \textit{With four parameters I can fit an elephant, and with five I can make him wiggle his trunk.}}
+Luego, se presenta un análisis sobre la arquitectura del modelo para estimación de CHF en la geometría de la \cna{}. Ya que el trabajo propone una superposición de arquitecturas, es importante evaluar la contribución de cada cambio, con la referencia de un modelo simple y de la metodología actual.
 
-\subsection{Análisis de arquitectura}
+En tercer lugar, es importante analizar las variables de entrada al modelo, ya que su uso sin evaluación equivale a un modelo de caja negra, que no permite comprender su comportamiento ni su relación con la física del fenómeno. 
+Citando a von Neumann: ``Con cuatro parámetros puedo ajustar un elefante, y con cinco puedo hacer que mueva su trompa''\footnotemark{}.
+\footnotetext{Traducido de la frase original en inglés: \textit{With four parameters I can fit an elephant, and with five I can make him wiggle his trunk.} \citep{dyson2004meeting}}
+
+\subsection{Modelo predictor de CHF en un tubo}
+\label{sec:lfdnn_resultados}
+Como se comentó en la sección \ref{sec:chf_arq}, se construyó un modelo de DNN para predecir el CHF en un tubo. Esta luego es utilizada por las MFDNN y MFPINN entrenadas como entrada. Es importante notar que para que los modelos de multifidelidad obtengan información relevante de la estimación en un tubo, esta debe ser confiable y con valor físico. Por ello, la evaluación de la \texttt{LFDNN} entrenada no se restringe únicamente a estadísticos tradicionales. Para su evaluación se consideran tres categorías principales: su predicción de los ensayos en un tubo, su $\mathrm{DNBR}_\mathrm{min}$ derivado de sus predicciones sobre los ensayos de la Universidad de Columbia y la evolución del CHF predicho en función de los parámetros termohidráulicos y la coordenada axial en estos. Este último criterio se propuso debido a que redes con arquitecturas muy densas y profundas lograban muy buenos resultados en los primeros dos criterios, pero al mirar en detalle la relación del CHF con los parámetros termohidráulicos y su evolución en la coordenada axial se observaban tendencias no físicas.  
+
+Entonces, para encontrar una arquitectura óptima resultaba dificil recurrir a una estructura automatizada como Optuna. Se propuso entonces evaluar una serie limitada de arquitecturas para evaluar el impacto del ancho y la profundidad de la red en los resultados. En la tabla \ref{tab:lfdnn_arqs} se presentan las arquitecturas evaluadas. Se evaluó utilizar como función de activación el tangente hiperbólico y la función SiLU. Finalmente, la función SiLU fue la que demostró un comportamiento más estable.
+
+\textbf{ANALISIS DE R2 Y RMSE SOBRE CONJUNTOS GROENEVELD.} 
+
+\begin{table}[h]
+	\centering
+	\caption{Arquitecturas de \texttt{LFDNN} propuestas y métricas sobre conjuntos de entrenamiento y evaluación de ensayos en un tubo.}
+	\begin{tabular}{c C{2cm} C{2cm} c c c c} 
+        \toprule
+        \multirow{2}{*}{\textbf{\#}} & \multirow{2}{=}{\textbf{Dim. capas ocultas}} & \multirow{2}{=}{\textbf{Cant. capas ocultas}} & \multicolumn{2}{c}{\textbf{Entrenamiento}} & \multicolumn{2}{c}{\textbf{Evaluación}} \\
+        & & & $\mathbf{R^2}$ & \textbf{RMSE} & $\mathbf{R^2}$ & \textbf{RMSE} \\ \hline
+        1 & 64  & 2 & $0.9553$ & $337.9$ & $0.9590$ & $322.0$ ($+0.8\%$) \\
+        2 & 64  & 3 & $0.9657$ & $296.1$ & $0.9657$ & $294.3$ ($+4.2\%$) \\
+        3 & 64  & 4 & $0.9749$ & $253.0$ & $0.9738$ & $257.3$ ($+14.2\%$) \\
+        4 & 32  & 3 & $0.9503$ & $356.0$ & $0.9557$ & $334.6$ ($+0.3\%$) \\
+        5 & 128 & 3 & $0.9746$ & $254.9$ & $0.9753$ & $249.9$ ($+9.6\%$) \\
+		\bottomrule
+	\end{tabular}
+	\label{tab:lfdnn_arqs}
+\end{table}
+% Groeneveld  |            log CHF            |          CHF [kW/m2]          
+% modelo       R2 tr   R2 te  RMSE tr  RMSE te   R2 tr   R2 te   RMSE tr   RMSE te
+% ------------------------------------------------------------------------------
+% 64x2        0.9608  0.9599   0.1583   0.1595  0.9553  0.9590     337.9     322.0
+% 64x3        0.9683  0.9653   0.1425   0.1484  0.9657  0.9657     296.1     294.3
+% 64x4        0.9778  0.9709   0.1192   0.1361  0.9749  0.9738     253.0     257.3
+% 32x3        0.9600  0.9595   0.1600   0.1605  0.9503  0.9557     356.0     334.6
+% 128x3       0.9754  0.9702   0.1254   0.1375  0.9746  0.9753     254.9     249.9
+
+% mejor R2 en test (log):   64x4  (0.9709)
+% mejor RMSE en test (log): 64x4  (0.1361)
+
+% brecha train->test (RMSE en log):
+%   64x2       +0.0012 (+0.8%)
+%   64x3       +0.0059 (+4.2%)
+%   64x4       +0.0169 (+14.2%)
+%   32x3       +0.0005 (+0.3%)
+%   128x3      +0.0121 (+9.6%)
+
+En la tabla \ref{tab:lfdnn_dnbrmin} se presentan los resultados de las distintas arquitecturas al evaluar sobre el conjunto de datos de los ensayos de Columbia replicados con CORBA3-CP. Se dispone la media y desvío estánda del $\mathrm{DNBR}$ predicho y el $\mathrm{DNBR}_\mathrm{min}$. Adicionalmente, se calcularon cuantos casos de los 146 presentaron el valor mínimo de CHF de la sección antes de los $250\,\mathrm{cm}$ y cuantos en los subcanales interiores, es decir no perifericos. Esto se realizó debido a que se tiene conocimiento de que el CHF se presenta al final de la sección de ensayos y que, por cómo modela COBRA3-CP los subcanales, los subcanales periféricos son los más comprometidos para le CHF. Entonces podemos observar que la arquitectura \#4 presenta dos ventajas, tiene la media y desvío estándar más favorables, y además el valor de cantidad de predicciones fuera de la región de salida más baja. En cuanto a predicciones en subcanales internos, se encuentra en la mediana de los modelos evaluados. 
+
+
+\begin{table}[h]
+	\centering
+	\caption{Arquitecturas de \texttt{LFDNN} propuestas y métricas sobre ensayos de bundle de la \cna{}.}
+	\begin{tabular}{c c c c c c} 
+        \toprule
+        \textbf{\#} & $\mathbf{\overline{\mathrm{DNBR}}}$ & $\mathbf{\sigma(\mathrm{DNBR})}$ &  $\mathbf{\mathrm{DNBR}_\mathrm{min}}$ & $Z_\mathrm{CHF} < 250\,\mathrm{cm}$ & $\mathrm{SCH}_\mathrm{CHF}$ interno \\
+        1 & $0.651$ & $0.329$ & $1.266$ & 89 & 10 \\
+        2 & $0.687$ & $0.403$ & $1.442$ & 72 & 6  \\
+        3 & $0.512$ & $0.393$ & $1.248$ & 97 & 26 \\
+        4 & $0.949$ & $0.266$ & $1.447$ & 31 & 16 \\
+        5 & $0.864$ & $0.315$ & $1.454$ & 31 & 30\\
+		\bottomrule
+	\end{tabular}
+	\label{tab:lfdnn_dnbrmin}
+\end{table}
+
+Luego se procedió a analizar en qué condiciones está prediciendo el modelo CHF. En la figura \ref{fig:lfdnn_chf_gx} se tiene para el modelo \#4 los gráficos de CHF frente a flujo másico y título termodinámico. Los valores de flujo másico y título termodinámico corresponden al punto en ese ensayo en el que el modelo obtuvo el menor CHF. Lo que se observa es preocupante. El modelo predice valores muy bajos de CHF para condiciones subenfriadas. Esto es algo definitivamente no físico y un resultado no deseado. El resto de modelos tienen comportamiento similar. 
+
+Entonces se propuso evaluar la generalización del modelo con el flujo másico y el título termodinámico. En la figura \ref{fig:lfdnn_chf_generalizacion} se presenta este análisis. Se filtraron los datos de entrenamiento de Groeneveld para considerar presiones y relaciones $\nicefrac{L}{D}$ similares a las del conjunto de COBRA3-CP, y luego se muestreo por fuera de los límites de flujo másico y título termodinámico. Los resultados explican fehacientemetne porque se tenía en la figura \ref{fig:lfdnn_chf_gx} una relación no física específicamente con el título termodinámico. Los modelos en su conjunto de entrenamiento no tiene datos para condiciones subenfriadas, y su extrapolación en esa zona es hacia valores de CHF bajos. Este comportamiento requiere de una corrección.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Figures/chf_lfdnn_gx_caso_mal.png}
+    \caption{Relación del CHF predicho con el flujo másico y el título, según el punto predicho por el modelo LFDNN \#4. TRAIN y TEST son los conjuntos de entrenamiento y evaluación correspondientes a la \texttt{HFDNN}, divididos tal que en evaluación se tienen los ensayos de menor flujo másico.}
+    \label{fig:lfdnn_chf_gx}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Figures/chf_lfdnn_generalizacion.png}
+    \caption{Evaluación de la generalización de la LFDNN respecto del flujo másico y el título termodinámico.}
+    \label{fig:lfdnn_chf_generalizacion}
+\end{figure}
+
+Para solventar esta dificultad del modelo en la zona subenfriada se propuso una condición de monotoneidad de la derivada del CHF y el título termodinámico. Entonces, se obtuvo un modelo de PINN para la \texttt{LFDNN}. Se analizó el impacto de esta implementación en una arquitectura de $64\times 3$, con al misma metodología que las arquitecturas anteriores. Se entrenaron tres redes, variando el valor del peso de la pérdida de la monotonicidad $\lambda$ entre $0.01$, $0.1$ y $1$. Esto permite evaluar el impacto de qué tanto se impone esta condición frente a los datos.
+
+En la tabla \ref{tab:lfdnn_arqs_comparativa} se presenta la comparativa de las métricas estadísticas sobre los conjuntos de ensayos en un tubo. Esto permite verificar que la condición agregada no perjudica al modelo dentro del conjunto que busca representar.
+\textbf{ANALISIS DE R2 Y RMSE}
+
+Luego en la tabla \ref{tab:lfdnn_dnbrmin_comp} se comparan los valores de media y desvío estándar del DNBR, el $\mathrm{DNBR}_\mathrm{min}$ y los puntos predichos en la región de entrada y en subcanales interiores.
+
+\begin{table}[h]
+	\centering
+	\caption{Arquitecturas de \texttt{LFDNN} propuestas y métricas sobre conjuntos de entrenamiento y evaluación de ensayos en un tubo.}
+	\begin{tabular}{c c c c c c} 
+        \toprule
+        \multirow{2}{*}{\textbf{Arquitectura}} & \multirow{2}{*}{$\mathbf{\lambda}$} & \multicolumn{2}{c}{\textbf{Entrenamiento}} & \multicolumn{2}{c}{\textbf{Evaluación}} \\
+        & & $\mathbf{R^2}$ & \textbf{RMSE} & $\mathbf{R^2}$ & \textbf{RMSE} \\ \hline
+        Base                    & -      & $0.9657$ & $296.1$ & $0.9657$ & $294.3$ ($+4.2\%$) \\
+        \multirow{3}{*}{PINN}   & $0.01$ & $0.9624$ & $310.0$ & $0.9642$ & $300.9$ ($+4.1\%$) \\
+                                & $0.1$  & $0.9638$ & $304.1$ & $0.9652$ & $296.8$ ($+4.7\%$) \\
+                                & $1$    & $0.9637$ & $304.6$ & $0.9650$ & $297.6$ ($+5.1\%$) \\
+		\bottomrule
+	\end{tabular}
+	\label{tab:lfdnn_arqs_comparativa}
+\end{table}
+
+% Groeneveld                --- log CHF ---                  --- CHF [kW/m2] ---        
+% modelo             R2 tr   R2 te  RMSE tr  RMSE te   R2 tr   R2 te   RMSE tr   RMSE te
+% --------------------------------------------------------------------------------------
+% $\lambda$ = 0     0.9665  0.9632   0.1464   0.1530  0.9605  0.9626     317.5     307.4
+% $\lambda$ = 0.01  0.9661  0.9630   0.1473   0.1533  0.9624  0.9642     310.0     300.9
+% $\lambda$ = 0.1   0.9661  0.9626   0.1473   0.1542  0.9638  0.9652     304.1     296.8
+% $\lambda$ = 1     0.9658  0.9620   0.1479   0.1554  0.9637  0.9650     304.6     297.6
+
+% mejor R2 en test (log):   $\lambda$ = 0  (0.9632)
+% mejor RMSE en test (log): $\lambda$ = 0  (0.1530)
+
+% brecha train->test (RMSE en log):
+%   $\lambda$ = 0    +0.0066 (+4.5%)
+%   $\lambda$ = 0.01 +0.0060 (+4.1%)
+%   $\lambda$ = 0.1  +0.0069 (+4.7%)
+%   $\lambda$ = 1    +0.0076 (+5.1%)
+
+% costo respecto de lambda = 0 (RMSE en log, test):
+%   $\lambda$ = 0    +0.00%
+%   $\lambda$ = 0.01 +0.20%
+%   $\lambda$ = 0.1  +0.80%
+%   $\lambda$ = 1    +1.61%
+
+\begin{table}[h]
+	\centering
+	\caption{Arquitecturas de \texttt{LFDNN} propuestas y métricas sobre ensayos de bundle de la \cna{}.}
+	\begin{tabular}{c c c c c c c} 
+        \toprule
+        \textbf{Arq.} & $\bm{\lambda}$ & $\bm{\overline{\mathrm{DNBR}}}$ & $\bm{\sigma(\mathrm{DNBR})}$ &  $\bm{\mathrm{DNBR}_\mathrm{min}}$ & \textbf{Z entrada} & \textbf{SCH int.} \\
+        Base    & -      & $0.687$ & $0.403$ & $1.442$ & 72 & 6  \\
+        \multirow{3}{*}{PINN} 
+                & $0.01$ & $1.061$ & $0.219$ & $1.470$ & 10 & 14 \\
+                & $0.1$  & $1.035$ & $0.226$ & $1.457$ & 4  & 14 \\
+                & $1$    & $1.037$ & $0.224$ & $1.456$ & 3  & 22 \\
+		\bottomrule
+	\end{tabular}
+	\label{tab:lfdnn_dnbrmin_comp}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Figures/chf_lfdnn_gx_mon.png}
+    \caption{Relación del CHF predicho con el flujo másico y el título, según el punto predicho por el modelo \texttt{LFDNN} con monotonicidad con $\lambda=0.1$. TRAIN y TEST son los conjuntos de entrenamiento y evaluación correspondientes a la \texttt{HFDNN}, divididos tal que en evaluación se tienen los ensayos de menor flujo másico.}
+    \label{fig:lfdnn_chf_gx_mon}
+\end{figure}
+
+
+\subsection{Análisis de arquitectura de multifidelidad}
 Para realizar el análisis sobre la arquitectura del modelo, se planteó emplear solo las variables utilizadas tradicionalmente en la predicción de CHF por las LUT de Groeneveld. Estas son el flujo másico, la presión, el título termodinámico y la relación de largo calefaccionado con diámetro hidráulico. Las primeras tres son las variables necesarias para interpolar dentro de la LUT, mientras que la cuarta permite transformar la predicción a la geometría de \textit{bundle}. Vale aclarar que Groeneveld propone factores de corrección que utilizan algunas de las variables adicionales incorporadas en este trabajo. Para más detalles, ver el apéndice \ref{appendix_groeneveld}.
 
 Las arquitecturas comparadas son las siguientes:
@@ -297,7 +449,7 @@ Para lograr una evaluación que no se limitara a la capacidad de los modelos de 
 \begin{figure}[hbtp]
     \centering
     \includegraphics[width=\textwidth]{Figures/chf_division_train_test.png}
-    \caption{División de los datos de CHF de la Universidad de Columbia en entrenamiento y evaluación, según flujo másico.}
+    \caption{División de los datos de CHF de la Universidad de Columbia en entrenamiento y evaluación, según flujo másico. Los ejes de flujo másico y título termodinámico corresponden a los valores promedios de la sección de ensayo a la salida.}
     \label{fig:chf_div_train_test}
 \end{figure}
 
@@ -315,23 +467,23 @@ Las arquitecturas se evaluaron en su predicción de CHF de forma tradicional, y 
                                         &  &  &  \\
                 & Evaluación    &       &  &  &  \\
         \multirow{2}{*}{LFDNN}     
-                & Entrenamiento & \multirow{2}{*}{1.084}
-                                        & 1.000 & 0.131 & 1.259 \\
-                & Evaluación    &       & 1.022 & 0.183 & 1.384 \\
+                & Entrenamiento & \multirow{2}{*}{}
+                                        &  &  & \\
+                & Evaluación    &       &  &  & \\
         \multirow{2}{*}{MFDNN}     
                 & Entrenamiento & \multirow{2}{*}{}
                                         &  &  &  \\
                 & Evaluación    &       &  &  &  \\
-        \multirow{2}{*}{MFPINN}     
-                & Entrenamiento & \multirow{2}{*}{}
-                                        &  &  &  \\
-                & Evaluación    &       &  &  &  \\
+        % \multirow{2}{*}{MFPINN}     
+        %         & Entrenamiento & \multirow{2}{*}{}
+        %                                 &  &  &  \\
+        %         & Evaluación    &       &  &  &  \\
 		\bottomrule
 	\end{tabular}
 	\label{tab:}
 \end{table}
 
-\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\subsection{Análisis de arquitectura informada por física}
 
 \begin{table}[H]
 	\centering
@@ -347,6 +499,45 @@ Las arquitecturas se evaluaron en su predicción de CHF de forma tradicional, y 
         b3&   &   & X &   &   \\
         c &   &   &   & X &   \\
         d &   &   &   &   & X \\
+		\bottomrule
+	\end{tabular}
+	\label{tab:}
+\end{table}
+
+\begin{table}[H]
+	\centering
+	\caption{}
+	\begin{tabular}{c c c c c c} 
+        \toprule
+        \textbf{Modelo} & \textbf{Conjunto} & $f_c$ & $\overline{\mathrm{DNBR}}$ & $\sigma(\mathrm{DNBR})$ & $\mathrm{DNBR}_\mathrm{min}$ \\ \hline
+        \multirow{2}{*}{A}     
+                & Entrenamiento & \multirow{2}{*}{}
+                                        &  &  &  \\
+                & Evaluación    &       &  &  &  \\
+        \multirow{2}{*}{B}     
+                & Entrenamiento & \multirow{2}{*}{}
+                                        &  &  &  \\
+                & Evaluación    &       &  &  &  \\
+        \multirow{2}{*}{B1}     
+                & Entrenamiento & \multirow{2}{*}{}
+                                        &  &  &  \\
+                & Evaluación    &       &  &  &  \\
+        \multirow{2}{*}{B2}     
+                & Entrenamiento & \multirow{2}{*}{}
+                                        &  &  &  \\
+                & Evaluación    &       &  &  &  \\
+        \multirow{2}{*}{B3}     
+                & Entrenamiento & \multirow{2}{*}{}
+                                        &  &  &  \\
+                & Evaluación    &       &  &  &  \\
+        \multirow{2}{*}{C}     
+                & Entrenamiento & \multirow{2}{*}{}
+                                        &  &  &  \\
+                & Evaluación    &       &  &  &  \\
+        \multirow{2}{*}{D}     
+                & Entrenamiento & \multirow{2}{*}{}
+                                        &  &  &  \\
+                & Evaluación    &       &  &  &  \\
 		\bottomrule
 	\end{tabular}
 	\label{tab:}

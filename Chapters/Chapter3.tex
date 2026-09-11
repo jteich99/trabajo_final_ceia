@@ -205,7 +205,16 @@ Es evidente que, en el caso de flujo uniforme, $K_5=1\,\forall x$.
 \newpage
 \subsection{Arquitectura del modelo}
 \label{sec:chf_arq}
-Como se explicó en la sección \ref{sec:frameworks}, el modelo planteado es una red de multifidelidad informada por física, denotada \texttt{MFPINN}. La \texttt{MFPINN} está compuesta por dos redes, una de baja fidelidad y otra de alta fidelidad. La de baja fidelidad es entrenada para predecir CHF en geometría de tubo, a partir de los datos crudos de las LUT de Groeneveld, y se la denota \texttt{LFDNN}. Esta no incorpora información física, ya que se cuenta con una gran cantidad de datos, y un enfoque puro sobre ellos resulta suficiente. Su entrenamiento se realiza de forma previa y sus pesos quedan congelados. Por otro lado, la componente de alta fidelidad sí utiliza información física y se la denota \texttt{HFPINN}. Los datos para su entrenamiento son las simulaciones con COBRA3-CP de los ensayos experimentales de la Universidad de Columbia. En la figura \ref{fig:mfpinn} se presenta un esquema de la arquitectura descripta de la \texttt{MFPINN}.
+Como se explicó en la sección \ref{sec:frameworks}, el modelo planteado es una red de multifidelidad informada por física, denotada \texttt{MFPINN}. La \texttt{MFPINN} está compuesta por dos redes, una de baja fidelidad y otra de alta fidelidad. La de baja fidelidad es entrenada para predecir CHF en geometría de tubo, a partir de los datos crudos de las LUT de Groeneveld, y se la denota \texttt{LFDNN}. 
+Esta en principio no incorporaba información física, ya que se dispone de una gran cantidad de datos y se estimaba que un enfoque puro sobre ellos era suficiente. Al entrenar esta red y probar su generalización sobre el conjunto de datos obtenidos de COBRA3-CP al replicar los ensayos de la Universidad de Columbia, se obtuvo un comportamiento no físico para condiciones subenfriadas. Esto se rastreó a la nula representación de condiciones subenfriadas a las presiones y $\nicefrac{L}{D_h}$ de interés en el conjunto de entrenamiento. Este análisis se aborda en detalle en la sección \ref{sec:lfdnn_resultados}. Por lo tanto, se decidió aplicar una condición de monotonicidad de la derivada del CHF con el título termodinámico. Luego la pérdida quedó descripta por la ecuación \ref{eq:loss_lfdnn},
+\begin{equation}
+    \label{eq:loss_lfdnn}
+    \mathcal{L} = \mathrm{MSE}(\log \mathrm{CHF}) \;+\; \lambda \cdot \frac{1}{\sum w}\sum_i \left[w_i\,\mathrm{ReLU}\!\left(\frac{\partial \log \mathrm{CHF}}{\partial x}\Big|_i\right)\right]^2 .
+\end{equation}
+
+Notar que se tiene $\log\mathrm{CHF}$, el valor predicho por la red. $w_i$ se corresponde a la máscara de la condición de monotonicidad sobre los puntos de colocación, para ser aplicada sólo en el rango $x<0$ y condiciones de trabajo de interés. Los puntos de colocación aplicados corresponden a presiones y relaciones $\nicefrac{L}{D_h}$ correspondientes al conjunto de datos de COBRA3-CP.
+
+Por otro lado, la componente de alta fidelidad utiliza información física y se la denota \texttt{HFPINN}. Los datos para su entrenamiento son las simulaciones con COBRA3-CP de los ensayos experimentales de la Universidad de Columbia. En la figura \ref{fig:mfpinn} se presenta un esquema de la arquitectura descripta de la \texttt{MFPINN}.
 
 \input{Figures/mfnn_pinn.tex}
 
