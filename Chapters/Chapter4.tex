@@ -288,7 +288,7 @@ Como se comentó en la sección \ref{sec:chf_arq}, se construyó un modelo de DN
 
 Entonces, para encontrar una arquitectura óptima resultaba dificil recurrir a una estructura automatizada como Optuna. Se propuso entonces evaluar una serie limitada de arquitecturas para evaluar el impacto del ancho y la profundidad de la red en los resultados. En la tabla \ref{tab:lfdnn_arqs} se presentan las arquitecturas evaluadas. Se evaluó utilizar como función de activación el tangente hiperbólico y la función SiLU. Finalmente, la función SiLU fue la que demostró un comportamiento más estable.
 
-\textbf{ANALISIS DE R2 Y RMSE SOBRE CONJUNTOS GROENEVELD.} 
+Los resultados de las métricas estadísticas se exponen en la tabla \ref{tab:lfdnn_ars}. Se observa que todos los modelos logran tanto en entrenamiento como en evaluación un $\mathrm{R}^2>0,95$ y un RMSE menor a $400\,\mathrm{kW/m^2}$. Los modelos de menos parámetros presentan menos diferencia entre el RMSE del conjunto de entrenamiento y de evaluación. Los dos modelos de mayores parámetros presentan los mejores valores tanto de $\mathrm{R}^2$ como de RMSE. En vistas de estos resultados, se podría considerar que el entrenamiento de todas las redes es satisfactorio.
 
 \begin{table}[h]
 	\centering
@@ -325,7 +325,7 @@ Entonces, para encontrar una arquitectura óptima resultaba dificil recurrir a u
 %   32x3       +0.0005 (+0.3%)
 %   128x3      +0.0121 (+9.6%)
 
-En la tabla \ref{tab:lfdnn_dnbrmin} se presentan los resultados de las distintas arquitecturas al evaluar sobre el conjunto de datos de los ensayos de Columbia replicados con CORBA3-CP. Se dispone la media y desvío estánda del $\mathrm{DNBR}$ predicho y el $\mathrm{DNBR}_\mathrm{min}$. Adicionalmente, se calcularon cuantos casos de los 146 presentaron el valor mínimo de CHF de la sección antes de los $250\,\mathrm{cm}$ y cuantos en los subcanales interiores, es decir no perifericos. Esto se realizó debido a que se tiene conocimiento de que el CHF se presenta al final de la sección de ensayos y que, por cómo modela COBRA3-CP los subcanales, los subcanales periféricos son los más comprometidos para le CHF. Entonces podemos observar que la arquitectura \#4 presenta dos ventajas, tiene la media y desvío estándar más favorables, y además el valor de cantidad de predicciones fuera de la región de salida más baja. En cuanto a predicciones en subcanales internos, se encuentra en la mediana de los modelos evaluados. 
+En la tabla \ref{tab:lfdnn_dnbrmin} se presentan los resultados de las distintas arquitecturas al evaluar sobre el conjunto de datos de los ensayos de Columbia replicados con CORBA3-CP. Se dispone la media y desvío estánda del $\mathrm{DNBR}$ predicho y el $\mathrm{DNBR}_\mathrm{min}$. Adicionalmente, se calcularon cuantos casos de los 146 presentaron el valor mínimo de CHF de la sección antes de los $250\,\mathrm{cm}$ y cuantos en los subcanales interiores, es decir no perifericos. Esto se realizó debido a que se tiene conocimiento de que el CHF se presenta al final de la sección de ensayos y que, por cómo modela COBRA3-CP los subcanales, los subcanales periféricos son los más comprometidos para el CHF. Entonces podemos observar que la arquitectura \#4 presenta dos ventajas, tiene la media y desvío estándar más favorables, y además el valor de cantidad de predicciones fuera de la región de salida más baja. En cuanto a predicciones en subcanales internos, se encuentra en la mediana de los modelos evaluados. 
 
 
 \begin{table}[h]
@@ -333,7 +333,8 @@ En la tabla \ref{tab:lfdnn_dnbrmin} se presentan los resultados de las distintas
 	\caption{Arquitecturas de \texttt{LFDNN} propuestas y métricas sobre ensayos de bundle de la \cna{}.}
 	\begin{tabular}{c c c c c c} 
         \toprule
-        \textbf{\#} & $\mathbf{\overline{\mathrm{DNBR}}}$ & $\mathbf{\sigma(\mathrm{DNBR})}$ &  $\mathbf{\mathrm{DNBR}_\mathrm{min}}$ & $Z_\mathrm{CHF} < 250\,\mathrm{cm}$ & $\mathrm{SCH}_\mathrm{CHF}$ interno \\
+        % \textbf{\#} & $\mathbf{\overline{\mathrm{DNBR}}}$ & $\mathbf{\sigma(\mathrm{DNBR})}$ &  $\mathbf{\mathrm{DNBR}_\mathrm{min}}$ & $Z_\mathrm{CHF} < 250\,\mathrm{cm}$ & $\mathrm{SCH}_\mathrm{CHF}$ interno \\
+        \textbf{\#} & $\bm{\overline{\mathrm{DNBR}}}$ & $\bm{\sigma(\mathrm{DNBR})}$ &  $\bm{\mathrm{DNBR}_\mathrm{min}}$ & \textbf{Z entrada} & \textbf{SCH int.} \\ \hline
         1 & $0.651$ & $0.329$ & $1.266$ & 89 & 10 \\
         2 & $0.687$ & $0.403$ & $1.442$ & 72 & 6  \\
         3 & $0.512$ & $0.393$ & $1.248$ & 97 & 26 \\
@@ -346,35 +347,39 @@ En la tabla \ref{tab:lfdnn_dnbrmin} se presentan los resultados de las distintas
 
 Luego se procedió a analizar en qué condiciones está prediciendo el modelo CHF. En la figura \ref{fig:lfdnn_chf_gx} se tiene para el modelo \#4 los gráficos de CHF frente a flujo másico y título termodinámico. Los valores de flujo másico y título termodinámico corresponden al punto en ese ensayo en el que el modelo obtuvo el menor CHF. Lo que se observa es preocupante. El modelo predice valores muy bajos de CHF para condiciones subenfriadas. Esto es algo definitivamente no físico y un resultado no deseado. El resto de modelos tienen comportamiento similar. 
 
-Entonces se propuso evaluar la generalización del modelo con el flujo másico y el título termodinámico. En la figura \ref{fig:lfdnn_chf_generalizacion} se presenta este análisis. Se filtraron los datos de entrenamiento de Groeneveld para considerar presiones y relaciones $\nicefrac{L}{D}$ similares a las del conjunto de COBRA3-CP, y luego se muestreo por fuera de los límites de flujo másico y título termodinámico. Los resultados explican fehacientemetne porque se tenía en la figura \ref{fig:lfdnn_chf_gx} una relación no física específicamente con el título termodinámico. Los modelos en su conjunto de entrenamiento no tiene datos para condiciones subenfriadas, y su extrapolación en esa zona es hacia valores de CHF bajos. Este comportamiento requiere de una corrección.
+Entonces se propuso evaluar la generalización del modelo con el flujo másico y el título termodinámico. En la figura \ref{fig:lfdnn_chf_generalizacion} se presenta este análisis. Se filtraron los datos de entrenamiento de Groeneveld para considerar presiones y relaciones $\nicefrac{L}{D}$ similares a las del conjunto de COBRA3-CP, y luego se muestreo por fuera de los límites de flujo másico y título termodinámico. Los resultados explican fehacientemente porque se tenía en la figura \ref{fig:lfdnn_chf_gx} una relación no física específicamente con el título termodinámico. Los modelos en su conjunto de entrenamiento no tiene datos para condiciones subenfriadas, y su extrapolación en esa zona es hacia valores de CHF bajos. Este comportamiento requiere de una corrección.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{Figures/chf_lfdnn_gx_caso_mal.png}
-    \caption{Relación del CHF predicho con el flujo másico y el título, según el punto predicho por el modelo LFDNN \#4. TRAIN y TEST son los conjuntos de entrenamiento y evaluación correspondientes a la \texttt{HFDNN}, divididos tal que en evaluación se tienen los ensayos de menor flujo másico.}
+    \caption{Relación del CHF predicho con el flujo másico y el título, según el punto predicho por el modelo \texttt{LFDNN} \#4. TRAIN y TEST son los conjuntos de entrenamiento y evaluación correspondientes a la \texttt{HFDNN}, divididos tal que en evaluación se tienen los ensayos de menor flujo másico.}
     \label{fig:lfdnn_chf_gx}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{Figures/chf_lfdnn_generalizacion.png}
-    \caption{Evaluación de la generalización de la LFDNN respecto del flujo másico y el título termodinámico.}
+    \caption{Evaluación de la generalización de la \lfdnn{} respecto del flujo másico y el título termodinámico.}
     \label{fig:lfdnn_chf_generalizacion}
 \end{figure}
 
-Para solventar esta dificultad del modelo en la zona subenfriada se propuso una condición de monotoneidad de la derivada del CHF y el título termodinámico. Entonces, se obtuvo un modelo de PINN para la \texttt{LFDNN}. Se analizó el impacto de esta implementación en una arquitectura de $64\times 3$, con al misma metodología que las arquitecturas anteriores. Se entrenaron tres redes, variando el valor del peso de la pérdida de la monotonicidad $\lambda$ entre $0.01$, $0.1$ y $1$. Esto permite evaluar el impacto de qué tanto se impone esta condición frente a los datos.
+Para solventar esta dificultad del modelo en la zona subenfriada se propuso una condición de monotoneidad negativa de la derivada del CHF y el título termodinámico, es decir un modelo de PINN para la \lfdnn{} que denotaremos \lfpinn{}. Esta incorporación se realizó modificando el cálculo de la función de pérdida, según la ecuación \ref{eq:lfpinn_loss},
+\begin{equation}
+    \mathcal{L} = \mathrm{MSE}(\log \mathrm{CHF}) \;+\; \lambda \cdot \frac{1}{\sum w}\sum_i \left[w_i\,\mathrm{ReLU}\!\left(\frac{\partial \log \mathrm{CHF}}{\partial x}\Big|_i\right)\right]^2.
+    \label{eq:lfpinn_loss} 
+\end{equation}
+Los término $w$ y $w_i$ representan la máscara aplicada por la condición de monotonicidad sobre los puntos de colocación, según en qué región del dominio de las variables de entrada se debe aplicar. En particular, en este caso se diseñó el conjunto de puntos de colocación para la región subenfriada, con valores de presión y $\nicefrac{L}{D_h}$ en los rangos de los ensayos de COBRA3-CP. $\lambda$ es el peso atribuido a la condición de monotonicidad. 
 
+Se analizó el impacto de esta implementación en una arquitectura de $64\times 3$, con al misma metodología que las arquitecturas anteriores. Se entrenaron tres redes, variando el valor de $\lambda$ entre $0.01$, $0.1$ y $1$. Esto permite evaluar el impacto de qué tanto se impone esta condición frente a los datos.
 En la tabla \ref{tab:lfdnn_arqs_comparativa} se presenta la comparativa de las métricas estadísticas sobre los conjuntos de ensayos en un tubo. Esto permite verificar que la condición agregada no perjudica al modelo dentro del conjunto que busca representar.
-\textbf{ANALISIS DE R2 Y RMSE}
-
-Luego en la tabla \ref{tab:lfdnn_dnbrmin_comp} se comparan los valores de media y desvío estándar del DNBR, el $\mathrm{DNBR}_\mathrm{min}$ y los puntos predichos en la región de entrada y en subcanales interiores.
+Se obtiene que los modelos mantienen su precisión respecto de los ensayos de un tubo. La diferencia en RMSE es de menos del $2\%$ respecto del modelo base, indicando que no se está realizando una corrupción del modelo al agregar la monotonicidad.
 
 \begin{table}[h]
 	\centering
 	\caption{Arquitecturas de \texttt{LFDNN} propuestas y métricas sobre conjuntos de entrenamiento y evaluación de ensayos en un tubo.}
 	\begin{tabular}{c c c c c c} 
         \toprule
-        \multirow{2}{*}{\textbf{Arquitectura}} & \multirow{2}{*}{$\mathbf{\lambda}$} & \multicolumn{2}{c}{\textbf{Entrenamiento}} & \multicolumn{2}{c}{\textbf{Evaluación}} \\
+        \multirow{2}{*}{\textbf{Arquitectura}} & \multirow{2}{*}{$\bm{\lambda}$} & \multicolumn{2}{c}{\textbf{Entrenamiento}} & \multicolumn{2}{c}{\textbf{Evaluación}} \\
         & & $\mathbf{R^2}$ & \textbf{RMSE} & $\mathbf{R^2}$ & \textbf{RMSE} \\ \hline
         Base                    & -      & $0.9657$ & $296.1$ & $0.9657$ & $294.3$ ($+4.2\%$) \\
         \multirow{3}{*}{PINN}   & $0.01$ & $0.9624$ & $310.0$ & $0.9642$ & $300.9$ ($+4.1\%$) \\
@@ -408,12 +413,15 @@ Luego en la tabla \ref{tab:lfdnn_dnbrmin_comp} se comparan los valores de media 
 %   $\lambda$ = 0.1  +0.80%
 %   $\lambda$ = 1    +1.61%
 
-\begin{table}[h]
+
+Luego en la tabla \ref{tab:lfdnn_dnbrmin_comp} se comparan los valores de media y desvío estándar del DNBR, el $\mathrm{DNBR}_\mathrm{min}$ y los puntos predichos en la región de entrada y en subcanales interiores. Se obtiene una mejora considerable en todos los modelos PINN, indicando que la condición aplicada mejora el modelo para condiciones subenfriadas. Los valores de DNBR quedan prácticamente centrados y su desvío estándar se redujo a la mitad. En cuanto al $\mathrm{DNBR}_\mathrm{min}$ no se obtuvo una mejora, pero esto es debido al método de cálculo del mismo y la subpredicción no física del DNBR con el modelo base. La cantidad de predicciones en la región de entrada se reduce de casi el $50\%$ de los ensayso a menos del $7\%$. En cuanto a las predicciones en subcanales internos, se obtiene un aumento, aunque se mantiene en menos de $15\%$ de los ensayos. La conclusión es que la aplicación de la monotonicidad mejora la generalización del modelo a la aplicación de interés.
+
+\begin{table}[H]
 	\centering
 	\caption{Arquitecturas de \texttt{LFDNN} propuestas y métricas sobre ensayos de bundle de la \cna{}.}
 	\begin{tabular}{c c c c c c c} 
         \toprule
-        \textbf{Arq.} & $\bm{\lambda}$ & $\bm{\overline{\mathrm{DNBR}}}$ & $\bm{\sigma(\mathrm{DNBR})}$ &  $\bm{\mathrm{DNBR}_\mathrm{min}}$ & \textbf{Z entrada} & \textbf{SCH int.} \\
+        \textbf{Arq.} & $\bm{\lambda}$ & $\bm{\overline{\mathrm{DNBR}}}$ & $\bm{\sigma(\mathrm{DNBR})}$ &  $\bm{\mathrm{DNBR}_\mathrm{min}}$ & \textbf{Z entrada} & \textbf{SCH int.} \\ \hline
         Base    & -      & $0.687$ & $0.403$ & $1.442$ & 72 & 6  \\
         \multirow{3}{*}{PINN} 
                 & $0.01$ & $1.061$ & $0.219$ & $1.470$ & 10 & 14 \\
@@ -424,11 +432,22 @@ Luego en la tabla \ref{tab:lfdnn_dnbrmin_comp} se comparan los valores de media 
 	\label{tab:lfdnn_dnbrmin_comp}
 \end{table}
 
+Manteniendo el criterio empleado para evaluar la predicción de los modelos base, se graficó la relación del CHF predicho con el flujo másico y el título termodinámico para el modelo \lfpinn{} con $\lambda=0.1$ en la figura \ref{fig:lfdnn_chf_gx_mon}. Se observa que se predicen unos pocos casos de CHF en región subenfriada, indicando una mejora considerable del modelo respecto de su versión base. Adicionalmente, no se observan valores de CHF tendiendo a $0$ como en al figura \ref{fig:lfdnn_chf_gx}.
+Luego en la figura \ref{fig:lfdnn_chf_generalizacion_mono} se presenta la evaluación de la generalización del modelo respecto del flujo másico y el título termodinámico. Se observa que el modelo ahora presenta un aumento del CHF al reducir el título termodinámico en condiciones subenfriadas. Esto es el resultado esperado y reforzado por la monotonicidad aplicada. Se observa una reducción del CHF predicho en la región cercana a $x=0$, lo que se debe a los ensayos disponibles en un tubo para condiciones subenfriadas. Se hayó que se tienen unos pocos ensayos de un tubo en condiciones subenfriadas pero con longitud calefaccionada muy por debajo de las de aplicación en este trabajo. Su efecto queda compensado por la condición de monotonicidad y los puntos de colocación durante el entrenamiento. Una posible mejora a futuro es realizar un filtrado del conjunto de ensayos de Groeneveld para que las variables estén en el rango de aplicación final.
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{Figures/chf_lfdnn_gx_mon.png}
     \caption{Relación del CHF predicho con el flujo másico y el título, según el punto predicho por el modelo \texttt{LFDNN} con monotonicidad con $\lambda=0.1$. TRAIN y TEST son los conjuntos de entrenamiento y evaluación correspondientes a la \texttt{HFDNN}, divididos tal que en evaluación se tienen los ensayos de menor flujo másico.}
     \label{fig:lfdnn_chf_gx_mon}
+\end{figure}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Figures/chf_lfdnn_generalizacion_mono.png}
+    \caption{Evaluación de la generalización de la \lfpinn{} respecto del flujo másico y el título termodinámico, según $\lambda$.}
+    \label{fig:lfdnn_chf_generalizacion_mono}
 \end{figure}
 
 
