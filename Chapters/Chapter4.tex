@@ -450,46 +450,79 @@ Luego en la figura \ref{fig:lfdnn_chf_generalizacion_mono} se presenta la evalua
     \label{fig:lfdnn_chf_generalizacion_mono}
 \end{figure}
 
+Por último, en la figura \ref{fig:lfdnn_chf_pred_mono} se grafica el CHF predicho contra medido y el DNBR en cada ensayo para el modelo con $\lambda=0.1$. Se observa una predicción centrada, con algunos outliers en el conjunto de evaluación. Estos casos son los que están por fuera del rango de los ensayos en un tubo, y la red debe extrapolar para estimar CHF. A excepción de estos casos, la predicción del modelo se encuentra contenida en el mismo rango que la metodología actual propuesta por INVAP, que recurre además de la LUT de Groeneveld a factores de centrado y corrección desarrollados específicamente para lograr una mejor estimación del CHF en el bundle de la \cna{}, descriptos en la sección \ref{sec:app_tmf}. Esto denota que ya el modelo de baja fidelidad logra una precisión incluso comparable a la metodología actual, sin haber utilizado datos de los ensayos en la geometría específica. 
 
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Figures/chf_lfdnn_pred_mono.png}
+    \caption{Predicción de CHF contra medido y $\mathrm{DNBR}$ para cada ensayo, para modelo \lfpinn{} con $\lambda=0.1$.}
+    \label{fig:lfdnn_chf_pred_mono}
+\end{figure}
+
+\newpage
 \subsection{Análisis de arquitectura de multifidelidad}
-Para realizar el análisis sobre la arquitectura del modelo, se planteó emplear solo las variables utilizadas tradicionalmente en la predicción de CHF por las LUT de Groeneveld. Estas son el flujo másico, la presión, el título termodinámico y la relación de largo calefaccionado con diámetro hidráulico. Las primeras tres son las variables necesarias para interpolar dentro de la LUT, mientras que la cuarta permite transformar la predicción a la geometría de \textit{bundle}. Vale aclarar que Groeneveld propone factores de corrección que utilizan algunas de las variables adicionales incorporadas en este trabajo. Para más detalles, ver el apéndice \ref{appendix_groeneveld}.
+Para realizar el análisis de la arquitectura del modelo, se planteó dividir entre la aplicación de multifidelidad y luego de información física. En esta sección se estudio el efecto de la primera. Sólo se utilizaron las variables base, tradicionales en la predicción de CHF por las LUT de Groeneveld y adopatadas por la \lfpinn{}.
+Estas son el flujo másico, la presión, el título termodinámico y la relación de largo calefaccionado con diámetro hidráulico. Las primeras tres son las variables necesarias para interpolar dentro de la LUT, mientras que la cuarta permite transformar la predicción a la geometría de \textit{bundle}. Vale aclarar que Groeneveld propone factores de corrección que utilizan algunas de las variables adicionales incorporadas en este trabajo. Para más detalles, ver el apéndice \ref{appendix_groeneveld}.
 
 Las arquitecturas comparadas son las siguientes:
 \begin{itemize}
     \item DNN tradicional entrenada directamente sobre las simulaciones con \break\mbox{COBRA3-CP} de los ensayos de la Universidad de Columbia. Constituye un \textit{baseline} para determinar si las arquitecturas más complejas conllevan una mejora de precisión. También debe evaluarse su comportamiento en regiones no entrenadas y ponerse en tela de juicio si sus predicciones tienen sustento físico.
     % \item DNN tradicional, entrenada directamente sobre las simulaciones con \nobreak COBRA3-CP de los ensayos de la Universidad de Columbia.
-    \item \texttt{LFDNN} entrenada sobre los ensayos en un tubo utilizados para conformar las LUT 2006 de Groeneveld. Esto permite tener un \textit{baseline} del aporte de la predicción de CHF en un tubo y de su contribución a la arquitectura de multifidelidad.
-    \item \texttt{MFDNN}, conjunción de la \texttt{LFDNN} y la \texttt{HFDNN}. Esta última, entrenada sobre las simulaciones de COBRA3-CP de los ensayos de la Universidad de Columbia, y con la predicción de la \texttt{LFDNN} como entrada adicional.
-    \item \texttt{MFPINN}, igual a la \texttt{MFDNN}, pero con la aplicación de las relaciones físicas descriptas en la sección \ref{sec:chf_arq}.
+    \item \lfpinn{} entrenada sobre los ensayos en un tubo utilizados para conformar las LUT 2006 de Groeneveld. Esto permite tener un \textit{baseline} del aporte de la predicción de CHF en un tubo y de su contribución a la arquitectura de multifidelidad.
+    \item \mfdnn{}, conjunción de la \lfpinn{} y la \hfdnn{}. Esta última, entrenada sobre las simulaciones de COBRA3-CP de los ensayos de la Universidad de Columbia, y con la predicción de la \lfpinn{} como entrada adicional.
+    % \item \texttt{MFPINN}, igual a la \texttt{MFDNN}, pero con la aplicación de las relaciones físicas descriptas en la sección \ref{sec:chf_arq}.
 \end{itemize}
 
-Para lograr una evaluación que no se limitara a la capacidad de los modelos de representar la información con la que fueron entrenados, se planteó entrenarlos con los casos menos exigentes desde el punto de vista del CHF. Entonces, para dividir entre los conjuntos de entrenamiento y prueba, se utilizaron en entrenamiento aquellos ensayos con un flujo másico superior a $4\,000\,\nicefrac{\mathrm{kg}}{\mathrm{m}^2\mathrm{s}}$. La división se grafica en la figura \ref{fig:chf_div_train_test}. Adicionalmente al flujo másico, se presenta contra el título termodinámico, donde se observa que la división también implica dejar en evaluación a los ensayos que presentaron CHF a mayor título.
+Para lograr una evaluación que no se limitara a la capacidad de los modelos de representar la información con la que fueron entrenados, se planteó entrenarlos con los casos menos exigentes desde el punto de vista del CHF. Entonces, para dividir entre los conjuntos de entrenamiento y prueba, se utilizaron en entrenamiento aquellos ensayos con un flujo másico superior a $4\,000\,\nicefrac{\mathrm{kg}}{\mathrm{m}^2\mathrm{s}}$. La división se grafica en la figura \ref{fig:chf_div_train_test}. Adicionalmente al flujo másico, se presenta contra el título termodinámico, donde se observa que la división también implica dejar en evaluación a los ensayos que presentaron CHF a mayor título. Esto permite evaluar el funcionamiento del modelo al extrapolar hacia condiciones más exigentes de CHF, similar a lo realizado para evaluar y definir la \lfpinn{}.
 
-\begin{figure}[hbtp]
+\begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{Figures/chf_division_train_test.png}
     \caption{División de los datos de CHF de la Universidad de Columbia en entrenamiento y evaluación, según flujo másico. Los ejes de flujo másico y título termodinámico corresponden a los valores promedios de la sección de ensayo a la salida.}
     \label{fig:chf_div_train_test}
 \end{figure}
 
+Para evitar que los resultados de los modelos evaluados tengan una dependencia con el proceso estocástico de entrenamiento, se entrenaron 50 instancias de cada modelo. De esta forma, se comparan las métricas estadísticas y de $\mathrm{DNBR}$ medias de cada modelo.
+Las arquitecturas se evaluaron en su predicción de CHF de forma tradicional, y adicionalmente por medio del $\mathrm{DNBR}_\mathrm{min}$, según lo explicado en la sección \ref{sec:chf_eval}. En la tabla \ref{tab:mf_estadistica} se comparan los valores de $\mathrm{R}^2$ y de RMSE para la DNN, la \lfpinn{} y la \mfdnn{}. 
+\textbf{ANALISIS DE R2 Y RMSE}
 
-Las arquitecturas se evaluaron en su predicción de CHF de forma tradicional, y adicionalmente por medio del $\mathrm{DNBR}_\mathrm{min}$, según lo explicado en la sección \ref{sec:chf_eval}.
+\begin{table}[h]
+	\centering
+	\caption{Evaluación por métricas estadísticas de la predicción sobre el conjunto de ensayos de la Universidad de Columbia.}
+	\begin{tabular}{p{2cm} l c c} 
+        \toprule
+        \textbf{Modelo} & \textbf{Conjunto} & $\bm{\mathrm{R}^2}$ & $\bm{\mathrm{RMSE}}$ \\ \hline
+        \multirow{2}{*}{DNN}     
+                & Entrenamiento & &  \\
+                & Evaluación    & &  \\
+        \multirow{2}{=}{\lfpinn{} $\lambda=0.1$}     
+                & Entrenamiento & &  \\
+                & Evaluación    & &  \\
+        \multirow{2}{*}{\mfdnn{}}     
+                & Entrenamiento & &  \\
+                & Evaluación    & &  \\
+		\bottomrule
+	\end{tabular}
+	\label{tab:mf_estadistica}
+\end{table}
+
+En la tabla \ref{tab:mf_dnbr} se comparan, para los mismos modelos, el factor de centrado, la media y desvío estándar del DNBR y el $\mathrm{DNBR}_\mathrm{min}$. Es importante aclarar que el factor de centrado se calculó en función del conjunto de entrenamiento y luego se aplicó al conjunto de evaluación. De esta forma se tiene un cómputo análogo al que se realiza en inferencia. \textbf{ANALISIS DE DNBRMIN}
 
 \begin{table}[H]
 	\centering
-	\caption{}
-	\begin{tabular}{c c c c c c} 
+	\caption{Evaluación por métricas de predicción de $\mathrm{DNBR}$ sobre el conjunto de ensayos de la Universidad de Columbia.}
+	\begin{tabular}{p{2cm} l c c c c} 
         \toprule
-        \textbf{Modelo} & \textbf{Conjunto} & $f_c$ & $\overline{\mathrm{DNBR}}$ & $\sigma(\mathrm{DNBR})$ & $\mathrm{DNBR}_\mathrm{min}$ \\ \hline
+        \textbf{Modelo} & \textbf{Conjunto} & $\bm{f_c}$ & $\bm{\overline{\mathrm{DNBR}}}$ & $\bm{\sigma(\mathrm{DNBR})}$ & $\bm{\mathrm{DNBR}_\mathrm{min}}$ \\ \hline
         \multirow{2}{*}{DNN}     
                 & Entrenamiento & \multirow{2}{*}{}
                                         &  &  &  \\
                 & Evaluación    &       &  &  &  \\
-        \multirow{2}{*}{LFDNN}     
-                & Entrenamiento & \multirow{2}{*}{}
-                                        &  &  & \\
-                & Evaluación    &       &  &  & \\
-        \multirow{2}{*}{MFDNN}     
+        \multirow{2}{=}{\lfdnn{} $\lambda=0.1$}     
+                & Entrenamiento & \multirow{2}{*}{0.916}
+                                        & $1.000$ & $0.152$ & $1.300$ \\
+                & Evaluación    &       & $0.895$ & $0.240$ & $1.369$ \\
+        \multirow{2}{*}{\mfdnn{}}     
                 & Entrenamiento & \multirow{2}{*}{}
                                         &  &  &  \\
                 & Evaluación    &       &  &  &  \\
@@ -499,81 +532,22 @@ Las arquitecturas se evaluaron en su predicción de CHF de forma tradicional, y 
         %         & Evaluación    &       &  &  &  \\
 		\bottomrule
 	\end{tabular}
-	\label{tab:}
+	\label{tab:mf_dnbr}
 \end{table}
 
-\subsection{Análisis de arquitectura informada por física}
+En la figura \ref{fig:chf_dnbrmin_dist} se presenta la distribución de densidad de probabilidad de\break $\mathrm{DNBR}_\mathrm{min}$ de cada modelo, para los conjuntos de entrenamiento y de evaluación. Ambos modelos presentan buen comportamiento en entrenamiento, algo no sorprendente a esta altura del trabajo. En evaluación los resultados dan luz del impacto de tomar como entrada la predicción informada de la \lfpinn{}. El modelo \mfdnn{} presenta una distribución con menor desvío estándar y concentrada, mientras que el modelo de DNN tradicional presenta una distribución casi uniforme entre $1.1$ y $1.4$. Esto da cuenta de que el modelo \mfdnn{} es más concistente con su predicción y tiene menos dependencia de los procesos estocásticos de optimización. En particular para esta aplicación esto es un rasgo positivo, ya que implica que el modelo debe respetar condiciones de fondo que la aleatoreidad no puede mover, es decir el modelo busca representar la física.
 
-\begin{table}[H]
-	\centering
-	\caption{}
-	\begin{tabular}{c | C{1cm} | C{1cm} | C{1cm} | C{2cm} | C{2cm}} 
-        \toprule
-        \multirow{2}{*}{\textbf{Modelo MFPINN}} & \multicolumn{3}{c|}{\textbf{Monotonicidad}} & \multirow{2}{=}{\centering \textbf{Derivada cruzada}} & \multirow{2}{=}{\centering \textbf{Derivada segunda}} \\
-        & x & G & p & & \\ \hline
-        a & X & X & X & X & X \\
-        b & X & X & X &   &   \\
-        b1& X &   &   &   &   \\
-        b2&   & X &   &   &   \\
-        b3&   &   & X &   &   \\
-        c &   &   &   & X &   \\
-        d &   &   &   &   & X \\
-		\bottomrule
-	\end{tabular}
-	\label{tab:}
-\end{table}
-
-\begin{table}[H]
-	\centering
-	\caption{}
-	\begin{tabular}{c c c c c c} 
-        \toprule
-        \textbf{Modelo} & \textbf{Conjunto} & $f_c$ & $\overline{\mathrm{DNBR}}$ & $\sigma(\mathrm{DNBR})$ & $\mathrm{DNBR}_\mathrm{min}$ \\ \hline
-        \multirow{2}{*}{A}     
-                & Entrenamiento & \multirow{2}{*}{}
-                                        &  &  &  \\
-                & Evaluación    &       &  &  &  \\
-        \multirow{2}{*}{B}     
-                & Entrenamiento & \multirow{2}{*}{}
-                                        &  &  &  \\
-                & Evaluación    &       &  &  &  \\
-        \multirow{2}{*}{B1}     
-                & Entrenamiento & \multirow{2}{*}{}
-                                        &  &  &  \\
-                & Evaluación    &       &  &  &  \\
-        \multirow{2}{*}{B2}     
-                & Entrenamiento & \multirow{2}{*}{}
-                                        &  &  &  \\
-                & Evaluación    &       &  &  &  \\
-        \multirow{2}{*}{B3}     
-                & Entrenamiento & \multirow{2}{*}{}
-                                        &  &  &  \\
-                & Evaluación    &       &  &  &  \\
-        \multirow{2}{*}{C}     
-                & Entrenamiento & \multirow{2}{*}{}
-                                        &  &  &  \\
-                & Evaluación    &       &  &  &  \\
-        \multirow{2}{*}{D}     
-                & Entrenamiento & \multirow{2}{*}{}
-                                        &  &  &  \\
-                & Evaluación    &       &  &  &  \\
-		\bottomrule
-	\end{tabular}
-	\label{tab:}
-\end{table}
-
-
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
     
-    \begin{subfigure}[b]{0.48\textwidth}
+    \begin{subfigure}[b]{0.60\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Figures/chf_distribucion_dnn.png}
         \caption{Modelo de DNN tradicional.}
         \label{fig:chf_dnbrmin_dist_dnn}
     \end{subfigure}
-    \hfill
-    \begin{subfigure}[b]{0.48\textwidth}
+    % \hfill
+    \begin{subfigure}[b]{0.60\textwidth}
         \centering
         \includegraphics[width=\textwidth]{Figures/chf_distribucion_mfdnn.png}
         \caption{Modelo de MFDNN.}
@@ -587,16 +561,94 @@ Las arquitecturas se evaluaron en su predicción de CHF de forma tradicional, y 
     %     % \label{fig:chf_dnbrmin_dist}
     % \end{subfigure}
     % \hfill
-    \begin{subfigure}[b]{0.48\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{example-image-b}
-        \caption{}
-        % \label{fig:chf_dnbrmin_dist}
-    \end{subfigure}
+    % \begin{subfigure}[b]{0.48\textwidth}
+    %     \centering
+    %     \includegraphics[width=\textwidth]{example-image-b}
+    %     \caption{}
+    %     % \label{fig:chf_dnbrmin_dist}
+    % \end{subfigure}
 
     \caption{Distribución de probabilidad de $\mathrm{DNBR}_\mathrm{min}$ para \mbox{$N=50$} modelos entrenados de cada tipo.}
     \label{fig:chf_dnbrmin_dist}
 \end{figure}
+
+\subsection{Análisis de arquitectura informada por física}
+Para el análisis de arquitectura informada por física, se realizó un enfoque de agregación de las condiciones para poder evaluar el efecto aislado de cada una sobre el modelo. Adicionalmente se entrenó el modelo con todas las condiciones en conjunto. En la tabla \ref{tab:mfpinn_arqs} se presentan la nomenclatura de las variantes evaluadas.
+El punto de comparación en esta instancia es la red \mfdnn{} evaluada en la sección previa.
+Para realizar la comparación se dispuso el entrenamiento de la siguiente forma. Se entrenó una red \mfdnn con optimizador Adam durante 500 épocas. De esta forma las redes \mfpinn{} tienen el mismo punto de partida y no dependen fuertemente del proceso estocástico detras del optimizador para el primer acercamiento a la solución. Luego, se entrena durante otras 500 épocas cada variante, pero con optimizador L-BFGS.
+
+\begin{table}[H]
+	\centering
+	\caption{Variantes del modelo \mfpinn{} evaluadas.}
+	\begin{tabular}{c | C{1cm} | C{1cm} | C{1cm} | C{2cm} | C{2cm}} 
+        \toprule
+        \multirow{2}{*}{\textbf{Modelo \mfpinn{}}} & \multicolumn{3}{c|}{\textbf{Monotonicidad}} & \multirow{2}{=}{\centering \textbf{Derivada cruzada}} & \multirow{2}{=}{\centering \textbf{Derivada segunda}} \\
+        & x & G & p & & \\ \hline
+        A & $\blacksquare$ & $\blacksquare$ & $\blacksquare$ & $\blacksquare$ & $\blacksquare$ \\
+        B & $\blacksquare$ & $\blacksquare$ & $\blacksquare$ &                &   \\
+        B1& $\blacksquare$ &                &                &                &   \\
+        B2&                & ${\blacksquare}^{\dagger}$ &                &                &   \\
+        B3&                &                & $\blacksquare$ &                &   \\
+        C &                &                &                & $\blacksquare$ &   \\
+        D &                &                &                &                & $\blacksquare$ \\
+		\bottomrule
+        \multicolumn{6}{l}{
+            $\dagger$ \small{Sólo se aplica la monotonicidad de G positiva en $(x<0.15)\cup(G<3\,000\,\nicefrac{\mathrm{kg}}{\mathrm{m}^2\mathrm{s}})$.}
+        }
+	\end{tabular}
+	\label{tab:mfpinn_arqs}
+\end{table}
+
+En la tabla \ref{tab:mfpinn_arqs_dnbr} se compara el rendimiento de los distintos modelos en cuanto a predicción de DNBR. Nuevamente, el factor de centrado fue calculado sobre el conjunto de entrenamiento y aplicado al de evaluación, análogamente a lo que se realiza en inferencia.
+
+\begin{table}[H]
+	\centering
+	\caption{Resultados de predicción de CHF para las arquitecturas evaluadas de \mfpinn{}.}
+	\begin{tabular}{c c c c c c} 
+        \toprule
+        \textbf{Modelo} & \textbf{Conjunto} & $f_c$ & $\overline{\mathrm{DNBR}}$ & $\sigma(\mathrm{DNBR})$ & $\mathrm{DNBR}_\mathrm{min}$ \\ \hline
+        \multirow{2}{*}{\mfdnn{}}     
+                & Entrenamiento & \multirow{2}{*}{$0.988$}
+                                        & $1.000$ & $0.029$ & $1.058$ \\
+                & Evaluación    &       & $1.051$ & $0.101$ & $1.252$ \\
+        \multirow{2}{*}{A}     
+                & Entrenamiento & \multirow{2}{*}{$1.000$}
+                                        & $1.000$ & $0.021$ & $1.041$ \\
+                & Evaluación    &       & $1.055$ & $0.123$ & $1.298$ \\
+        \multirow{2}{*}{B}     
+                & Entrenamiento & \multirow{2}{*}{$1.000$}
+                                        & $1.000$ & $0.020$ & $1.040$ \\
+                & Evaluación    &       & $0.754$ & $0.295$ & $1.318$ \\
+        \multirow{2}{*}{B1}     
+                & Entrenamiento & \multirow{2}{*}{$1.000$}
+                                        & $1.000$ & $0.021$ & $1.041$ \\
+                & Evaluación    &       & $0.929$ & $0.169$ & $1.263$ \\
+        \multirow{2}{*}{B1}     
+                & Entrenamiento & \multirow{2}{*}{$1.000$}
+                                        & $1.000$ & $0.021$ & $1.041$ \\
+                & Evaluación    &       & $0.944$ & $0.167$ & $1.273$ \\
+        \multirow{2}{*}{B2}     
+                & Entrenamiento & \multirow{2}{*}{$1.000$}
+                                        & $1.000$ & $0.021$ & $1.041$ \\
+                & Evaluación    &       & $0.944$ & $0.167$ & $1.273$ \\
+        \multirow{2}{*}{B3}     
+                & Entrenamiento & \multirow{2}{*}{$1.000$}
+                                        & $1.000$ & $0.019$ & $1.038$ \\
+                & Evaluación    &       & $0.875$ & $0.228$ & $1.326$ \\
+        \multirow{2}{*}{C}     
+                & Entrenamiento & \multirow{2}{*}{$1.000$}
+                                        & $1.000$ & $0.022$ & $1.043$ \\
+                & Evaluación    &       & $0.989$ & $0.137$ & $1.260$ \\
+        \multirow{2}{*}{D}     
+                & Entrenamiento & \multirow{2}{*}{$1.000$}
+                                        & $1.000$ & $0.021$ & $1.041$ \\
+                & Evaluación    &       & $1.009$ & $0.104$ & $1.215$ \\
+		\bottomrule
+	\end{tabular}
+	\label{tab:mfpinn_arqs_dnbr}
+\end{table}
+
+
 
 \newpage
 \subsection{Análisis de variables de entrada}
@@ -605,6 +657,8 @@ Las variables de entrada propuestas en la sección \ref{sec:chf_pipeline} fueron
 
 Las primeras cuatro variables son las clásicas utilizadas por la LUT de Groeneveld, y se pueden considerar como las más importantes para la predicción de CHF. Las cuatro variables restantes fueron propuestas en este trabajo, y se debe evaluar su contribución al modelo.
 
+
+\subsection{Modelos finales}
 
 
 % \subsection{Optimización de hiperparámetros}

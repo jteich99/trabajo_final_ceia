@@ -348,7 +348,7 @@ donde los $\lambda$ son los factores de peso de las PDE. Estos se optimizaron pa
 Para el entrenamiento del modelo, en primer lugar se entrena la \texttt{LFDNN} con sus datos. Su entrenamiento es estándar y puede realizarse con optimizador Adam y métrica MSE.
 Luego, con los pesos de la \texttt{LFDNN} congelados, se entrena la \texttt{HFPINN} con la estructura completa de la \texttt{MFPINN}. Se realizaron pruebas para determinar si era necesario, debido a las restricciones tipo PINN, un optimizador de segundo orden como L-BFGS \citep{liu1989lbfgs}. Sus resultados se exponen en el capítulo \ref{Chapter4}.
 
-Al igual que para el predictor de PLC, se realizó la optimización de los hiperparámetros de la arquitectura por medio de Optuna. Los resultados, junto al modelo final, se presentan en el capítulo \ref{Chapter4}. 
+% Al igual que para el predictor de PLC, se realizó la optimización de los hiperparámetros de la arquitectura por medio de Optuna. Los resultados, junto al modelo final, se presentan en el capítulo \ref{Chapter4}. 
 
 \subsection{Evaluación del modelo}
 \label{sec:chf_eval}
