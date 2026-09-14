@@ -3,31 +3,41 @@
 \chapter{Conclusiones} % Main chapter title
 
 \label{Chapter5} % Change X to a consecutive number; for referencing this chapter elsewhere, use \ref{ChapterX}
-Todos los capítulos deben comenzar con un breve párrafo introductorio que indique cuál es el contenido que se encontrará al leerlo.  La redacción sobre el contenido de la memoria debe hacerse en presente y todo lo referido al proyecto en pasado, siempre de modo impersonal.
+A continuación, se presentan las conclusiones del trabajo y las tareas disponibles a futuro para continuarlo.
 
 
-%----------------------------------------------------------------------------------------
-
-%----------------------------------------------------------------------------------------
-%	SECTION 1
-%----------------------------------------------------------------------------------------
 
 \section{Conclusiones generales }
 
-La idea de esta sección es resaltar cuáles son los principales aportes del trabajo realizado y cómo se podría continuar. Debe ser especialmente breve y concisa. Es buena idea usar un listado para enumerar los logros obtenidos.
+% La idea de esta sección es resaltar cuáles son los principales aportes del trabajo realizado y cómo se podría continuar. Debe ser especialmente breve y concisa. Es buena idea usar un listado para enumerar los logros obtenidos.
 
-En esta sección no se deben incluir ni tablas ni gráficos.
+% En esta sección no se deben incluir ni tablas ni gráficos.
 
-Algunas preguntas que pueden servir para completar este capítulo:
+% Algunas preguntas que pueden servir para completar este capítulo:
 
-\begin{itemize}
-\item ¿Cuál es el grado de cumplimiento de los requerimientos?
-\item ¿Cuán fielmente se puedo seguir la planificación original (cronograma incluido)?
-\item ¿Se manifestó algunos de los riesgos identificados en la planificación? ¿Fue efectivo el plan de mitigación? ¿Se debió aplicar alguna otra acción no contemplada previamente?
-\item Si se debieron hacer modificaciones a lo planificado ¿Cuáles fueron las causas y los efectos?
-\item ¿Qué técnicas resultaron útiles para el desarrollo del proyecto y cuáles no tanto?
-\end{itemize}
+% \begin{itemize}
+% \item ¿Cuál es el grado de cumplimiento de los requerimientos?
+% \item ¿Cuán fielmente se puedo seguir la planificación original (cronograma incluido)?
+% \item ¿Se manifestó algunos de los riesgos identificados en la planificación? ¿Fue efectivo el plan de mitigación? ¿Se debió aplicar alguna otra acción no contemplada previamente?
+% \item Si se debieron hacer modificaciones a lo planificado ¿Cuáles fueron las causas y los efectos?
+% \item ¿Qué técnicas resultaron útiles para el desarrollo del proyecto y cuáles no tanto?
+% \end{itemize}
 
+A continuación, se presentan las conclusiones generales de los modelos desarrollados en el trabajo.
+
+\subsection{Estimación de PLC}
+Se propuso un modelo de aprendizaje profundo para la estimación del DNBR y la fracción de vacío en un canal refrigerante de la \cna{}. El modelo tiene como entradas los parámetros termohidráulicos del canal y los perfiles de potencia axial y por barra. Se optimizaron sus hiperparámetros y obtuvo el modelo final, con errores relativos menores al $1\%$. 
+
+Se desarrolló un lazo de cálculo análogo al utilizado con COBRA3-CP para la estimación de PLC con el modelo desarrollado. Se comparó con cálculos de PLC realizados sobre 100 casos de la vigente estrategia de recambio de combustibles de la \cna{}. Se obtuvieron cocientes entre valor predicho y real con media menor a $1.05$. 
+
+Para asegurar la estimación conservativa de la PLC, se propuso un factor multiplicativo de ajuste. Utilizando este factor, se obtuvieron los margenes perdidos por el uso de la herramienta con inteligencia artificial frente a utilizar COBRA3-CP. El margen medio perdido total en el reactor es de $0.71\%$, mientras que el máximo es $2.34\%$. 
+
+El tiempo de computo de la metodología propuesta es varios órdenes de magnitud menor a la predicción con COBRA3-CP. En términos cuantitativos, la aplicación de esta metodología representa una mejora en el tiempo de computo de aproximadamente $2\,000$ veces por fracción de vacío y $8\,500$ veces por DNB.
+
+Finalmente, se aplicó una arquitectura autoencoder para obtener el espacio latente de los perfiles de potencia axial y por barra. Los espacios latentes obtenidos permiten identificar las cualidades principales de los perfiles. Adicionalmente, se aplicó la reducción de dimensionalidad de los perfiles para modificar el vector de entrada a la DNN estimadora de DNBR y fracción de vacío. Se obtuvo una reducción del margen perdido en el caso de utilizar el espacio latente del perfil por barra, demostrando que las 37 componentes son altamente redundantes para este cálculo.
+
+
+\subsection{Estimación de CHF}
 
 %----------------------------------------------------------------------------------------
 %	SECTION 2
@@ -39,5 +49,7 @@ Algunas preguntas que pueden servir para completar este capítulo:
     \item Evaluar la optimización del predictor de CHF.
     \item 
 \end{itemize}
+
+MSS: Algo interesante a investigar sería la capacidad de reproducir peores casos. Es decir, si el que te da peor con la red es el que te da peor con COBRA. Sé que es difícil pero habría que mirarlo para ver si te sirve como filtro para saber cuáles casos calcular desúés con COBRA para afinar el lápiz. 
 
 Acá se indica cómo se podría continuar el trabajo más adelante.
