@@ -2,7 +2,7 @@
 \label{appendix_groeneveld}
 
 \section{Interpolación en la LUT}
-La LUT propuesta por Groeneveld es una tabla con tres dimensiones: la presión, el flujo másico y el título termodinámico. Para la versión 2006, se tiene una discretización de 15 puntos para la presión entre $100$ y $21\,000$ kPa. Para el flujo másico una discretización de 21 puntos entre $0$ y $8\,000\,\nicefrac{\mathrm{kg}}{\mathrm{m}^2 \mathrm{s}}$. Para el título termodinámico una discretización de 23 puntos entre $-0.5$ y $1$. Para obtener valores en puntos no tabulados se interpola linealmente. En la figura \ref{fig:groeneveld_interp} se esquematiza la interpolación en tres dimensiones.
+La LUT propuesta por Groeneveld es una tabla con tres dimensiones: la presión, el flujo másico y el título termodinámico. Para la versión 2006, se tiene una discretización de 15 puntos para la presión, entre $100$ y $21\,000$ kPa; de 21 puntos para el flujo másico, entre $0$ y $8\,000\,\nicefrac{\mathrm{kg}}{\mathrm{m}^2 \mathrm{s}}$; y de 23 puntos para el título termodinámico, entre $-0.5$ y $1$. Para obtener valores en puntos no tabulados se interpola linealmente. En la figura \ref{fig:groeneveld_interp} se esquematiza la interpolación en tres dimensiones.
 
 \begin{figure}[htbp]
 	\centering
@@ -15,7 +15,7 @@ La LUT propuesta por Groeneveld es una tabla con tres dimensiones: la presión, 
 \section{Factores de corrección}
 A continuación, se exponen los factores de corrección propuestos por Groeneveld con las LUT 1986 \citep{GROENEVELD1986}.
 \begin{itemize}
-    \item Factor de subcanal, expesado en la ecuación \ref{eq:groeneveld_k1}.
+    \item Factor de subcanal, expresado en la ecuación \ref{eq:groeneveld_k1}.
     \begin{equation}
         \label{eq:groeneveld_k1}
         K_1 = \begin{cases}
@@ -24,13 +24,13 @@ A continuación, se exponen los factores de corrección propuestos por Groenevel
         \end{cases}
     \end{equation}
 
-    \item Factor de bundle, expesado en la ecuación \ref{eq:groeneveld_k2}.
+    \item Factor de bundle, expresado en la ecuación \ref{eq:groeneveld_k2}.
     \begin{equation}
         \label{eq:groeneveld_k2}
         K_2 = \min{\left[ 0.8; 0.8\cdot \exp{\left(-0.5\cdot x^{\nicefrac{1}{3}} \right)}  \right]}
     \end{equation}
 
-    \item Factor de grilla de separadores, expesado en la ecuación \ref{eq:groeneveld_k3} con las definiciones de la ecuación \ref{eq:groeneveld_k3_ab}.
+    \item Factor de grilla de separadores, expresado en la ecuación \ref{eq:groeneveld_k3} con las definiciones de la ecuación \ref{eq:groeneveld_k3_ab}.
     \begin{equation}
         \label{eq:groeneveld_k3}
         K_3 = 1 + A \cdot \exp{\left( -B \cdot \frac{L_\mathrm{sp}}{D_h} \right)} 
@@ -40,14 +40,14 @@ A continuación, se exponen los factores de corrección propuestos por Groenevel
         A = 1.5\cdot k^{0.5}\cdot \left(\frac{G}{1000}\right)^{0.2} && B=0.1
     \end{align}
 
-    \item Factor de longitud calefaccionada, expesado en la ecuación \ref{eq:groeneveld_k4}.
+    \item Factor de longitud calefaccionada, expresado en la ecuación \ref{eq:groeneveld_k4}.
     \begin{align}
         \label{eq:groeneveld_k4}
         K_4 = \exp{\left[ \frac{D_h}{L} \exp{(2\alpha)} \right]} && \frac{L}{D_h}\geq 5
     \end{align}
     $\alpha$ es la fracción de vacío calculada según el modelo homogéneo.
 
-    \item Factor de perfil axial de potencia, expesado en la ecuación \ref{eq:groeneveld_k5}.
+    \item Factor de perfil axial de potencia, expresado en la ecuación \ref{eq:groeneveld_k5}.
     \begin{equation}
         \label{eq:groeneveld_k5}
         K_5 = \begin{cases}
@@ -55,11 +55,11 @@ A continuación, se exponen los factores de corrección propuestos por Groenevel
             1 & x < 0
         \end{cases}
     \end{equation}
-    $q_\mathrm{BLA}$ es el flujo de calor promedio sobre la longitud con ebullición, es decir desde $x=0$ hasta $x=x_\mathrm{CHF}$.
+    $q_\mathrm{BLA}$ es el flujo de calor promedio sobre la longitud con ebullición, es decir, desde $x=0$ hasta $x=x_\mathrm{CHF}$.
 \end{itemize}
 
-En particular, para la metodología actual de predicción de CHF en el bundle de la \cna{}, solo se utilizan los factores de subcanal $K_1$ y de perfil axial de potencia $K_5$. Adicionalmente se utilizan tres factores adicionales, explicados en la siguiente sección \ref{sec:app_tmf}.
+En particular, para la metodología actual de predicción de CHF en el bundle de la \cna{}, solo se utilizan los factores de subcanal $K_1$ y de perfil axial de potencia $K_5$. Adicionalmente, se utilizan tres factores propuestos por INVAP, explicados en la sección \ref{sec:app_tmf}.
 
 \section{Factores de corrección propuestos por INVAP}
 \label{sec:app_tmf}
-INVAP propuso en \citep{invapTMF1, invapTMF2} factores de corrección para mejorar la predicción de CHF por medio de las LUT, específicamente para el bundle de la \cna{}. Estos factores se plantearon como la exponencial de un polinómio de segundo grado, del cual se optimizaron los coeficientes para reducir la dependencia residual del CHF predicho con el flujo másico y el título termodinámico. Adicionalmente, se aplicó un factor de centrado, que permite luego aplicar el criterio de 95\% de probabilidad y confianza para el cálculo del $\mathrm{DNBR}_\mathrm{min}$, descripto en la sección \ref{sec:chf_eval}.
+INVAP propuso en \citep{invapTMF1, invapTMF2} factores de corrección para mejorar la predicción de CHF por medio de las LUT, específicamente para el bundle de la \cna{}. Estos factores se plantearon como la exponencial de un polinomio de segundo grado, del cual se optimizaron los coeficientes para reducir la dependencia residual del CHF predicho con el flujo másico y el título termodinámico. Adicionalmente, se aplicó un factor de centrado, que permite luego aplicar el criterio de 95\% de probabilidad y confianza para el cálculo del $\mathrm{DNBR}_\mathrm{min}$, descripto en la sección \ref{sec:chf_eval}.
