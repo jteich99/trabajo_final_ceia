@@ -300,13 +300,14 @@ Se observa que todos los modelos logran tanto en entrenamiento como en evaluaci�
 	\caption{Arquitecturas de \texttt{LFDNN} propuestas y métricas sobre conjuntos de entrenamiento y evaluación de ensayos en un tubo.}
 	\begin{tabular}{c C{2cm} C{2cm} c c c c} 
         \toprule
-        \multirow{2}{*}{\textbf{\#}} & \multirow{2}{=}{\textbf{Dim. capas ocultas}} & \multirow{2}{=}{\textbf{Cant. capas ocultas}} & \multicolumn{2}{c}{\textbf{Entrenamiento}} & \multicolumn{2}{c}{\textbf{Evaluación}} \\
-        & & & $\mathbf{R^2}$ & \textbf{RMSE} & $\mathbf{R^2}$ & \textbf{RMSE} \\ \hline
-        1 & 64  & 2 & $0.9553$ & $337.9$ & $0.9590$ & $322.0$ ($+0.8\%$) \\
-        2 & 64  & 3 & $0.9657$ & $296.1$ & $0.9657$ & $294.3$ ($+4.2\%$) \\
-        3 & 64  & 4 & $0.9749$ & $253.0$ & $0.9738$ & $257.3$ ($+14.2\%$) \\
-        4 & 32  & 3 & $0.9503$ & $356.0$ & $0.9557$ & $334.6$ ($+0.3\%$) \\
-        5 & 128 & 3 & $0.9746$ & $254.9$ & $0.9753$ & $249.9$ ($+9.6\%$) \\
+        \multirow{2}{*}{\textbf{\#}} & \multirow{2}{=}{\textbf{Dim. capas ocultas}} & \multirow{2}{=}{\textbf{Cant. capas ocultas}} & \multicolumn{2}{c}{$\mathbf{R^2}$} & \multicolumn{2}{c}{\textbf{RMSE}} \\
+        & & & \textbf{Ent.} & \textbf{Eval.} & \textbf{Ent.} & \textbf{Eval.} \\ \hline
+        \multicolumn{3}{c}{LUT}   & \multicolumn{2}{c}{$0.898$} & \multicolumn{2}{c}{$507.1$} \\
+        1 & 64  & 2 & $0.9553$ & $0.9590$ & $337.9$ & $322.0$ ($+0.8\%$) \\
+        2 & 64  & 3 & $0.9657$ & $0.9657$ & $296.1$ & $294.3$ ($+4.2\%$) \\
+        3 & 64  & 4 & $0.9749$ & $0.9738$ & $253.0$ & $257.3$ ($+14.2\%$) \\
+        4 & 32  & 3 & $0.9503$ & $0.9557$ & $356.0$ & $334.6$ ($+0.3\%$) \\
+        5 & 128 & 3 & $0.9746$ & $0.9753$ & $254.9$ & $249.9$ ($+9.6\%$) \\
 		\bottomrule
 	\end{tabular}
 	\label{tab:lfdnn_arqs}
@@ -385,12 +386,13 @@ Se obtiene que los modelos mantienen su precisión respecto de los ensayos de un
 	\caption{Arquitecturas de \texttt{LFDNN} propuestas y métricas sobre conjuntos de entrenamiento y evaluación de ensayos en un tubo.}
 	\begin{tabular}{c c c c c c} 
         \toprule
-        \multirow{2}{*}{\textbf{Arquitectura}} & \multirow{2}{*}{$\bm{\lambda}$} & \multicolumn{2}{c}{\textbf{Entrenamiento}} & \multicolumn{2}{c}{\textbf{Evaluación}} \\
-        & & $\mathbf{R^2}$ & \textbf{RMSE} & $\mathbf{R^2}$ & \textbf{RMSE} \\ \hline
-        Base                    & -      & $0.9657$ & $296.1$ & $0.9657$ & $294.3$ ($+4.2\%$) \\
-        \multirow{3}{*}{PINN}   & $0.01$ & $0.9624$ & $310.0$ & $0.9642$ & $300.9$ ($+4.1\%$) \\
-                                & $0.1$  & $0.9638$ & $304.1$ & $0.9652$ & $296.8$ ($+4.7\%$) \\
-                                & $1$    & $0.9637$ & $304.6$ & $0.9650$ & $297.6$ ($+5.1\%$) \\
+        \multirow{2}{*}{\textbf{\#}} & $\bm{\lambda}$ & \multicolumn{2}{c}{$\mathbf{R^2}$} & \multicolumn{2}{c}{\textbf{RMSE}} \\
+        & & \textbf{Ent.} & \textbf{Eval.} & \textbf{Ent.} & \textbf{Eval.} \\ \hline
+        LUT                     & -      & \multicolumn{2}{c}{$0.898$} & \multicolumn{2}{c}{$507.1$} \\
+        Base                    & -      & $0.9657$ & $0.9657$ & $296.1$ & $294.3$ ($+4.2\%$) \\
+        \multirow{3}{*}{PINN}   & $0.01$ & $0.9624$ & $0.9642$ & $310.0$ & $300.9$ ($+4.1\%$) \\
+                                & $0.1$  & $0.9638$ & $0.9652$ & $304.1$ & $296.8$ ($+4.7\%$) \\
+                                & $1$    & $0.9637$ & $0.9650$ & $304.6$ & $297.6$ ($+5.1\%$) \\
 		\bottomrule
 	\end{tabular}
 	\label{tab:lfdnn_arqs_comparativa}
@@ -443,7 +445,7 @@ Luego, en la figura \ref{fig:lfdnn_chf_generalizacion_mono}, se presenta la eval
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\textwidth]{Figures/chf_lfdnn_gx_mon.png}
+    \includegraphics[width=0.9\textwidth]{Figures/chf_lfdnn_gx_mon.png}
     \caption{Relación del CHF predicho con el flujo másico y el título, según el punto predicho por el modelo \texttt{LFDNN} con monotonicidad con $\lambda=0.1$. TRAIN y TEST son los conjuntos de entrenamiento y evaluación correspondientes a la \texttt{HFDNN}, divididos tal que en evaluación se tienen los ensayos de menor flujo másico.}
     \label{fig:lfdnn_chf_gx_mon}
 \end{figure}
@@ -463,6 +465,17 @@ Por último, en la figura \ref{fig:lfdnn_chf_pred_mono} se grafica el CHF predic
     \includegraphics[width=\textwidth]{Figures/chf_lfdnn_pred_mono.png}
     \caption{Predicción de CHF contra medido y $\mathrm{DNBR}$ para cada ensayo, para modelo \lfpinn{} con $\lambda=0.1$.}
     \label{fig:lfdnn_chf_pred_mono}
+\end{figure}
+
+Definido el modelo para realizar la estimación de CHF en un tubo, resulta natural la pregunta sobre cómo se compara con la metodología LUT. Para ello, en la figura \ref{fig:lfpinn_lut} se presentan los valores de CHF predicho contra medido para los ensayos de un tubo. Se grafican las predicciones de la LUT y del modelo \lfpinn{} final con $\lambda=0.1$. Graficamente la mejora es más modesta de lo que el aumento de $\mathrm{R}^2$ y el descenso en RMSE indican. Notar que en la zona de menor CHF se obtiene una sobrepredicción importante del mismo. Esto es producto de la condición de monotonicidad aplicada respecto del título termodinámico. Su efecto es positivo en el contexto de la estimación para el bundle de la \cna{}, pero en el caso general de un tubo no lo es. Como se mencionó previamente, los datos en condiciones subenfriadas se corresponden a ensayos con $\nicefrac{L}{D_h}$ muy lejanos al bundle de \cna{}, por lo que su exclusión para el entrenamiento de la \lfpinn{} sería recomendable.
+
+En la bibliografía se han realizado modelos basados en Machine Learning que han obtenido mejor rendimiento que la \lfpinn{}. Aún así, el objetivo del modelo en el contexto de este trabajo es tener una predicción confiable del CHF en un tubo como primer aproximación. La optimización del modelo \lfpinn{} no se realizó de forma rigurosa y en función de lo informado en la tabla \ref{tab:lfdnn_arqs} se evidencia un margen de mejora con redes más densas.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{Figures/lfpinn_lut.png}
+    \caption{Predicción de CHF contra medido para \lfpinn{} y LUT.}
+    \label{fig:lfpinn_lut}
 \end{figure}
 
 \newpage
@@ -669,7 +682,6 @@ Allí se observa el rendimiento similar entre el modelo completo A y el B, con a
 
 En función de los resultados de esta sección, se definió utilizar la variante E como modelo final \mfpinn{}.
 
-El máximo \dnbrmin{} para \mfdnn{} fue $XXX$ y para \mfpinn{} $XXX$.
 
 \begin{table}[h]
 	\centering
@@ -904,7 +916,7 @@ El modelo \mfdnn{} obtiene un rendimiento similar a los análisis previos en el 
 	\label{tab:mf_final_dnbr}
 \end{table}
 
-En la figura \ref{fig:dist_mfdnn_final} se presenta la distribución de densidad de probabilidad de \dnbrmin{} para los 50 modelos \mfdnn{} entrenados. Nuevamente, se evidencia un rendimiento en evaluación consistente y cercano al de entrenamiento. En la figura \ref{fig:chf_mfdnn_final} se presentan los gráficos de CHF predicho contra real y DNBR por ensayo para el modelo \mfdnn{} con el valor mediano de \dnbrmin{}. Comparado con las predicciones por la metodología INVAP, se obtiene una distribución más centrada en la recta de identidad, y todos los valores de DNBR quedan contenidos aproximadamente entre $0.9$ y $1.1$.
+En la figura \ref{fig:dist_mfdnn_final} se presenta la distribución de densidad de probabilidad de\break \dnbrmin{} para los 50 modelos \mfdnn{} entrenados. Nuevamente, se evidencia un rendimiento en evaluación consistente y cercano al de entrenamiento. En la figura \ref{fig:chf_mfdnn_final} se presentan los gráficos de CHF predicho contra real y DNBR por ensayo para el modelo \mfdnn{} con el valor mediano de \dnbrmin{}. Comparado con las predicciones por la metodología INVAP, se obtiene una distribución más centrada en la recta de identidad, y todos los valores de DNBR quedan contenidos aproximadamente entre $0.9$ y $1.1$.
 
 Finalmente, en la figura \ref{fig:chf_mfpinn_final} se presentan para el modelo \mfpinn{} los gráficos de CHF predicho contra real y de DNBR por ensayo. La distribución de predicciones es aún más cercana que la de la \mfdnn{}, lo que refuerza los valores de \dnbrmin{} presentados previamente.
 
@@ -933,6 +945,8 @@ Finalmente, en la figura \ref{fig:chf_mfpinn_final} se presentan para el modelo 
 Para estimar el impacto de la reducción del valor del \dnbrmin{} en las PLC, se utiliza el valor obtenido en evaluación de la \mfpinn{} para calcular el $\mathrm{DNBR}_\mathrm{lim}$. Luego se calcula con COBRA3-CP el valor de PLC por DNB, con los perfiles de potencia de diseño termohidráulico del IFS.
 Es importante notar que esta estimación es de primer orden, puesto que el valor final del $\mathrm{DNBR}_\mathrm{lim}$ depende del límite de diseño seguro (SDL). Este límite varía por la metodología de predicción de CHF y su dependencia ante variaciones en las condiciones operativas. A priori, una predicción más robusta de CHF debería permitir reducir el $\Delta \mathrm{DNBR}_\mathrm{SDL}$, pero esa evaluación se encuentra por fuera del alcance de este trabajo ya que implica realizar todos los cálculos del diseño termohidráulico de la \cna{}.
 
+En la tabla \ref{tab:plc_mfpinn} se presentan las potencias límite de canal por DNB para la metodología actual y la \mfpinn{}. Los resultados indican un aumento en todas las ZZHH, con máximo para la ZH 3. Aún así, se debe considerar principalmente el resultado de la ZH 5, limitada por DNB. Las ZZHH 1 a 4 tienen límite por fracción de vacío. Se concluye entonces, como primer estimación, que el aumento de PLC producto de incorporar la metodología \mfpinn{} es de $3\%$.
+
 \begin{table}[H]
 	\centering
 	\caption{Potencia límite de canal [MW] por DNB para metodología actual y \mfpinn{}.}
@@ -945,5 +959,5 @@ Es importante notar que esta estimación es de primer orden, puesto que el valor
         Diferencia  & $+2.6\%$  & $+7.59\%$ & $+9.72\%$ & $+3.62\%$ & $+3.01\%$ \\
 		\bottomrule
 	\end{tabular}
-	\label{tab:mfpinn_arqs_dnbr}
+	\label{tab:plc_mfpinn}
 \end{table}

@@ -18,7 +18,7 @@ La Central Nuclear Atucha II (\cna{}) se ubica en la localidad de Lima, en la pr
 \end{figure}
 \footnotetext{Imagen tomada de \url{https://na-sa.com.ar/}.}
 
-En la tabla \ref{tab:condiciones_operacion_cna2}, obtenida del Informe Final de Seguridad (IFS) de la \cna{} \citep{IFS_CNA2}, se presentan los principales parámetros de diseño y condiciones de operación de la \cna{}. El núcleo está compuesto por 451 canales refrigerantes que contienen los elementos combustibles (EECC). Los canales se encuentran agrupados en 5 zonas hidráulicas (ZZHH), cada una con un caudal másico característico. El caudal está determinado por un restrictor o drossel distintivo para las 4 zonas periféricas, mientras que la zona central no posee drossel. La diferenciación de caudal fue realizada durante el diseño de la central, con el objetivo de obtener el mismo salto entálpico en todos los canales. En la figura \ref{fig:zonas_hidraulicas} se presenta una imagen esquemática de la distribución de los canales en el núcleo de la \cna{} y sus ZZHH.
+En la tabla \ref{tab:condiciones_operacion_cna2}, obtenida del Informe Final de Seguridad (IFS) de la \cna{} \citep{IFS_CNA2}, se presentan sus principales parámetros de diseño y condiciones de operación. El núcleo está compuesto por 451 canales refrigerantes que contienen los elementos combustibles (EECC). Los canales se encuentran agrupados en 5 zonas hidráulicas (ZZHH), cada una con un caudal másico característico. El caudal está determinado por un restrictor o drossel distintivo para las 4 zonas periféricas, mientras que la zona central no posee drossel. La diferenciación de caudal fue realizada durante el diseño de la central, con el objetivo de obtener el mismo salto entálpico en todos los canales. En la figura \ref{fig:zonas_hidraulicas} se presenta una imagen esquemática de la distribución de los canales en el núcleo de la \cna{} y sus ZZHH.
 
 \begin{table}[h]
 	\centering
@@ -27,14 +27,14 @@ En la tabla \ref{tab:condiciones_operacion_cna2}, obtenida del Informe Final de 
         \toprule
         \textbf{Condiciones Generales de Operación} & \textbf{\cna{}} \\
         \hline
-        Potencia térmica del reactor & 2 160 $\text{MW}_\text{th}$ \\
-        Caudal másico total & 10 576 $\nicefrac{\text{kg}}{\text{s}}$ \\
-        Presión del Sistema Primario & 115 bar \\
+        Potencia térmica del reactor & $2\,160\,\text{MW}_\text{th}$ \\
+        Caudal másico total & $10\,576\,\nicefrac{\text{kg}}{\text{s}}$ \\
+        Presión del Sistema Primario & $115$ bar \\
         Temperatura de entrada del refrigerante & $277.8$ $\degree\text{C}$ \\
         Temperatura de salida del refrigerante & $314.6$ $\degree\text{C}$ \\
-        Cantidad de zonas hidráulicas del núcleo & 5 \\
-        Cantidad de elementos combustibles en el núcleo & 451 \\
-        Cantidad de barras combustibles por elemento combustible & 37 \\
+        Cantidad de zonas hidráulicas del núcleo & $5$ \\
+        Cantidad de elementos combustibles en el núcleo & $451$ \\
+        Cantidad de barras combustibles por elemento combustible & $37$ \\
 		\bottomrule
 		% \hline
 	\end{tabular}
@@ -68,7 +68,7 @@ El DNB es un cambio en el patrón de flujo que se desarrolla dentro de los canal
 \section{Contexto y motivación}
 Uno de los cálculos más importantes en el diseño termohidráulico de un reactor PHWR es la estimación de las PLC. Este cálculo puede requerir más de un millón de ejecuciones durante cada iteración del diseño de una estrategia de recambio de EECC, lo que implica un alto costo computacional. Por lo tanto, obtener una herramienta que permita computar de manera eficiente las PLC e identificar los casos más críticos a ser evaluados con los códigos termohidráulicos es de elevado interés. Dado que se cuenta con una amplia variedad de cálculos realizados por la División de Termohidráulica con el código COBRA3-CP \citep{cobra3cp}, es factible plantear una herramienta basada en redes neuronales que permita estimar de manera preliminar las PLC con una alta eficiencia computacional. Debido a que los casos de interés para el diseño son los más limitantes, una herramienta que los seleccione de forma rápida y eficiente reduciría los tiempos de cómputo en órdenes de magnitud.
 
-Adicionalmente, en el cálculo con los códigos termohidráulicos, un paso fundamental es la estimación del CHF en función de las condiciones locales del fluido. Hoy en día, esto se realiza con métodos que se dividen en dos: fórmulas semiempíricas que buscan capturar la alta dimensionalidad del problema, y tablas de CHF obtenidas de ensayos en geometrías simples que luego son modificadas por factores ad hoc para replicar lo mejor posible los ensayos realizados sobre las geometrías reales del canal refrigerante del reactor. Se cuenta con datos de ensayos en geometrías sencillas, ensayos para el bundle de la \cna{} realizados por la Universidad de Columbia, y la replicación de los ensayos de manera numérica con el código de subcanales COBRA3-CP. Este caso particular de disponibilidad de datos puede ser aprovechado por redes neuronales de tipo multifidelidad (MFDNN, del inglés \textit{Multi-Fidelity Deep Neural Network}), como se plantea en el trabajo de Meng y Karniadakis \citep{MENG2020}. Además, ya que se plantea un fenómeno físico, evaluar el impacto de introducir ecuaciones de conservación o relaciones monótonas es de interés, mediante un enfoque informado por física como se plantea en el trabajo fundacional de las redes neuronales informadas por física (PINN, del inglés \textit{Physics Informed Neural Network}) de Raissi, Perdikaris y Karniadakis \citep{RAISSI2019}.
+Adicionalmente, en el cálculo con los códigos termohidráulicos, un paso fundamental es la estimación del CHF en función de las condiciones locales del fluido. Hoy en día, esto se realiza con métodos que se dividen en dos: fórmulas semiempíricas que buscan capturar la alta dimensionalidad del problema, y tablas de CHF obtenidas de ensayos en geometrías simples que luego son modificadas por factores ad hoc para replicar lo mejor posible los ensayos realizados sobre las geometrías reales del canal refrigerante del reactor. Se cuenta con datos de ensayos en geometrías sencillas, ensayos para el bundle de la \cna{} realizados por la Universidad de Columbia, y la replicación de los ensayos de manera numérica con el código de subcanales COBRA3-CP. Este caso particular de disponibilidad de datos puede ser aprovechado por redes neuronales de tipo multifidelidad (MFDNN, del inglés \textit{Multi-Fidelity Deep Neural Network}), como se plantea en el trabajo de Meng y Karniadakis \citep{MENG2020}. Además, ya que se plantea un fenómeno físico, evaluar el impacto de introducir ecuaciones de conservación o relaciones diferenciales es de interés, mediante un enfoque informado por física como se plantea en el trabajo fundacional de las redes neuronales informadas por física (PINN, del inglés \textit{Physics Informed Neural Network}) de Raissi, Perdikaris y Karniadakis \citep{RAISSI2019}.
 
 \section{Estado del arte}
 
