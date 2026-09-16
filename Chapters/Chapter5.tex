@@ -3,9 +3,8 @@
 \chapter{Conclusiones} % Main chapter title
 
 \label{Chapter5} % Change X to a consecutive number; for referencing this chapter elsewhere, use \ref{ChapterX}
-A continuación, se presentan las conclusiones del trabajo y las tareas disponibles a futuro para continuarlo.
-
-
+% A continuación, se presentan las conclusiones del trabajo y las tareas disponibles a futuro para continuarlo.
+En este capítulo se presentan las principales conclusiones obtenidas del trabajo realizados y se plantean posibles líneas de trabajo futuro para continuar y ampliar el desarrollo. 
 
 \section{Conclusiones generales}
 
@@ -23,41 +22,41 @@ A continuación, se presentan las conclusiones del trabajo y las tareas disponib
 % \item ¿Qué técnicas resultaron útiles para el desarrollo del proyecto y cuáles no tanto?
 % \end{itemize}
 
-En esta sección, se exponen las conclusiones generales de los modelos desarrollados en el trabajo.
+En esta sección, se exponen las conclusiones generales de los modelos desarrollados en el trabajo. Se analiza el desarrollo y los resultados alcanzados para la estimación de Potencia Límite de Canal (PLC) y la predicción del Flujo Crítio de Calor (CHF).
 
 \subsection{Estimación de PLC}
 Se propuso un modelo de aprendizaje profundo para la estimación del DNBR y la fracción de vacío en un canal refrigerante de la \cna{}. El modelo tiene como entradas los parámetros termohidráulicos del canal y los perfiles de potencia axial y por barra. Se optimizaron sus hiperparámetros y se obtuvo el modelo final, con errores relativos menores al $1\%$. 
 
-Se desarrolló un lazo de cálculo análogo al utilizado con COBRA3-CP para la estimación de PLC con el modelo desarrollado. Se comparó con cálculos de PLC realizados sobre 100 casos de la vigente estrategia de recambio de combustibles de la \cna{}. Se obtuvieron cocientes entre valor predicho y real con media menor a $1.05$. 
+Se desarrolló un lazo de cálculo análogo al utilizado con COBRA3-CP para la estimación de PLC con el modelo desarrollado. Se comparó con cálculos de PLC realizados sobre 100 casos de la vigente estrategia de recambio de combustibles de la \cna{}. Se obtuvieron cocientes entre el valor predicho y el real con media menor a $1.05$. 
 
 Para asegurar la estimación conservativa de la PLC, se propuso un factor multiplicativo de ajuste. Al utilizar este factor, se obtuvieron los márgenes perdidos por el uso de la herramienta con inteligencia artificial frente al uso de COBRA3-CP. El margen medio perdido total en el reactor es de $0.71\%$, mientras que el máximo es $2.34\%$. 
 
-El tiempo de cómputo de la metodología propuesta fue varios órdenes de magnitud menor que el de la predicción con COBRA3-CP. En términos cuantitativos, la aplicación de esta metodología representa una mejora en el tiempo de cómputo de aproximadamente $2\,000$ veces por fracción de vacío y $8\,500$ veces por DNB.
+El tiempo de cómputo de la metodología propuesta fue varios órdenes de magnitud inferior al de la predicción con COBRA3-CP. En términos cuantitativos, la aplicación de esta metodología representa una mejora en el tiempo de cómputo de aproximadamente $2\,000$ veces por fracción de vacío y $8\,500$ veces por DNB.
 
 Finalmente, se aplicó una arquitectura autoencoder para obtener el espacio latente de los perfiles de potencia axial y por barra. Los espacios latentes obtenidos permiten identificar las cualidades principales de los perfiles. Adicionalmente, se aplicó la reducción de dimensionalidad de los perfiles para modificar el vector de entrada a la DNN estimadora de DNBR y fracción de vacío. Se obtuvo una reducción del margen perdido en el caso de utilizar el espacio latente del perfil por barra, lo que demuestra que las 37 componentes son altamente redundantes para este cálculo.
 
 
 \subsection{Estimación de CHF}
-Se propuso un modelo de aprendizaje profundo con redes de multifidelidad informadas con física para la estimación de CHF en el bundle de la \cna{}. Para su construcción, se desarrolló un primer modelo denominado de baja fidelidad para estimar CHF en un tubo, a partir de los datos de ensayos recopilados por Groeneveld. Este modelo incluyó una relación de monotonicidad negativa con el título termodinámico para corregir comportamientos indeseados en la región subenfriada.
+Se propuso un modelo de aprendizaje profundo con redes de multifidelidad informadas por física para la estimación de CHF en el bundle de la \cna{}. Para su construcción, se desarrolló un primer modelo denominado de baja fidelidad para estimar CHF en un tubo, a partir de los datos de ensayos recopilados por Groeneveld. Este modelo incluyó una relación de monotonicidad negativa con el título termodinámico para corregir comportamientos indeseados en la región subenfriada.
 
 Para el entrenamiento de las redes de alta fidelidad se utilizaron simulaciones de COBRA3-CP sobre los ensayos realizados por la Universidad de Columbia. De esta forma se puede aplicar la hipótesis de que el CHF depende únicamente de condiciones locales.
 
-Definido el modelo de baja dimensionalidad, se realizó un análisis progresivo de las arquitecturas de multifidelidad y de la adición de información física. En este análisis se tomo como punto de referencia una red neuronal simple. Adicionalmente, para analizar la robustez de los modelos, se entrenó a los modelos en el rango superior de flujo másico y se los evaluó en el rango inferior. Esto implica entrenar a los modelos en la región menos demandante para el CHF en cuanto a condiciones termohidráulicas. Se validó la arquitectura de multifidelidad y la adición de relaciones físicas con múltiples métricas, tanto estadísticas como específicas del estudio del CHF.
+Definido el modelo de baja dimensionalidad, se realizó un análisis progresivo de las arquitecturas de multifidelidad y de la adición de información física. En este análisis se tomó como punto de referencia una red neuronal simple. Adicionalmente, para analizar la robustez de los modelos, se entrenaron a los modelos en el rango superior de flujo másico y se los evaluó en el rango inferior. Esto implica entrenar a los modelos en la región menos demandante para el CHF en cuanto a condiciones termohidráulicas. Se validó la arquitectura de multifidelidad y la adición de relaciones físicas con múltiples métricas, tanto estadísticas como específicas del estudio del CHF.
 
-Luego se analizó la adición de variables de entrada a los modelos. Estas variables son adicionales a las clasicamente utilizadas en la predicción de CHF, aunque su adición busca capturar efectos por fuera de la localidad del fenómeno. Se obtuvo un resultado desfavorable al utilizarlas, por lo que se descarto su adición a los modelos finales.
+Luego se analizó la adición de variables de entrada a los modelos. Estas variables son adicionales a las clásicamente utilizadas en la predicción de CHF, aunque su adición busca capturar efectos por fuera de la localidad del fenómeno. Se obtuvo un resultado desfavorable al utilizarlas, por lo que se descartó su adición a los modelos finales.
 
-En última instancia, se entrenaron dos modelos de multifidelidad con y sin adición de información física. Este entrenamiento se realizó sobre todo el rango de los ensayos experimentales de la Universidad de Columbia, reservando un conjunto para evaluación. Se obtuvó un \dnbrmin{} de $1.113$ para el modelo \mfdnn{} y de $1.084$ para el modelo \mfpinn{}. Estos resultados resultan superadores considerando el valor de la metodología actual de $1.212$.
+En última instancia, se entrenaron dos modelos de multifidelidad con y sin adición de información física. Este entrenamiento se realizó sobre todo el rango de los ensayos experimentales de la Universidad de Columbia, con un conjunto para evaluación reservado del entrenamiento. Se obtuvo un \dnbrmin{} de $1.113$ para el modelo \mfdnn{} y de $1.084$ para el modelo \mfpinn{}. Estos resultados son superadores a la metodología actual, con un \dnbrmin{} de $1.212$.
 
-Finalmente, se utilizó el valor de \dnbrmin{} de la \mfpinn{} para una estimación de primer orden del impacto en el cálculo de la PLC por DNB. Para la ZH 5 se obtuvo un $3\%$ adicional de PLC para el caso de diseño. Esta mejora indica el beneficio de utilizar metodologías modernas para la predicción de CHF, permitiendo resultados consistentes y robustos con la posibilidad de margenes de seguridad más acotados.
+Finalmente, se utilizó el valor de \dnbrmin{} de la \mfpinn{} para una estimación de primer orden del impacto en el cálculo de la PLC por DNB. Para la ZH 5 se obtuvo un $3\%$ adicional de PLC para el caso de diseño. Esta mejora indica el beneficio de utilizar metodologías modernas para la predicción de CHF, al obtener resultados consistentes y robustos con la posibilidad de márgenes de seguridad más acotados.
 
 \section{Próximos pasos}
-Como trabajos futuros para continuar el desarrollo del modelo de estimación de DNBR y fracción de vacío en los canales refrigerantes de la \cna{} se tiene:
+Como trabajos futuros para continuar el desarrollo del modelo de estimación de DNBR y fracción de vacío en los canales refrigerantes de la \cna{} se proponen:
 \begin{itemize}
     \item Analizar la capacidad del modelo de reproducir los peores casos de una estrategia de recambio de combustibles y casos anómalos en la misma.
-    \item Investigar si el modelo predice los mismos canales limitantes que COBRA3-CP. Esto es importante ya que se plantea al modelo como un primer filtro para definir los casos más limitantes que siempre deberán ser calculados por COBRA3-CP.
+    \item Investigar si el modelo predice los mismos canales limitantes que COBRA3-CP. Esto es importante, ya que se plantea al modelo como un primer filtro para definir los casos más limitantes que siempre deberán ser calculados por COBRA3-CP.
     \item Analizar si la dificultad del modelo en predecir DNBR y fracción de vacío en las ZZHH periféricas es efectivamente por su subrepresentación en el conjunto de entrenamiento o si es producto de otra causa.
-    \item Aplicar el modelo a un entorno de cálculo de estrategia de recambio de combustibles como cálculo en línea de la PLC, reemplazando el uso de un límite fijo por ZH para toda la estrategia.
-    \item Incorporar el modelo para el cálculo de PLC en línea realizado por AXCNA en la computadora de procesos de la \cna{}. Este código es utilizado para la calibración del algorítmo de la vigilancia de la limitación de potencia.
+    \item Aplicar el modelo a un entorno de cálculo de estrategia de recambio de combustibles como cálculo en línea de la PLC. Esto permite reemplazar el uso de un límite fijo por ZH para toda la estrategia.
+    \item Incorporar el modelo para el cálculo de PLC en línea realizado por AXCNA en la computadora de procesos de la \cna{}. Este código es utilizado para la calibración del algoritmo de la vigilancia de la limitación de potencia.
 \end{itemize}
 
 En cuanto al modelo predictor de CHF para el bundle de la \cna{}, se tienen los siguientes posibles trabajos futuros:
@@ -66,8 +65,8 @@ En cuanto al modelo predictor de CHF para el bundle de la \cna{}, se tienen los 
     \item Evaluar el entrenamiento de la \lfpinn{} con datos de ensayos en tubo con condiciones cercanas al bundle de \cna{}, en especial en términos geométricos. Esto podría incluso eliminar la necesidad de la condición de monotonicidad con el título termodinámico.
     \item Realizar la optimización de hiperparámetros con Optuna de la \lfpinn{}.
     \item Analizar la aplicación del modelo en otra geometría de bundle, como por ejemplo de EPRI \citep{EPRI1982}. Esto implica entrenar nuevamente el modelo con los datos de CHF de geometrías alternativas de bundle. La \lfpinn{} puede mantenerse constante si prueba buen rendimiento en el rango de aplicación.
-    \item Realizar la optimziación con Optuna de la \hfdnn{} de los modelos \mfdnn{} y \mfpinn{}.
+    \item Realizar la optimización con Optuna de la \hfdnn{} de los modelos \mfdnn{} y \mfpinn{}.
     \item Implementar el modelo final entrenado dentro de COBRA3-CP, con la posibilidad de actualizar sus pesos y bias de forma sencilla.
-    \item Analizar el impacto final sobre el diseño termohidráulico con el recálculo del mismo utilizando el modelo \mfpinn{} implementado en COBRA3-CP.
+    \item Analizar el impacto final sobre el diseño termohidráulico con el modelo \mfpinn{} implementado en COBRA3-CP.
 \end{itemize}
 
