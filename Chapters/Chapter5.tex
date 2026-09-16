@@ -4,7 +4,7 @@
 
 \label{Chapter5} % Change X to a consecutive number; for referencing this chapter elsewhere, use \ref{ChapterX}
 % A continuación, se presentan las conclusiones del trabajo y las tareas disponibles a futuro para continuarlo.
-En este capítulo se presentan las principales conclusiones obtenidas del trabajo realizados y se plantean posibles líneas de trabajo futuro para continuar y ampliar el desarrollo. 
+En este capítulo se presentan las principales conclusiones obtenidas del trabajo realizado y se plantean posibles líneas de trabajo futuro para continuar y ampliar el desarrollo.
 
 \section{Conclusiones generales}
 
@@ -22,7 +22,7 @@ En este capítulo se presentan las principales conclusiones obtenidas del trabaj
 % \item ¿Qué técnicas resultaron útiles para el desarrollo del proyecto y cuáles no tanto?
 % \end{itemize}
 
-En esta sección, se exponen las conclusiones generales de los modelos desarrollados en el trabajo. Se analiza el desarrollo y los resultados alcanzados para la estimación de Potencia Límite de Canal (PLC) y la predicción del Flujo Crítio de Calor (CHF).
+En esta sección, se exponen las conclusiones generales de los modelos desarrollados en el trabajo. Se analiza el desarrollo y los resultados alcanzados para la estimación de Potencia Límite de Canal (PLC) y la predicción del Flujo Crítico de Calor (CHF).
 
 \subsection{Estimación de PLC}
 Se propuso un modelo de aprendizaje profundo para la estimación del DNBR y la fracción de vacío en un canal refrigerante de la \cna{}. El modelo tiene como entradas los parámetros termohidráulicos del canal y los perfiles de potencia axial y por barra. Se optimizaron sus hiperparámetros y se obtuvo el modelo final, con errores relativos menores al $1\%$. 
@@ -52,7 +52,7 @@ Finalmente, se utilizó el valor de \dnbrmin{} de la \mfpinn{} para una estimaci
 \section{Próximos pasos}
 Como trabajos futuros para continuar el desarrollo del modelo de estimación de DNBR y fracción de vacío en los canales refrigerantes de la \cna{} se proponen:
 \begin{itemize}
-    \item Analizar la capacidad del modelo de reproducir los peores casos de una estrategia de recambio de combustibles y casos anómalos en la misma.
+    \item Analizar la capacidad del modelo de reproducir los peores casos de una estrategia de recambio de combustibles y casos anómalos en ella.
     \item Investigar si el modelo predice los mismos canales limitantes que COBRA3-CP. Esto es importante, ya que se plantea al modelo como un primer filtro para definir los casos más limitantes que siempre deberán ser calculados por COBRA3-CP.
     \item Analizar si la dificultad del modelo en predecir DNBR y fracción de vacío en las ZZHH periféricas es efectivamente por su subrepresentación en el conjunto de entrenamiento o si es producto de otra causa.
     \item Aplicar el modelo a un entorno de cálculo de estrategia de recambio de combustibles como cálculo en línea de la PLC. Esto permite reemplazar el uso de un límite fijo por ZH para toda la estrategia.
