@@ -1,6 +1,8 @@
 \chapter{Predicción de CHF por LUT de Groeneveld}
 \label{appendix_groeneveld}
 
+En este anexo se describe en detalle la metodología de predicción de CHF mediante las \textit{Look-up Tables} (LUT) de Groeneveld, utilizada como referencia de la metodología actual de cálculo de CHF para el bundle de la \cna{}, mencionada en los capítulos \ref{Chapter1} y \ref{Chapter3}. Se presenta el esquema de interpolación en la tabla tridimensional de presión, flujo másico y título termodinámico, y luego los factores de corrección propuestos por Groeneveld y por INVAP para adaptar la predicción de la LUT a la geometría de interés.
+
 \section{Interpolación en la LUT}
 La LUT propuesta por Groeneveld es una tabla con tres dimensiones: la presión, el flujo másico y el título termodinámico. Para la versión 2006, se tiene una discretización de 15 puntos para la presión, entre $100$ y $21\,000$ kPa; de 21 puntos para el flujo másico, entre $0$ y $8\,000\,\nicefrac{\mathrm{kg}}{\mathrm{m}^2 \mathrm{s}}$; y de 23 puntos para el título termodinámico, entre $-0.5$ y $1$. Para obtener valores en puntos no tabulados se interpola linealmente. En la figura \ref{fig:groeneveld_interp} se esquematiza la interpolación en tres dimensiones.
 
