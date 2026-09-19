@@ -32,7 +32,7 @@ La arquitectura optimizada se resume en la tabla \ref{tab:plc_arq_hp}, y en la f
 
 \subsection{Resultados de DNBR y fracción de vacío}
 
-En esta sección, se evalúan los resultados del modelo en cuanto a la predicción de DNBR y fracción de vacío. En la figura \ref{fig:plc_results_dnbr_vacio} se presentan los gráficos de valores predichos contra reales, para los conjuntos de test y train. Se observa una buena predicción del modelo en ambos objetivos y una distribución equivalente entre conjuntos. No obstante, se aprecia una tendencia a subestimar la fracción de vacío en la región cercana a 25\%.
+En la figura \ref{fig:plc_results_dnbr_vacio} se presentan los gráficos de valores predichos contra reales, para los conjuntos de test y train. Se observa una buena predicción del modelo en ambos objetivos y una distribución equivalente entre conjuntos. No obstante, se aprecia una tendencia a subestimar la fracción de vacío en la región cercana a 25\%.
 
 \begin{figure}[h]
     \centering
@@ -41,7 +41,7 @@ En esta sección, se evalúan los resultados del modelo en cuanto a la predicci�
     \label{fig:plc_results_dnbr_vacio}
 \end{figure}
 
-En la tabla \ref{tab:plc_errors_dnbr_vacio} se presentan la media y el desvío estándar del error con signo para cada objetivo. El error con signo se define como la diferencia entre el valor real y el predicho, por lo que valores positivos de la media implican una subpredicción del objetivo, y los negativos una sobrepredicción. Para la fracción de vacío, se aplica un factor de 10 para que las magnitudes entre objetivos sean comparables. Se observa una tendencia a subpredecir DNBR y a sobrepredecir la fracción de vacío, ambas tendencias en igual magnitud en train y test. Los desvíos estándar son menores en test que en train para DNBR, y a la inversa para la fracción de vacío. En ambos casos, los valores de desvío estándar son bajos. 
+En la tabla \ref{tab:plc_errors_dnbr_vacio} se presentan la media y el desvío estándar del error con signo para cada objetivo. El error con signo se define como la diferencia entre el valor real y el predicho, por lo que valores positivos de la media implican una sobrepredicción del objetivo, y los negativos una subpredicción. Para la fracción de vacío, se aplica un factor de 10 para que las magnitudes entre objetivos sean comparables. Se observa una tendencia a subpredecir DNBR y a sobrepredecir la fracción de vacío, ambas tendencias en igual magnitud en train y test. Los desvíos estándar son menores en test que en train para DNBR, y a la inversa para la fracción de vacío. En ambos casos, los valores de desvío estándar son bajos. 
 
 La tendencia general de la predicción de vacío es a sobrepredecir, mientras que el gráfico de predicho contra real indica lo contrario. Para analizar esta discrepancia, se realizó el mismo cálculo del error al dividir en 5 regiones el dominio de cada variable objetivo. Los resultados se presentan en la tabla \ref{tab:plc_errors_dnbr_vacio_segmentado}. 
 Se obtiene, para DNBR, una media aún más baja en la región de interés ($1.7-2.5$) y una subpredicción general del DNBR, lo que representa una tendencia conservativa. En cuanto a la fracción de vacío, no se tiene el mínimo de error en la zona de interés, sino alrededor de ella. En la zona de interés ($0.15-0.35$) se tiene una sobrepredicción de la fracción de vacío, también una tendencia conservativa. Se puede concluir entonces que el modelo tiene un buen rendimiento en ambos objetivos y tendencias conservativas respecto de las referencias.
@@ -52,7 +52,7 @@ Se obtiene, para DNBR, una media aún más baja en la región de interés ($1.7-
 	\begin{tabular}{c c c c c} 
         \toprule
         \multirow{2}{*}{\textbf{Conjunto}} & \multicolumn{2}{c}{\textbf{DNBR}} & \multicolumn{2}{c}{\textbf{Fracción de vacío}} \\
-                & media     & $\sigma$  & media & $\sigma$  \\
+                & media     & $\sigma$  & media & $\sigma$  \\ \hline
         Train   & $-0.006$    & $0.021$     & $0.018$ & $0.040$     \\
         Test    & $-0.006$    & $0.017$     & $0.018$ & $0.032$     \\
 		\bottomrule
@@ -91,7 +91,7 @@ Debe tenerse en cuenta que para las ZZHH 1 a 3 el límite siempre se obtiene por
 	\begin{tabular}{c c c c c c c } 
         \toprule
         \multirow{2}{*}{\textbf{Zona Hidráulica}} & \multicolumn{3}{c}{\textbf{DNBR}} & \multicolumn{3}{c}{\textbf{Fracción de vacío}} \\
-            & media & $\sigma$  & F     & media & $\sigma$  & F     \\
+            & media & $\sigma$  & F     & media & $\sigma$  & F     \\ \hline
         1 & $1.047$ & $0.015$ & $0.933$ & $1.008$ & $0.004$ & $0.985$ \\
         2 & $1.025$ & $0.010$ & $0.961$ & $1.003$ & $0.002$ & $0.993$ \\
         3 & $1.018$ & $0.010$ & $0.967$ & $1.002$ & $0.002$ & $0.995$ \\
@@ -136,14 +136,14 @@ Se buscó el espacio latente de menor dimensión tal que la reconstrucción del 
 
 Para ambos perfiles de potencia se obtuvo un espacio latente de 3 dimensiones. En la figura \ref{fig:embeddings_axial} se presentan, para cada componente del espacio latente, los 3 perfiles con mayor valor de la componente, los 3 con valores medianos y los 3 con menor valor. La primera componente puede interpretarse como el clásico factor de forma de los perfiles axiales, donde los perfiles de menor valor corresponden a la forma típicamente llamada ``panza arriba''. La segunda componente tiene un significado similar; se asocia con perfiles cuya zona inferior o superior está aplanada. Por último, la tercera componente representa potencia disminuida en el centro del perfil.
 
+En la figura \ref{fig:embeddings_radial} se presenta el gráfico análogo para el perfil por barras. En este caso, resulta más difícil obtener una explicación de cada componente.
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{Figures/embeddings_axial_componentes_latente.png}
     \caption{Gráficos de perfiles axiales con valores más altos, medianos y bajos de cada componente del espacio latente.}
     \label{fig:embeddings_axial}
 \end{figure}
-
-En la figura \ref{fig:embeddings_radial} se presenta el gráfico análogo para el perfil por barras. En este caso, resulta más difícil obtener una explicación de cada componente.
 
 \begin{figure}[hbtp]
     \centering
@@ -210,6 +210,8 @@ Las arquitecturas comparadas son las siguientes:
 
 Para lograr una evaluación que no se limitara a la capacidad de los modelos de representar la información con la que fueron entrenados, se planteó entrenarlos con los casos menos exigentes desde el punto de vista del CHF. Entonces, para dividir entre los conjuntos de entrenamiento y prueba, se utilizaron en entrenamiento aquellos ensayos con un flujo másico superior a $4\,000\,\nicefrac{\mathrm{kg}}{\mathrm{m}^2\mathrm{s}}$. La división se grafica en la figura \ref{fig:chf_div_train_test}. Además del flujo másico, la división se presenta contra el título termodinámico, donde se observa que la división también implica dejar en evaluación a la mayoría de los ensayos que presentaron CHF a título alto. Esto permite evaluar el funcionamiento del modelo al extrapolar hacia condiciones más exigentes de CHF, de forma similar a lo realizado para evaluar y definir la \lfpinn{}.
 
+Para evitar que los resultados de los modelos evaluados dependan del proceso estocástico de entrenamiento, se entrenaron 50 instancias de cada modelo. De esta forma, se comparan las métricas estadísticas y de $\mathrm{DNBR}$ medias de cada modelo.
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{Figures/chf_division_train_test.png}
@@ -217,7 +219,6 @@ Para lograr una evaluación que no se limitara a la capacidad de los modelos de 
     \label{fig:chf_div_train_test}
 \end{figure}
 
-Para evitar que los resultados de los modelos evaluados dependan del proceso estocástico de entrenamiento, se entrenaron 50 instancias de cada modelo. De esta forma, se comparan las métricas estadísticas y de $\mathrm{DNBR}$ medias de cada modelo.
 Las arquitecturas se evaluaron en su predicción de CHF de forma tradicional, y adicionalmente por medio del $\mathrm{DNBR}_\mathrm{min}$, según lo explicado en la sección \ref{sec:chf_eval}. En la tabla \ref{tab:mf_estadistica} se comparan los valores de $\mathrm{R}^2$ y de RMSE para la DNN, la \lfpinn{} y la \mfdnn{}. 
 Se obtuvo un mejor rendimiento por parte de la \mfdnn{} respecto de la DNN en evaluación y muy similar en entrenamiento. En cuanto a la \lfpinn{}, su comportamiento es pobre, con un $\mathrm{R}^2<0$ que indica que una predicción constante e igual a la media obtendría un mejor ajuste.
 
@@ -255,7 +256,7 @@ Se obtiene nuevamente un comportamiento similar entre el modelo DNN y \mfdnn{}, 
                                         & $1.000$ & $0.031$ & $1.060$ \\
                 & Evaluación    &       & $1.063$ & $0.109$ & $1.265$ \\
         \multirow{2}{=}{\lfpinn{} $\lambda=0.1$}     
-                & Entrenamiento & \multirow{2}{*}{0.916}
+                & Entrenamiento & \multirow{2}{*}{$0.916$}
                                         & $1.000$ & $0.152$ & $1.300$ \\
                 & Evaluación    &       & $0.895$ & $0.240$ & $1.369$ \\
         \multirow{2}{*}{\mfdnn{}}     
@@ -341,9 +342,9 @@ Para realizar la comparación se dispuso el entrenamiento de la siguiente forma.
 \begin{table}[H]
 	\centering
 	\caption{Variantes del modelo \mfpinn{} evaluadas.}
-	\begin{tabular}{c | C{1cm} | C{1cm} | C{1cm} | C{2cm} | C{2cm}} 
+	\begin{tabular}{c C{1cm} C{1cm} C{1cm} C{2cm} C{2cm}} 
         \toprule
-        \multirow{2}{*}{\textbf{Modelo \mfpinn{}}} & \multicolumn{3}{c|}{\textbf{Monotonicidad}} & \multirow{2}{=}{\centering \textbf{Derivada cruzada}} & \multirow{2}{=}{\centering \textbf{Derivada segunda}} \\
+        \multirow{2}{*}{\textbf{Modelo \mfpinn{}}} & \multicolumn{3}{c}{\textbf{Monotonicidad}} & \multirow{2}{=}{\centering \textbf{Derivada cruzada}} & \multirow{2}{=}{\centering \textbf{Derivada segunda}} \\
         & x & G & p & & \\ \hline
         A & $\blacksquare$ & $\blacksquare$ & $\blacksquare$ & $\blacksquare$ & $\blacksquare$ \\
         B & $\blacksquare$ & $\blacksquare$ & $\blacksquare$ &                &   \\
@@ -398,18 +399,18 @@ En función de los resultados de esta sección, se definió utilizar la variante
 	\label{tab:mfpinn_arqs_dnbr_test}
 \end{table}
 
-\vspace{2cm}
+% \vspace{2cm}
 
 \begin{figure}[!hbtp]
     \centering
-    \includegraphics[width=0.95\textwidth]{Figures/chf_mfpinn_E.png}
+    \includegraphics[width=0.82\textwidth]{Figures/chf_mfpinn_E.png}
     \caption{CHF predicho contra medido y DNBR por ensayo para variante E de \mfpinn{}.}
     \label{fig:chf_pred_mfpinn_e}
 \end{figure}
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.95\textwidth]{Figures/chf_mfpinn_gx_E.png}
+    \includegraphics[width=0.82\textwidth]{Figures/chf_mfpinn_gx_E.png}
     \caption{Relación entre CHF predicho y flujo másico y título termodinámico para variante E de \mfpinn{}.}
     \label{fig:chf_gx_mfpinn_e}
 \end{figure}

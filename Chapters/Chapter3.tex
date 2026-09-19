@@ -19,7 +19,7 @@ Debido a que los datos de una estrategia se ubican alrededor de los parámetros 
 
 Las simulaciones se realizaron en paralelo y fueron procesadas al finalizar, para luego borrar el directorio de ejecución. De esta manera se evitó un excesivo volumen de datos en disco que no aportaba valor.
 
-La distribución de fracción de vacío y MDNBR obtenida se presenta en la figura \ref{fig:hist_void_mdnbr}. Se observa que el MDNBR presenta una fuerte dependencia de la ZH. Esto es esperable, ya que cada ZH tiene un rango de caudales y una relación potencia-caudal característicos, y los límites de DNBR aumentan hacia las ZH periféricas. La correcta predicción de la PLC en cada ZH es, entonces, un criterio de evaluación del modelo final. Por otro lado, la fracción de vacío presenta una distribución uniforme en casi todo el dominio, con un pico en 0, es decir, condiciones sin presencia de vapor a la salida del canal.
+La distribución de fracción de vacío y MDNBR obtenida se presenta en la figura \ref{fig:hist_void_mdnbr}. Se observa que el MDNBR presenta una fuerte dependencia de la ZH. Esto es esperable, ya que cada ZH tiene un rango de caudales y una relación potencia-caudal característicos, y los límites de DNBR aumentan hacia las ZZHH periféricas. La correcta predicción de la PLC en cada ZH es, entonces, un criterio de evaluación del modelo final. Por otro lado, la fracción de vacío presenta una distribución uniforme en casi todo el dominio, con un pico en 0, es decir, condiciones sin presencia de vapor a la salida del canal.
 
 \begin{figure}[hbt]
     \centering
@@ -30,7 +30,7 @@ La distribución de fracción de vacío y MDNBR obtenida se presenta en la figur
 
 Al realizar las simulaciones y procesarlas se generó un archivo con extensión \texttt{csv}, que tiene las siguientes columnas: \texttt{caso}, \texttt{canal}, \texttt{zh}, \texttt{pa1}, \texttt{...}, \texttt{pa22}, \texttt{pr1}, \texttt{...}, \texttt{pr37}, \texttt{power}, \texttt{void}, \texttt{caudal}, \texttt{temperatura}, \texttt{presion}, \texttt{MDNBR}. Este archivo fue importado como un objeto \texttt{pandas.DataFrame}, de la biblioteca Pandas. Las columnas \texttt{caso}, \texttt{canal} y \texttt{zh} se descartaron. Las primeras dos, debido a que no aportan información, y la zona hidráulica, debido a que queda unívocamente representada por el caudal.
 
-Los resultados se filtraron según el valor de MDNBR y de fracción de vacío, para conservar solo aquellos dentro del rango de interés al calcular las PLC. Los datos que exceden estos rangos sirvieron de set adicional de evaluación, para determinar la capacidad de generalización del modelo ante valores no incluidos en el entrenamiento. Se conservaron los casos con MDNBR entre $1.7$ y $2.5$, o fracción de vacío entre 15\% y 35\%.
+Los resultados se filtraron según el valor de MDNBR y de fracción de vacío, para conservar solo aquellos dentro del rango de interés al calcular las PLC. Los datos que exceden estos rangos sirvieron de conjunto adicional de evaluación, para determinar la capacidad de generalización del modelo ante valores no incluidos en el entrenamiento. Se conservaron los casos con MDNBR entre $1.7$ y $2.5$, o fracción de vacío entre 15\% y 35\%.
 
 A partir de los resultados filtrados, el pipeline es el siguiente:
 \begin{enumerate}
@@ -47,7 +47,7 @@ En la figura \ref{fig:mlp-arquitectura} se esquematiza la arquitectura implement
 
 \input{Figures/mlp_arquitectura.tex}
 
-Para la construcción de la arquitectura se desarrolló la función \texttt{plc.build\_model}, que permite obtener en una línea el modelo con los hiperparámetros deseados.
+Para la construcción de la arquitectura se desarrolló la función\break \texttt{plc.build\_model}, que permite obtener en una línea el modelo con los hiperparámetros deseados.
 
 Para entrenar al modelo se utilizó Adam \citep{kingma2015adam} como optimizador, debido a su alta capacidad y adopción en casos clásicos de DNN. Como función de pérdida se utilizó la raíz del error cuadrático medio (RMSE, del inglés \textit{Root Mean Squared Error}), debido a que penaliza fuertemente los errores grandes y tiene magnitud del orden de las variables a optimizar.
 
@@ -89,7 +89,7 @@ La elección de $d$ se realizó por barrido: se entrenó un autoencoder para cad
 
 Con las nuevas features se reentrenó el estimador de PLC descripto en las subsecciones anteriores, y en el capítulo \ref{Chapter4} se comparan sus resultados con los del modelo que utiliza los perfiles completos. 
 
-A partir de la transformación al espacio latente, se pueden evaluar cuáles son las componentes que caracterizan a los perfiles de potencia y cómo impactan en la PLC. Como referencia, se realizó un estudio análogo por medio del análisis de componentes principales (PCA, del inglés \textit{Principal Component Analysis}) \citep{hotelling1933pca}.
+% A partir de la transformación al espacio latente, se pueden evaluar cuáles son las componentes que caracterizan a los perfiles de potencia y cómo impactan en la PLC.
 
 \subsection{Evaluación del modelo}
 \label{sec:plc_evaluacion}
@@ -172,14 +172,14 @@ Para el pipeline de alta fidelidad, de las simulaciones de COBRA3-CP se extrajo,
     \item Desbalance entre título local y título promedio del bundle (\texttt{x\_disbalance}), para que la red pueda contemplar que un subcanal con alto título rodeado de subcanales fríos retrasa el DNB gracias a la transferencia lateral de masa.
     \item Factor de pico máximo del subcanal (\texttt{f\_pico}), ya que no todos los subcanales están expuestos a la misma potencia.
     \item Relación entre perímetro calefaccionado y mojado del subcanal (\texttt{p\_heat\allowbreak\_wet}), para distinguir entre distintos tipos geométricos de subcanal.
-    \item Derivadas respecto de la posición axial de la presión, la entalpía, la temperatura, el título termodinámico y el flujo másico, que se utilizan para la formulación de pérdida informada por física en la PINN.
+    % \item Derivadas respecto de la posición axial de la presión, la entalpía, la temperatura, el título termodinámico y el flujo másico, que se utilizan para la formulación de pérdida informada por física en la PINN.
 \end{itemize}
 
 A continuación, se describe la metodología para obtener cada una de estas variables. La presión en cada nodo resultó de sumar la diferencia registrada en ese punto al valor a la salida. La distancia al último separador se obtuvo al adimensionalizar la posición axial del nodo con la longitud total y buscar el separador más próximo aguas arriba, a partir de las ubicaciones relevadas en la sección de ensayo \citep{recopilacion_columbia}. El desbalance de título surgió de restar, al valor local del nodo, el promedio del bundle a la misma altura. Los factores de pico provienen también de \citep{recopilacion_columbia}: a cada subcanal se le asignó el máximo al que está expuesto, es decir, el de la corona de barras más exterior con la que limita. Por último, la relación entre perímetro calefaccionado y mojado se extrajo de las entradas de COBRA3-CP, que la definen por tipo de subcanal, y se replicó en todos los nodos correspondientes. 
 
-Las derivadas de las variables mencionadas respecto de la coordenada axial se calcularon por medio de la función \texttt{numpy.gradient}, que calcula de forma numérica el gradiente de un \texttt{numpy.array} dado respecto de otro, evaluado en los valores de este último.
+% Las derivadas de las variables mencionadas respecto de la coordenada axial se calcularon por medio de la función \texttt{numpy.gradient}, que calcula de forma numérica el gradiente de un \texttt{numpy.array} dado respecto de otro, evaluado en los valores de este último.
 
-El vector final de features de la \texttt{HFPINN} contiene las mismas features que la \texttt{LFDNN} y, además, la predicción de la \texttt{LFDNN}, \texttt{z\_sep\_adim}, \texttt{x\_disbalance}, \texttt{f\_pico} y \texttt{p\_heat\_wet}.
+El vector final de features de la \texttt{HFPINN} contiene las mismas features que la \texttt{LFDNN} y, además, la predicción de la \texttt{LFDNN}, \texttt{z\_sep\_adim}, \texttt{x\_disbalance},\break \texttt{f\_pico} y \texttt{p\_heat\_wet}.
 
 Ya que la red de multifidelidad realiza predicción tanto con la red de baja fidelidad como con la de alta fidelidad a partir de las mismas entradas, las redes deben entrenarse a partir de datos escalados de la misma manera. En la figura \ref{fig:eda_cobra_groeneveld} se comparan los gráficos de densidad de probabilidad correspondientes a los datos de ensayos de un tubo y a los puntos obtenidos mediante simulaciones con COBRA3-CP. La comparación se realiza para las cuatro variables de mayor interés: flujo másico, presión, temperatura y título termodinámico. Se observa que los puntos de las simulaciones de COBRA3-CP presentan un mayor sesgo hacia flujos másicos elevados. Los valores de presión se encuentran concentrados alrededor de las 5 presiones de ensayo distintivas. La temperatura, por su parte, se concentra en valores elevados. Por último, el título termodinámico tiene una distribución más concentrada en valores menores a 0. Esto es esperable al considerar todos los puntos de la sección ensayada, a la que ingresa líquido subenfriado. Los casos de ensayos de un tubo presentan distribuciones casi uniformes en presión y temperatura.  
 
@@ -202,11 +202,14 @@ Para la aplicación final del modelo, se debe agregar un factor de corrección p
 \end{equation}
 Es evidente que, en el caso de flujo uniforme, $K_5=1\,\forall x$.
 
-\newpage
+% \newpage
 \subsection{Arquitectura del modelo}
 \label{sec:chf_arq}
-Como se explicó en la sección \ref{sec:frameworks}, el modelo planteado es una red de multifidelidad informada por física, denotada \texttt{MFPINN}. La \texttt{MFPINN} está compuesta por dos redes, una de baja fidelidad y otra de alta fidelidad. La de baja fidelidad es entrenada para predecir CHF en geometría de tubo, a partir de los datos crudos de las LUT de Groeneveld, y se la denota \texttt{LFDNN}. 
-Esta, en principio, no incorporaba información física, ya que se dispone de una gran cantidad de datos y se estimaba que un enfoque puro sobre ellos era suficiente. Al entrenar esta red y probar su generalización sobre el conjunto de datos obtenidos de COBRA3-CP al replicar los ensayos de la Universidad de Columbia, se obtuvo un comportamiento no físico para condiciones subenfriadas. Este comportamiento se atribuyó a la nula representación de condiciones subenfriadas a las presiones y $\nicefrac{L}{D_h}$ de interés en el conjunto de entrenamiento. Este análisis se aborda en detalle en la sección \ref{sec:lfdnn_resultados}. Por lo tanto, se decidió aplicar una condición de monotonicidad de la derivada del CHF con el título termodinámico. Luego la pérdida quedó descripta por la ecuación \ref{eq:loss_lfdnn},
+Como se explicó en la sección \ref{sec:frameworks}, el modelo planteado es una red de multifidelidad informada por física, denotada \texttt{MFPINN}. La \texttt{MFPINN} está compuesta por dos redes, una de baja fidelidad y otra de alta fidelidad. 
+En la figura \ref{fig:mfpinn} se presenta un esquema de la arquitectura descripta.
+
+La red de baja fidelidad es entrenada para predecir CHF en geometría de tubo, a partir de los datos crudos de las LUT de Groeneveld, y se la denota \texttt{LFDNN}. 
+Esta, en principio, no incorporaba información física, ya que se dispone de una gran cantidad de datos y se estimaba que un enfoque puro sobre ellos era suficiente. Al entrenar esta red y probar su generalización sobre el conjunto de datos obtenidos de COBRA3-CP al replicar los ensayos de la Universidad de Columbia, se obtuvo un comportamiento no físico para condiciones subenfriadas. Este comportamiento se atribuyó a la nula representación de condiciones subenfriadas a las presiones y $\nicefrac{L}{D_h}$ de interés en el conjunto de entrenamiento. Este análisis se aborda en detalle en la sección \ref{app_chf_lfdnn_resultados}. Por lo tanto, se decidió aplicar una condición de monotonicidad de la derivada del CHF con el título termodinámico. Luego la pérdida quedó descripta por la ecuación \ref{eq:loss_lfdnn},
 \begin{equation}
     \label{eq:loss_lfdnn}
     \mathcal{L} = \mathrm{MSE}(\log \mathrm{CHF}) \;+\; \lambda \cdot \frac{1}{\sum w}\sum_i \left[w_i\,\mathrm{ReLU}\!\left(\frac{\partial \log \mathrm{CHF}}{\partial x}\Big|_i\right)\right]^2 .
@@ -216,7 +219,6 @@ Cabe notar que se tiene $\log\mathrm{CHF}$, el valor predicho por la red. El té
 
 Por otro lado, la componente de alta fidelidad utiliza información física y se la denota \texttt{HFPINN}. Los datos para su entrenamiento son las simulaciones con COBRA3-CP de los ensayos experimentales de la Universidad de Columbia. 
 
-En la figura \ref{fig:mfpinn} se presenta un esquema de la arquitectura descripta de la \texttt{MFPINN}.
 
 \input{Figures/mfnn_pinn.tex}
 
@@ -244,7 +246,7 @@ Se planteó entonces utilizar un enfoque de mínimo suave o softmin, que permita
     \label{eq:softmin}
     \mathrm{softmin}_\tau (\mathbf{y}) = \sum_i w_i y_i,
 \end{equation}
-donde $w_i$ son los pesos para ponderar las distintas predicciones. En el trabajo de Ilse los pesos se aprenden con una red de atención aparte, pero en este trabajo se utiliza el propio campo predicho, a través de la función softmax de Bridle \citep{bridle1990softmax} y el parámetro de temperatura propuesto por Hinton, Vinyals y Dean \citep{hinton2015distilling}, según la ecuación \ref{eq:softmax_w}.
+donde $w_i$ son los pesos para ponderar las distintas predicciones. En el trabajo de Ilse los pesos se aprenden con una red de atención, pero en este trabajo se utiliza el propio campo predicho, a través de la función softmax de Bridle \citep{bridle1990softmax} y el parámetro de temperatura propuesto por Hinton, Vinyals y Dean \citep{hinton2015distilling}, según la ecuación \ref{eq:softmax_w}.
 \begin{equation}
     \label{eq:softmax_w}
     w_i = \mathrm{softmax}\left(-\frac{\mathbf{y}}{\tau}\right)_i .
@@ -336,8 +338,10 @@ En cuanto a la relación de convexidad, se planteó una derivada segunda positiv
 % \end{equation}
 % donde las derivadas de las variables respecto de la coordenada axial $\nicefrac{dj}{dz}$ fueron computadas previamente a partir de los resultados de las simulaciones con COBRA3-CP. De esta manera se penaliza que la red invente dependencias axiales que no provengan de las condiciones locales, y, de alguna forma, es una expresión de la hipótesis de condiciones locales como PDE.
 
-La evaluación de este conjunto de ecuaciones diferenciales se realizó sobre un conjunto de datos independiente, tradicionalmente llamado puntos de colocación. Se formó un espacio de puntos de colocación con los límites inferiores y superiores de cada variable, y se expandió cada uno en un 10\% de la media de la variable. De esta forma el espacio permitió evaluar la extrapolación del modelo por fuera de los datos rotulados. Se estableció el doble de puntos de colocación que de observaciones de simulaciones de COBRA3-CP, lo que resultó en un total de $2\,645\,520$ puntos.
+La evaluación de este conjunto de ecuaciones diferenciales se realizó sobre un conjunto de datos independiente, tradicionalmente llamado puntos de colocación. Se formó un espacio de puntos de colocación específico para cada relación aplicada, extendiendo el rango en sentido del mínimo o del máximo según el signo de la derivada aplicada. Se estableció, para cada condición, la mitad de puntos de colocación que de observaciones de simulaciones de COBRA3-CP.
+% con los límites inferiores y superiores de cada variable, y se expandió cada uno en un 10\% de la media de la variable. De esta forma el espacio permitió evaluar la extrapolación del modelo por fuera de los datos rotulados. Se estableció el doble de puntos de colocación que de observaciones de simulaciones de COBRA3-CP, lo que resultó en un total de $2\,645\,520$ puntos.
 
+\pagebreak
 La pérdida total, entonces, se compone de las componentes de la ecuación \ref{eq:loss_chf},
 \begin{equation}
     \label{eq:loss_chf}
@@ -348,7 +352,7 @@ La pérdida total, entonces, se compone de las componentes de la ecuación \ref{
 donde los $\lambda$ son los factores de peso de las ecuaciones diferenciales parciales (PDE, del inglés \textit{Partial Differential Equation}). Estos se optimizaron para obtener resultados que respeten las relaciones postuladas por fuera del rango de operación de los ensayos experimentales.
 
 Para el entrenamiento del modelo, en primer lugar se entrena la \texttt{LFDNN} con sus datos. Su entrenamiento es estándar y puede realizarse con optimizador Adam y métrica MSE.
-Luego, con los pesos de la \texttt{LFDNN} congelados, se entrena la \texttt{HFPINN} con la estructura completa de la \texttt{MFPINN}. Se realizaron pruebas para determinar si era necesario, debido a las restricciones tipo PINN, un optimizador de segundo orden como L-BFGS \citep{liu1989lbfgs}. Sus resultados se exponen en el capítulo \ref{Chapter4}.
+Luego, con los pesos de la \texttt{LFDNN} congelados, se entrena la \texttt{HFPINN} con la estructura completa de la \texttt{MFPINN}. Se realizaron pruebas para determinar si era necesario, debido a las restricciones tipo PINN, un optimizador de segundo orden como L-BFGS \citep{liu1989lbfgs}. A partir de estas pruebas, se determinó utilizar una estructura de optimización en dos etapas: una inicial con optimizador Adam sin la pérdida informada por física, y una final con optimizador L-BFGS incorporando dicha pérdida. Sus resultados se exponen en el capítulo \ref{Chapter4}.
 
 % Al igual que para el predictor de PLC, se realizó la optimización de los hiperparámetros de la arquitectura por medio de Optuna. Los resultados, junto al modelo final, se presentan en el capítulo \ref{Chapter4}. 
 
