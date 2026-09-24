@@ -17,9 +17,7 @@ En la figura \ref{fig:plc_opt_results} se exponen los resultados durante el proc
 Según la tabla \ref{tab:plc_errors_dnbr_vacio}, la tendencia general de la predicción de vacío es a sobrepredecir.
 Por otro lado, el gráfico de predicho contra real de la figura \ref{fig:plc_results_dnbr_vacio} indica lo contrario. Para analizar esta discrepancia, se realizó el mismo cálculo del error al dividir en 5 regiones el dominio de cada variable objetivo. Los resultados se presentan en la tabla \ref{tab:plc_errors_dnbr_vacio_segmentado}. 
 
-Por otro lado, para cuantificar el aumento del error en el conjunto excluido, la figura \ref{fig:plc_errores} presenta los errores para cada variable objetivo en los conjuntos de train, test y excluidos. Tal como se comentó previamente, los conjuntos de train y test presentan errores muy similares, y el conjunto excluido un error considerablemente mayor. Adicionalmente, se grafican los cuantiles del 5\% y 95\%, que evidencian que el conjunto de excluidos también tiene una dispersión mucho mayor en su error.
-
-\begin{table}[h]
+\begin{table}[H]
 	\centering
 	\caption{Media y desvío estándar del error con signo para cada objetivo, segmentado por rangos de cada objetivo.}
 	\begin{tabular}{c c c c c c} 
@@ -45,6 +43,8 @@ Por otro lado, para cuantificar el aumento del error en el conjunto excluido, la
 	\end{tabular}
 	\label{tab:plc_errors_dnbr_vacio_segmentado}
 \end{table}
+
+Por otro lado, para cuantificar el aumento del error en el conjunto excluido, la figura \ref{fig:plc_errores} presenta los errores para cada variable objetivo en los conjuntos de train, test y excluidos. Tal como se comentó previamente, los conjuntos de train y test presentan errores muy similares, y el conjunto excluido un error considerablemente mayor. Adicionalmente, se grafican los cuantiles del 5\% y 95\%, que evidencian que el conjunto de excluidos también tiene una dispersión mucho mayor en su error.
 
 \begin{figure}[h]
     \centering
@@ -198,7 +198,7 @@ Entonces, se propuso evaluar la generalización del modelo con el flujo másico 
     \label{fig:lfdnn_chf_gx}
 \end{figure}
 
-Para solventar esta dificultad del modelo en la zona subenfriada se propuso una condición de monotonicidad negativa de la derivada del CHF respecto del título termodinámico, es decir, un modelo de PINN para la \lfdnn{}, que se denota \lfpinn{}. Esta incorporación se realizó al modificar el cálculo de la función de pérdida, según la ecuación \ref{eq:lfpinn_loss},
+Para solventar esta dificultad del modelo en la zona subenfriada se propuso una condición de monotonicidad negativa de la derivada del CHF respecto del título termodinámico, es decir, un modelo de PINN para la \lfdnn{}, que se denota \lfpinn{}. Esta incorporación se realizó al modificar el cálculo de la función de pérdida, según la ecuación \ref{eq:lfpinn_loss}:
 \begin{equation}
     \mathcal{L} = \mathrm{MSE}(\log \mathrm{CHF}) \;+\; \lambda \cdot \frac{1}{\sum w}\sum_i \left[w_i\,\mathrm{ReLU}\!\left(\frac{\partial \log \mathrm{CHF}}{\partial x}\Big|_i\right)\right]^2.
     \label{eq:lfpinn_loss} 
@@ -393,7 +393,7 @@ En esta sección se presentan los resultados complementarios del análisis de ar
 \subsection{Análisis de variables de entrada}
 \label{sec:chf_variables_entrada}
 
-Las variables de entrada propuestas en la sección \ref{sec:chf_pipeline} fueron el flujo másico, la presión, el título termodinámico, la relación de largo calefaccionado con diámetro hidráulico, la distancia adimensional al separador aguas arriba, el desbalance de título termodinámico respecto del valor medio del bundle, el factor de pico de potencia y la relación entre perímetro calefaccionado y mojado del subcanal. 
+Las variables de entrada propuestas en la subsección \ref{sec:chf_pipeline} fueron el flujo másico, la presión, el título termodinámico, la relación de largo calefaccionado con diámetro hidráulico, la distancia adimensional al separador aguas arriba, el desbalance de título termodinámico respecto del valor medio del bundle, el factor de pico de potencia y la relación entre perímetro calefaccionado y mojado del subcanal. 
 Las primeras cuatro variables son las clásicas utilizadas por la LUT de Groeneveld, y se consideran las más importantes para la predicción de CHF. Las cuatro variables restantes fueron propuestas en este trabajo, y se debe evaluar su contribución al modelo.
 
 Se entrenaron el modelo \mfdnn{} y las variantes A, B, C y D del modelo \mfpinn{}. Al igual que en la sección anterior, para el modelo \mfdnn{} se entrenaron 50 instancias y se informan las medianas de las métricas. En cuanto a las variantes \mfpinn{}, no se realizó un estudio de ese tipo, debido a que su costo de entrenamiento es considerablemente elevado.
@@ -461,7 +461,7 @@ Se presentan los resultados de CHF predicho contra real y DNBR por ensayo para e
 La conclusión obtenida es que la inclusión de estas variables en el modelo no representa una mejora clara en las predicciones, e incluso puede resultar en predicciones con tendencias no físicas. Por lo tanto, los modelos finales solo utilizan las variables básicas.
 
 \section{Modelo final}
-En la figura \ref{fig:dist_mfdnn_final} se presenta la distribución de densidad de probabilidad de \dnbrmin{} para los 50 modelos \mfdnn{} entrenados, resultado discutido en la sección \ref{sec:chf_modelos_finales} del capítulo \ref{Chapter4}.
+En la figura \ref{fig:dist_mfdnn_final} se presenta la distribución de densidad de probabilidad de \dnbrmin{} para los 50 modelos \mfdnn{} entrenados, resultado discutido en la subsección \ref{sec:chf_modelos_finales} del capítulo \ref{Chapter4}.
 
 \begin{figure}[H]
     \centering

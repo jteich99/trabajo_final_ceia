@@ -70,8 +70,7 @@ Para calcular el flujo másico en función del flujo de calor, se recurrió a la
 
 \input{Figures/dnb_dnn_loop.tex}
 
-
-\newpage
+% \newpage
 \subsection{Arquitectura de embeddings, entrenamiento y aplicación}
 \label{sec:arq_embeddings}
 Como se definió en la sección de objetivos \ref{sec:objetivos}, se realizó un análisis de reducción de dimensionalidad de los perfiles de potencia axiales y por barra. Para ello, se planteó una arquitectura de codificador-decodificador (en inglés \textit{encoder-decoder} o \textit{autoencoder}). Esto permite llevar el vector de entrada, en $\mathbb{R}^n$, a un espacio latente, $\mathbb{R}^d$, de menor dimensión, $d<n$. De esta forma se obtiene una representación compacta del vector de origen.
@@ -93,10 +92,10 @@ Con las nuevas features se reentrenó el estimador de PLC descripto en las subse
 
 \subsection{Evaluación del modelo}
 \label{sec:plc_evaluacion}
-Para evaluar los modelos predictores de PLC, no basta con presentar medidas estadísticas del error, como el error cuadrático medio (MSE, del inglés \textit{Mean Squared Error}), su raíz RMSE o el error absoluto medio (MAE, del inglés \textit{Mean Absolute Error}). Por la naturaleza de la aplicación de este modelo, debe validarse también el conservadurismo de su predicción, esto es, asegurar con cierto grado de probabilidad y confianza que se predice una PLC por debajo de la referencia. Para ello, se aplicó un criterio similar al utilizado en el diseño termohidráulico de la \cna{} para calcular el $\mathrm{DNBR}_\mathrm{min}$, descripto en la sección \ref{sec:chf_eval}. 
+Para evaluar los modelos predictores de PLC, no basta con presentar medidas estadísticas del error, como el error cuadrático medio (MSE, del inglés \textit{Mean Squared Error}), su raíz RMSE o el error absoluto medio (MAE, del inglés \textit{Mean Absolute Error}). Por la naturaleza de la aplicación de este modelo, debe validarse también el conservadurismo de su predicción, esto es, asegurar con cierto grado de probabilidad y confianza que se predice una PLC por debajo de la referencia. Para ello, se aplicó un criterio similar al utilizado en el diseño termohidráulico de la \cna{} para calcular el $\mathrm{DNBR}_\mathrm{min}$, descripto en la subsección \ref{sec:chf_eval}. 
 
 Se definió el factor de ajuste de PLC, o $F_\mathrm{PLC}$, que asegura con 95\% de probabilidad y confianza que se subestima la PLC. Entonces, se buscó el intervalo de tolerancia que, con 95\% de confianza, contiene el 95\% de las predicciones por debajo del valor real. 
-Para ello se requirió el factor de tolerancia $k$. En este caso, dada la elevada cantidad de observaciones, se pudo tomar el límite para infinitas muestras. Para 95\% de confianza, 95\% de probabilidad e infinitas muestras, se obtuvo $k_{95/95}=1.645$. Entonces, $F_\mathrm{PLC}$ se obtiene según la ecuación \ref{eq:f_plc},
+Para ello se requirió el factor de tolerancia $k$. En este caso, dada la elevada cantidad de observaciones, se pudo tomar el límite para infinitas muestras. Para 95\% de confianza, 95\% de probabilidad e infinitas muestras, se obtuvo $k_{95/95}=1.645$. Entonces, $F_\mathrm{PLC}$ se obtiene según la ecuación \ref{eq:f_plc}:
 \begin{equation}
     \label{eq:f_plc}
     \frac{1}{F_\mathrm{PLC}} = \overline{R} + k_{95/95} \cdot \sigma(R),
@@ -105,7 +104,7 @@ donde $R$ es el cociente entre el valor predicho y el de referencia de la PLC.
 
 Definido el factor que permite asegurar una predicción conservativa, se evaluó el margen de potencia perdido al realizar la predicción por el método propuesto. 
 
-\pagebreak
+% \pagebreak
 \section{Estimación de CHF}
 En esta sección se presenta el modelo de multifidelidad informado por física para estimar CHF. Se explica el pipeline de datos, la arquitectura del modelo y la metodología para su evaluación.
 
@@ -131,7 +130,7 @@ Por otro lado, el título termodinámico de equilibrio se relaciona con la ental
     x(z) = \frac{h(z) - h_f}{h_{fg}}.
     \label{eq:xz}
 \end{equation}
-Si $q''=\mathrm{cte}$, como ocurre tanto en los ensayos de un tubo como en los del bundle de la \cna{}, al reemplazar la ecuación \ref{eq:hz} en la \ref{eq:xz} se obtiene la ecuación \ref{eq:xz_lineal},
+Si $q''=\mathrm{cte}$, como ocurre tanto en los ensayos de un tubo como en los del bundle de la \cna{}, al reemplazar la ecuación \ref{eq:hz} en la \ref{eq:xz} se obtiene la ecuación \ref{eq:xz_lineal}:
 \begin{equation}
     \label{eq:xz_lineal}
     x(z) = x_\mathrm{inlet} + \frac{\pi\,D\,q''\,z}{\dot{m}\,h_{fg}},
@@ -143,7 +142,7 @@ Groeneveld et al. evaluaron sus tres versiones de las LUT (1986 \citep{GROENEVEL
 Sin embargo, el DSM es el más utilizado en la práctica y el más adecuado para su aplicación en códigos termohidráulicos, como señala Siman\=/Tov \citep{SIMANTOV1996}. Esto se debe, por un lado, a su simplicidad y, por otro, a que los ensayos realizados en geometrías reales (de bundle) informan las condiciones promedio, mientras que el CHF ocurre a nivel de subcanal. Las condiciones locales a nivel de subcanal pueden ser estimadas por medio de códigos de subcanales como COBRA3-CP, pero esto agregaría un error de la herramienta de cálculo que sería deseable evitar.
 Adicionalmente, el DSM es el método utilizado en la estimación de CHF para el bundle de la \cna{}, por medio de las LUT 1995 y los TMF de INVAP.
 
-Por otra parte, se debe considerar un detalle importante de los ensayos realizados en la Universidad de Columbia. La mayoría de estos ensayos se llevó a cabo en agua liviana ($H_2 O$), pero una serie de ellos se realizó en agua pesada ($D_2 O$), el fluido de trabajo de la \cna{}. Esto impone la necesidad de traducir los ensayos a un único fluido. Debido a que tradicionalmente los ensayos se han hecho con agua liviana con vistas a reactores PWR (del inglés \textit{Pressurized Water Reactors}), y que los ensayos en un tubo se realizaron con agua liviana, la práctica habitual es escalar el ensayo de agua pesada a agua liviana. Luego, la predicción de CHF para agua liviana se debe escalar a agua pesada, para poder predecir las condiciones dentro del reactor. En este trabajo se adoptó el mismo criterio. El escaleo de propiedades entre fluidos depende del fenómeno estudiado. En particular, para CHF se utiliza la regla de Ahmad \citep{ahmad1973}. Esta regla propone cuatro números adimensionales a conservar entre el fluido ``prototipo'' y el fluido ``modelo'', como se muestra en la ecuación \ref{eq:ahmad1}.
+Por otra parte, se debe considerar un detalle importante de los ensayos realizados en la UC. La mayoría de estos ensayos se llevó a cabo en agua liviana ($H_2 O$), pero una serie de ellos se realizó en agua pesada ($D_2 O$), el fluido de trabajo de la \cna{}. Esto impone la necesidad de traducir los ensayos a un único fluido. Debido a que tradicionalmente los ensayos se han hecho con agua liviana con vistas a reactores PWR (del inglés \textit{Pressurized Water Reactors}), y que los ensayos en un tubo se realizaron con agua liviana, la práctica habitual es escalar el ensayo de agua pesada a agua liviana. Luego, la predicción de CHF para agua liviana se debe escalar a agua pesada, para poder predecir las condiciones dentro del reactor. En este trabajo se adoptó el mismo criterio. El escaleo de propiedades entre fluidos depende del fenómeno estudiado. En particular, para CHF se utiliza la regla de Ahmad \citep{ahmad1973}. Esta regla propone cuatro números adimensionales a conservar entre el fluido ``prototipo'' y el fluido ``modelo'', como se muestra en la ecuación \ref{eq:ahmad1}.
 \begin{equation}
     \label{eq:ahmad1}
     \begin{cases}
@@ -154,14 +153,14 @@ Por otra parte, se debe considerar un detalle importante de los ensayos realizad
     \end{cases}
 \end{equation}
 
-En estas expresiones, $\Delta H$ es el subenfriamiento a la entrada, $\lambda$ es el calor latente de vaporización, $\rho_L$ y $\rho_V$ son las densidades de las fases líquida y vapor, respectivamente, $L$ es el largo de la sección de ensayo, $D$ es el diámetro de la sección de ensayo, y $\Psi_\mathrm{CHF}$ es el número adimensional propuesto específicamente para CHF por Ahmad, expresado en la ecuación \ref{eq:ahmad2},
+En estas expresiones, $\Delta H$ es el subenfriamiento a la entrada, $\lambda$ es el calor latente de vaporización, $\rho_L$ y $\rho_V$ son las densidades de las fases líquida y vapor, respectivamente, $L$ es el largo de la sección de ensayo, $D$ es el diámetro de la sección de ensayo, y $\Psi_\mathrm{CHF}$ es el número adimensional propuesto específicamente para CHF por Ahmad, expresado en la ecuación \ref{eq:ahmad2}:
 \begin{equation}
     \label{eq:ahmad2}
     \Psi_\mathrm{CHF} = \left[\left(\frac{G\,D}{\mu_L}\right) \cdot \left(\frac{\mu_L^2}{\sigma\,D\,\rho_L}\right)^{\nicefrac{2}{3}} \cdot \left(\frac{\mu_V}{\mu_L}\right)^{\nicefrac{1}{5}} \right],
 \end{equation}
 donde $G$ es el flujo másico por unidad de área, $\mu_L$ y $\mu_V$ son las viscosidades dinámicas de las fases líquida y vapor, respectivamente, y $\sigma$ es la tensión superficial. Esta regla se encuentra implementada en un código de Python, por medio de la función \texttt{scaling\_ahmad()}. El sistema implícito planteado se resuelve mediante la herramienta \texttt{scipy.optimize.fsolve}.
 
-Al aplicar una arquitectura de red neuronal de multifidelidad, el pipeline se divide en dos: uno para entrenar la DNN de baja fidelidad a partir de los datos de ensayos en tubo, y otro para entrenar la PINN de alta fidelidad con los datos de los ensayos de la Universidad de Columbia y sus correspondientes simulaciones en COBRA3-CP.
+Al aplicar una arquitectura de red neuronal de multifidelidad, el pipeline se divide en dos: uno para entrenar la DNN de baja fidelidad a partir de los datos de ensayos en tubo, y otro para entrenar la PINN de alta fidelidad con los datos de los ensayos de la UC y sus correspondientes simulaciones en COBRA3-CP.
 
 Como se mencionó en la sección \ref{sec:datasets}, los datos de ensayos en tubo proveen las siguientes variables: diámetro, longitud, presión a la salida, flujo másico, título termodinámico a la salida, entalpía a la entrada, flujo de calor y temperatura de entrada. De estos, se utilizaron la presión a la salida \texttt{p}, el flujo másico \texttt{G}, el título termodinámico a la salida \texttt{x} y el cociente entre la longitud y el diámetro \texttt{LD}.
 
@@ -192,7 +191,7 @@ Ya que la red de multifidelidad realiza predicción tanto con la red de baja fid
 
 Entonces, se combinaron los tensores de entrenamiento de los ensayos de un tubo y de las simulaciones de COBRA3-CP para conformar el \texttt{Standard\allowbreak Scaler}. Las features adicionales que utiliza la red de alta fidelidad se escalan independientemente, por medio de un \texttt{Standard\allowbreak Scaler}. En el valor del CHF también pueden existir diferencias importantes, por lo que se realiza un escaleo independiente de las distribuciones, mediante la aplicación del logaritmo natural.
 
-Para la aplicación final del modelo, se debe agregar un factor de corrección por perfil de potencia no uniforme. Este factor toma distintas formas en la bibliografía, como el propuesto por Groeneveld \citep{GROENEVELD1986} o por Tong \citep{tong1997boiling}. Para mantener consistencia respecto de la metodología actual, se utilizó el de Groeneveld, que se computa según la ecuación \ref{eq:f_axial_power},
+Para la aplicación final del modelo, se debe agregar un factor de corrección por perfil de potencia no uniforme. Este factor toma distintas formas en la bibliografía, como el propuesto por Groeneveld \citep{GROENEVELD1986} o por Tong \citep{tong1997boiling}. Para mantener consistencia respecto de la metodología actual, se utilizó el de Groeneveld, que se computa según la ecuación \ref{eq:f_axial_power}:
 \begin{equation}
     \label{eq:f_axial_power}
     K_5 = \begin{cases}
@@ -209,7 +208,7 @@ Como se explicó en la sección \ref{sec:frameworks}, el modelo planteado es una
 En la figura \ref{fig:mfpinn} se presenta un esquema de la arquitectura descripta.
 
 La red de baja fidelidad es entrenada para predecir CHF en geometría de tubo, a partir de los datos crudos de las LUT de Groeneveld, y se la denota \texttt{LFDNN}. 
-Esta, en principio, no incorporaba información física, ya que se dispone de una gran cantidad de datos y se estimaba que un enfoque puro sobre ellos era suficiente. Al entrenar esta red y probar su generalización sobre el conjunto de datos obtenidos de COBRA3-CP al replicar los ensayos de la Universidad de Columbia, se obtuvo un comportamiento no físico para condiciones subenfriadas. Este comportamiento se atribuyó a la nula representación de condiciones subenfriadas a las presiones y $\nicefrac{L}{D_h}$ de interés en el conjunto de entrenamiento. Este análisis se aborda en detalle en la sección \ref{app_chf_lfdnn_resultados}. Por lo tanto, se decidió aplicar una condición de monotonicidad de la derivada del CHF con el título termodinámico. Luego la pérdida quedó descripta por la ecuación \ref{eq:loss_lfdnn},
+Esta, en principio, no incorporaba información física, ya que se dispone de una gran cantidad de datos y se estimaba que un enfoque puro sobre ellos era suficiente. Al entrenar esta red y probar su generalización sobre el conjunto de datos obtenidos de COBRA3-CP al replicar los ensayos de la UC, se obtuvo un comportamiento no físico para condiciones subenfriadas. Este comportamiento se atribuyó a la nula representación de condiciones subenfriadas a las presiones y $\nicefrac{L}{D_h}$ de interés en el conjunto de entrenamiento. Este análisis se aborda en detalle en la sección \ref{app_chf_lfdnn_resultados}. Por lo tanto, se decidió aplicar una condición de monotonicidad de la derivada del CHF con el título termodinámico. Luego la pérdida quedó descripta por la ecuación \ref{eq:loss_lfdnn}:
 \begin{equation}
     \label{eq:loss_lfdnn}
     \mathcal{L} = \mathrm{MSE}(\log \mathrm{CHF}) \;+\; \lambda \cdot \frac{1}{\sum w}\sum_i \left[w_i\,\mathrm{ReLU}\!\left(\frac{\partial \log \mathrm{CHF}}{\partial x}\Big|_i\right)\right]^2 .
@@ -217,12 +216,10 @@ Esta, en principio, no incorporaba información física, ya que se dispone de un
 
 Cabe notar que se tiene $\log\mathrm{CHF}$, el valor predicho por la red. El término $w_i$ corresponde a la máscara de la condición de monotonicidad sobre los puntos de colocación, para ser aplicada solo en el rango $x<0$ y en las condiciones de trabajo de interés. Los puntos de colocación aplicados corresponden a presiones y relaciones $\nicefrac{L}{D_h}$ del conjunto de datos de COBRA3-CP.
 
-Por otro lado, la componente de alta fidelidad utiliza información física y se la denota \texttt{HFPINN}. Los datos para su entrenamiento son las simulaciones con COBRA3-CP de los ensayos experimentales de la Universidad de Columbia. 
+Por otro lado, la componente de alta fidelidad utiliza información física y se la denota \texttt{HFPINN}. Los datos para su entrenamiento son las simulaciones con COBRA3-CP de los ensayos experimentales de la UC. 
 
 
-\input{Figures/mfnn_pinn.tex}
-
-La \texttt{HFPINN} entrena con los datos de las simulaciones con COBRA3-CP. Cada una de ellas provee datos en 151 nodos axiales y 60 subcanales, para un total de $9\,060$ datos por ensayo. Por otro lado, la información provista por los ensayos de Columbia contiene un dato por ensayo, correspondiente al punto desconocido en el que comienza el DNB. Se tiene entonces un desajuste de dimensionalidad entre el producto de la red al evaluar en los ensayos numéricos y lo medido en los ensayos reales, expuesto en la ecuación \ref{eq:dim_red}.
+La \texttt{HFPINN} entrena con los datos de las simulaciones con COBRA3-CP. Cada una de ellas provee datos en 151 nodos axiales y 60 subcanales, para un total de $9\,060$ datos por ensayo. Por otro lado, la información provista por los ensayos de la UC contiene un dato por ensayo, correspondiente al punto desconocido en el que comienza el DNB. Se tiene entonces un desajuste de dimensionalidad entre el producto de la red al evaluar en los ensayos numéricos y lo medido en los ensayos reales, expuesto en la ecuación \ref{eq:dim_red}.
 \begin{equation}
     \underbrace{\mathbf{y} \in \mathbb{R}^{9060}}_{\text{campo predicho}}
     \quad\longrightarrow\quad
@@ -241,7 +238,9 @@ La flecha en la ecuación \ref{eq:dim_red} es la reducción de dimensionalidad q
 \end{equation}
 De esta forma, el optimizador solo recibe información del punto mínimo. Adicionalmente, al comenzar el entrenamiento, el punto que resulta mínimo es completamente aleatorio, por lo que es muy fácil condicionar negativamente la red y que esta no pueda salir del mínimo inicial.
 
-Se planteó entonces utilizar un enfoque de mínimo suave o softmin, que permita utilizar una mayor cantidad de nodos para el aprendizaje. Un enfoque similar es el promedio ponderado o \textit{attention pooling}, propuesto por Ilse \citep{ilse2018attention} en el contexto de MIL (del inglés \textit{Multiple Instance Learning}). Se propuso utilizar el softmin expuesto en la ecuación \ref{eq:softmin},
+\input{Figures/mfnn_pinn.tex}
+
+Se planteó entonces utilizar un enfoque de mínimo suave o softmin, que permita utilizar una mayor cantidad de nodos para el aprendizaje. Un enfoque similar es el promedio ponderado o \textit{attention pooling}, propuesto por Ilse \citep{ilse2018attention} en el contexto de MIL (del inglés \textit{Multiple Instance Learning}). Se propuso utilizar el softmin expuesto en la ecuación \ref{eq:softmin}:
 \begin{equation}
     \label{eq:softmin}
     \mathrm{softmin}_\tau (\mathbf{y}) = \sum_i w_i y_i,
@@ -271,17 +270,17 @@ En cuanto a la información física que se le brinda a la \texttt{HFPINN}, se de
 
 Se plantearon entonces distintos tipos de ecuaciones diferenciales a satisfacer por el modelo. Se implementaron las siguientes relaciones:
 \begin{itemize}
-    \item Monotónicas, presentadas en la ecuación \ref{eq:pde_mon},
+    \item Monotónicas, presentadas en la ecuación \ref{eq:pde_mon}:
     \begin{equation}
         \label{eq:pde_mon}
         \frac{d\,\mathrm{CHF}}{di} \lessgtr 0.
     \end{equation}
-    \item De derivada cruzada, presentadas en la ecuación \ref{eq:pde_cruz},
+    \item De derivada cruzada, presentadas en la ecuación \ref{eq:pde_cruz}:
     \begin{equation}
         \label{eq:pde_cruz}
         \frac{d^2\,\mathrm{CHF}}{di\,dj} \lessgtr 0.
     \end{equation}
-    \item De convexidad, presentadas en la ecuación \ref{eq:pde_convex},
+    \item De convexidad, presentadas en la ecuación \ref{eq:pde_convex}:
     \begin{equation}
         \label{eq:pde_convex}
         \frac{d^2\,\mathrm{CHF}}{di^2} > 0.
@@ -297,28 +296,6 @@ Entonces, se modificó la relación propuesta inicialmente para ser negativa en 
 
 Luego, en la figura \ref{fig:groeneveld_x} se evidencia la clara tendencia negativa del CHF con el título termodinámico.
 Por último, en la figura \ref{fig:groeneveld_p} se observa que, en el rango de operación de los ensayos con presiones mayores a $60\,\mathrm{bar}$, se tiene una tendencia decreciente del CHF con la presión. 
-
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=\textwidth]{Figures/groeneveld_tendencia_g.png}
-    \caption{Tendencia del CHF con el flujo másico, para los datos de los ensayos en un tubo recopilados por Groeneveld \citep{USNRC2019NUREGKM0011, GROENEVELD2007}.}
-    \label{fig:groeneveld_g}
-\end{figure}
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=\textwidth]{Figures/groeneveld_tendencia_x.png}
-    \caption{Tendencia del CHF con el título termodinámico, para los datos de los ensayos en un tubo recopilados por Groeneveld \citep{USNRC2019NUREGKM0011, GROENEVELD2007}.}
-    \label{fig:groeneveld_x}
-\end{figure}
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=\textwidth]{Figures/groeneveld_tendencia_p.png}
-    \caption{Tendencia del CHF con la presión, para los datos de los ensayos en un tubo recopilados por Groeneveld \citep{USNRC2019NUREGKM0011, GROENEVELD2007}.}
-    \label{fig:groeneveld_p}
-\end{figure}
 
 % Las relaciones monotónicas del CHF con las variables de entrada implementadas son positiva con el flujo másico, negativa con el título termodinámico y negativa con la presión. Estas relaciones tienen fundamento físico y aseguran que las salidas de la red en condiciones de extrapolación mantengan sentido físico. Es importante señalar que esta última es válida para el rango de aplicación de reactores PWR o PHWR, es decir, por encima de 100 bar.
 
@@ -341,8 +318,8 @@ En cuanto a la relación de convexidad, se planteó una derivada segunda positiv
 La evaluación de este conjunto de ecuaciones diferenciales se realizó sobre un conjunto de datos independiente, tradicionalmente llamado puntos de colocación. Se formó un espacio de puntos de colocación específico para cada relación aplicada, extendiendo el rango en sentido del mínimo o del máximo según el signo de la derivada aplicada. Se estableció, para cada condición, la mitad de puntos de colocación que de observaciones de simulaciones de COBRA3-CP.
 % con los límites inferiores y superiores de cada variable, y se expandió cada uno en un 10\% de la media de la variable. De esta forma el espacio permitió evaluar la extrapolación del modelo por fuera de los datos rotulados. Se estableció el doble de puntos de colocación que de observaciones de simulaciones de COBRA3-CP, lo que resultó en un total de $2\,645\,520$ puntos.
 
-\pagebreak
-La pérdida total, entonces, se compone de las componentes de la ecuación \ref{eq:loss_chf},
+% \pagebreak
+La pérdida total, entonces, se compone de las componentes de la ecuación \ref{eq:loss_chf}:
 \begin{equation}
     \label{eq:loss_chf}
     \mathcal{L} = \mathcal{L}_\mathrm{data} + \lambda_\mathrm{mon} \sum_i \mathcal{L}_{\mathrm{mon},i} + \lambda_\mathrm{cruz} \mathcal{L}_\mathrm{cruz} + \lambda_\mathrm{convex} \mathcal{L}_\mathrm{convex}
@@ -351,8 +328,22 @@ La pérdida total, entonces, se compone de las componentes de la ecuación \ref{
 \end{equation}
 donde los $\lambda$ son los factores de peso de las ecuaciones diferenciales parciales (PDE, del inglés \textit{Partial Differential Equation}). Estos se optimizaron para obtener resultados que respeten las relaciones postuladas por fuera del rango de operación de los ensayos experimentales.
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{Figures/groeneveld_tendencia_g.png}
+    \caption{Tendencia del CHF con el flujo másico, para los datos de los ensayos en un tubo recopilados por Groeneveld \citep{USNRC2019NUREGKM0011, GROENEVELD2007}.}
+    \label{fig:groeneveld_g}
+\end{figure}
+
 Para el entrenamiento del modelo, en primer lugar se entrena la \texttt{LFDNN} con sus datos. Su entrenamiento es estándar y puede realizarse con optimizador Adam y métrica MSE.
 Luego, con los pesos de la \texttt{LFDNN} congelados, se entrena la \texttt{HFPINN} con la estructura completa de la \texttt{MFPINN}. Se realizaron pruebas para determinar si era necesario, debido a las restricciones tipo PINN, un optimizador de segundo orden como L-BFGS \citep{liu1989lbfgs}. A partir de estas pruebas, se determinó utilizar una estructura de optimización en dos etapas: una inicial con optimizador Adam sin la pérdida informada por física, y una final con optimizador L-BFGS incorporando dicha pérdida. Sus resultados se exponen en el capítulo \ref{Chapter4}.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{Figures/groeneveld_tendencia_x.png}
+    \caption{Tendencia del CHF con el título termodinámico, para los datos de los ensayos en un tubo recopilados por Groeneveld \citep{USNRC2019NUREGKM0011, GROENEVELD2007}.}
+    \label{fig:groeneveld_x}
+\end{figure}
 
 % Al igual que para el predictor de PLC, se realizó la optimización de los hiperparámetros de la arquitectura por medio de Optuna. Los resultados, junto al modelo final, se presentan en el capítulo \ref{Chapter4}. 
 
@@ -360,12 +351,19 @@ Luego, con los pesos de la \texttt{LFDNN} congelados, se entrena la \texttt{HFPI
 \label{sec:chf_eval}
 Para la evaluación del modelo se utilizaron métricas estadísticas tradicionales en conjunto con otras particulares del problema. Las primeras son el MSE, el RMSE y el coeficiente de determinación $\mathrm{R}^2$. 
 
-En cuanto a las métricas específicas del problema, se utilizó el $\mathrm{DNBR}_\mathrm{min}$ del diseño termohidráulico de la \cna{}, explicado en detalle en \citep{IFS_CNA2, invap_thdesign}. Este es el valor para el que, si la predicción de DNBR está por encima, se asegura con 95\% de probabilidad y confianza que no se tiene DNB. Se define según la ecuación \ref{eq:dnbr_min},
+En cuanto a las métricas específicas del problema, se utilizó el $\mathrm{DNBR}_\mathrm{min}$ del diseño termohidráulico de la \cna{}, explicado en detalle en \citep{IFS_CNA2, invap_thdesign}. Este es el valor para el que, si la predicción de DNBR está por encima, se asegura con 95\% de probabilidad y confianza que no se tiene DNB. Se define según la ecuación \ref{eq:dnbr_min}:
 \begin{equation}
     \label{eq:dnbr_min}
     \mathrm{DNBR}_\mathrm{min} = \overline{\mathrm{DNBR}} + k_{95}\cdot \sigma(\mathrm{DNBR}) ,
 \end{equation}
-donde DNBR son las predicciones en las condiciones de los ensayos de la Universidad de Columbia y $k_{95}$ es el intervalo de tolerancia de una distribución normal para asegurar 95\% de probabilidad y confianza según la cantidad de observaciones \citep{nist_e_handbook_tolerance, natrella1963experimental}. Es importante destacar que el cómputo de esta métrica tiene dos hipótesis: que la distribución es normal y que está centrada. Esto último se debe asegurar por medio de un factor de centrado.
+donde DNBR son las predicciones en las condiciones de los ensayos de la UC y $k_{95}$ es el intervalo de tolerancia de una distribución normal para asegurar 95\% de probabilidad y confianza según la cantidad de observaciones \citep{nist_e_handbook_tolerance, natrella1963experimental}. Es importante destacar que el cómputo de esta métrica tiene dos hipótesis: que la distribución es normal y que está centrada. Esto último se debe asegurar por medio de un factor de centrado.
 % Se comparó con la metodología actual (LUT + TMF), que obtiene $\mathrm{DNBR}_\mathrm{min} = 1.21$ al considerar todo el set de datos.
 
 Otro criterio utilizado para evaluar el modelo fue la evolución predicha de CHF en función de las distintas variables. Esto permite afirmar que el modelo realiza una predicción con sentido físico. 
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{Figures/groeneveld_tendencia_p.png}
+    \caption{Tendencia del CHF con la presión, para los datos de los ensayos en un tubo recopilados por Groeneveld \citep{USNRC2019NUREGKM0011, GROENEVELD2007}.}
+    \label{fig:groeneveld_p}
+\end{figure}

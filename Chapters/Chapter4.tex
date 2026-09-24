@@ -9,7 +9,7 @@ En este capítulo se presentan los resultados de los estudios realizados sobre l
 A continuación, se presentan los resultados para el modelo de estimación de PLC: la optimización de hiperparámetros, las predicciones de DNBR y fracción de vacío del mejor modelo y la estimación de PLC por ambos criterios.
 
 \subsection{Optimización de hiperparámetros}
-Como se mencionó en la sección \ref{sec:plc_arq}, la optimización de hiperparámetros se realizó por medio de la biblioteca Optuna. Las métricas objetivo se establecieron por separado para cada criterio. Para el DNBR se utilizó el error porcentual medio, mientras que para la fracción de vacío se usó el error absoluto medio escalado 100 veces. Esta decisión se tomó al considerar que la fracción de vacío tiene valor exactamente igual a 0 para un porcentaje importante de los datos y con el objetivo de lograr una contribución equitativa de ambos criterios al rendimiento del modelo. De esta forma, se obtiene un único modelo con error similar en ambos criterios y se evita entrenar uno por cada uno de ellos.
+Como se mencionó en la subsección \ref{sec:plc_arq}, la optimización de hiperparámetros se realizó por medio de la biblioteca Optuna. Las métricas objetivo se establecieron por separado para cada criterio. Para el DNBR se utilizó el error porcentual medio, mientras que para la fracción de vacío se usó el error absoluto medio escalado 100 veces. Esta decisión se tomó al considerar que la fracción de vacío tiene valor exactamente igual a 0 para un porcentaje importante de los datos y con el objetivo de lograr una contribución equitativa de ambos criterios al rendimiento del modelo. De esta forma, se obtiene un único modelo con error similar en ambos criterios y se evita entrenar uno por cada uno de ellos.
 
 La arquitectura optimizada se resume en la tabla \ref{tab:plc_arq_hp}, y en la figura \ref{fig:plc_opt_results} del anexo \ref{appendix_plc} se muestra el proceso de optimización y los resultados de las sucesivas iteraciones.
 
@@ -60,24 +60,20 @@ Se obtiene, para DNBR, una media aún más baja en la región de interés ($1.7-
 	\label{tab:plc_errors_dnbr_vacio}
 \end{table}
 
-Como se explicó en la sección \ref{sec:plc_pipeline}, se filtraron los datos disponibles para entrenar en la región de interés en ambas variables objetivo. El filtro conservó los valores de MDNBR entre $1.7$ y $2.5$, o de fracción de vacío entre 15\% y 35\%. Por ello, resulta de interés evaluar la precisión del modelo por fuera de la región de entrenamiento. En la figura \ref{fig:plc_results_excluidos} se presentan las predicciones comparadas con los valores reales, para MDNBR y fracción de vacío.
+Como se explicó en la subsección \ref{sec:plc_pipeline}, se filtraron los datos disponibles para entrenar en la región de interés en ambas variables objetivo. El filtro conservó los valores de MDNBR entre $1.7$ y $2.5$, o de fracción de vacío entre 15\% y 35\%. Por ello, resulta de interés evaluar la precisión del modelo por fuera de la región de entrenamiento. En la figura \ref{fig:plc_results_excluidos} se presentan las predicciones comparadas con los valores reales, para MDNBR y fracción de vacío.
 En primer lugar, se evidencia la dificultad del modelo para predecir en las regiones excluidas del entrenamiento, algo esperable en una arquitectura DNN.
 Luego, para DNBR se observa un comportamiento correcto en valores inferiores a los de interés, pero una tendencia a subpredecir al aumentar. Si bien esto podría interpretarse generalmente como un resultado desfavorable, se puede considerar que el modelo entrega predicciones conservativas fuera de su zona de entrenamiento y brinda seguridad en su aplicación. Por último, para la fracción de vacío, por debajo de la zona de interés se observan predicciones menores a 0, lo que constituye un resultado no físico. Se podría realizar un clipping de la predicción para que los valores negativos se conviertan en 0, lo que daría un buen rendimiento por debajo de la zona de entrenamiento. Por encima de la zona de entrenamiento, se puede observar en primer lugar una tendencia a subpredecir hasta 60\% y luego una sobrepredicción. 
 
 En la sección \ref{sec:app_plc_dnbr_vacio} se analiza el error del modelo en el conjunto de datos excluido.
 
 \subsection{Estimación de PLC por DNBR y fracción de vacío}
-La evaluación del modelo realizada hasta aquí responde a su capacidad de estimar el mínimo DNBR y la fracción de vacío a la salida de un canal refrigerante, dadas sus condiciones termohidráulicas y distribuciones de potencia. Sin embargo, este no es el objetivo último del modelo, sino que se debe estimar la PLC por DNBR y fracción de vacío. Esto responde a un lazo de cálculo iterativo, explicado en detalle en la sección \ref{sec:plc_integracion}. A continuación, se analiza el comportamiento del modelo en dicho escenario, por medio del criterio del factor de ajuste $F_\mathrm{PLC}$ explicado en la sección \ref{sec:plc_evaluacion}.
+La evaluación del modelo realizada hasta aquí responde a su capacidad de estimar el mínimo DNBR y la fracción de vacío a la salida de un canal refrigerante, dadas sus condiciones termohidráulicas y distribuciones de potencia. Sin embargo, este no es el objetivo último del modelo, sino que se debe estimar la PLC por DNBR y fracción de vacío. Esto responde a un lazo de cálculo iterativo, explicado en detalle en la subsección \ref{sec:plc_integracion}. A continuación, se analiza el comportamiento del modelo en dicho escenario, por medio del criterio del factor de ajuste $F_\mathrm{PLC}$ explicado en la subsección \ref{sec:plc_evaluacion}.
 
 Para esta evaluación, se utilizaron 100 estados del reactor correspondientes a una estrategia de recambio de elementos combustibles de la \cna{}, con un total de $43\,811$ simulaciones. El cálculo de las PLC se realizó con COBRA3-CP según la metodología tradicional, para obtener los valores de referencia y los tiempos requeridos en este tipo de cálculos. 
 
 En la figura \ref{fig:plc_results_corr} se presentan los resultados, segmentados por ZH, para la versión base de la DNN y con la corrección por $F_\mathrm{PLC}$. En la tabla \ref{tab:plc_f} se observan los valores de media y desvío estándar para el cociente entre el valor predicho y el real, y el $F_\mathrm{PLC}$, factor de ajuste para asegurar con 95\% de probabilidad y confianza que la PLC predicha está por debajo de la real. Los tres valores se encuentran segmentados por ZH y para los criterios de DNBR y fracción de vacío.
 
-Se observa un buen desempeño, especialmente para las ZZHH 4 y 5, donde la nube de puntos azul, correspondiente a la DNN sin corregir, se encuentra muy cerca de la recta identidad. Para las ZZHH 1 a 3, el desempeño es inferior, aunque los resultados se encuentran dentro de parámetros aceptables. Este comportamiento resulta esperable, ya que en el conjunto de datos de entrenamiento la representación de las ZZHH era equivalente a la cantidad de canales de cada una en el reactor, distribución que es muy despareja. Esto también se evidencia en los valores de media y desvío estándar del cociente predicho-real. La media y el desvío estándar son decrecientes de ZH 1 a 5, con un valor casi unitario en la última. Los factores de ajuste muestran una mayor sobreestimación de las PLC en las ZZHH periféricas.
-
-Debe tenerse en cuenta que para las ZZHH 1 a 3 el límite siempre se obtiene por fracción de vacío. Por lo tanto, el error en predicción de DNBR no es un problema, y el buen rendimiento en fracción de vacío hace al modelo apto para predecir en estas ZZHH. La ZH 4, en este caso, también está limitada por vacío, por lo que se le puede aplicar la misma conclusión.
-
-\begin{figure}[hbtp]
+\begin{figure}[H]
     \centering
     % \includegraphics[width=\textwidth]{Figures/plc_pred_corr.png}
     \includegraphics[height=\textheight]{Figures/plc_pred_corr.png}
@@ -101,6 +97,10 @@ Debe tenerse en cuenta que para las ZZHH 1 a 3 el límite siempre se obtiene por
 	\end{tabular}
 	\label{tab:plc_f}
 \end{table}
+
+Se observa un buen desempeño, especialmente para las ZZHH 4 y 5, donde la nube de puntos azul, correspondiente a la DNN sin corregir, se encuentra muy cerca de la recta identidad. Para las ZZHH 1 a 3, el desempeño es inferior, aunque los resultados se encuentran dentro de parámetros aceptables. Este comportamiento resulta esperable, ya que en el conjunto de datos de entrenamiento la representación de las ZZHH era equivalente a la cantidad de canales de cada una en el reactor, distribución que es muy despareja. Esto también se evidencia en los valores de media y desvío estándar del cociente predicho-real. La media y el desvío estándar son decrecientes de ZH 1 a 5, con un valor casi unitario en la última. Los factores de ajuste muestran una mayor sobreestimación de las PLC en las ZZHH periféricas.
+
+Debe tenerse en cuenta que para las ZZHH 1 a 3 el límite siempre se obtiene por fracción de vacío. Por lo tanto, el error en predicción de DNBR no es un problema, y el buen rendimiento en fracción de vacío hace al modelo apto para predecir en estas ZZHH. La ZH 4, en este caso, también está limitada por vacío, por lo que se le puede aplicar la misma conclusión.
 
 Por último, en la tabla \ref{tab:plc_margen_perdido} se observan los márgenes de potencia perdidos al aplicar la predicción de DNN. Es decir, la diferencia porcentual de potencia entre el valor de referencia y el predicho, corregido por $F_\mathrm{PLC}$. Se presentan los valores de margen medio y de margen máximo. Luego se computa el total como el promedio ponderado por la cantidad de canales que pertenecen a cada ZH.
 Se obtuvieron valores decrecientes de la ZH 1 a la 5 tanto por DNBR como por fracción de vacío, a excepción de la ZH 3, que presenta el valor máximo de margen perdido por DNBR. Los valores máximos en las zonas periféricas resultan altos, aunque dentro de los porcentajes de margen tomados como criterio de seguridad al calcular una estrategia de recambio de combustibles.
@@ -130,7 +130,7 @@ Finalmente, los márgenes perdidos totales medios son del $0.7$\% para DNBR y $0
 En la sección \ref{app_plc_tiempos} se presenta un análisis de los tiempos de cómputos de PLC según la metodología adoptada.
 
 \subsection{Aplicación de embeddings}
-Como se explicó en la sección \ref{sec:arq_embeddings}, se aplicó una arquitectura de autoencoder para obtener el espacio latente de los perfiles de potencia axial y por barras. La arquitectura empleada fue simple, ya que esta tarea no requiere una red densa. Se optó por un encoder con 2 capas ocultas, la primera de 64 neuronas y la segunda de 32. El decoder, por su parte, es el espejo del encoder.
+Como se explicó en la subsección \ref{sec:arq_embeddings}, se aplicó una arquitectura de autoencoder para obtener el espacio latente de los perfiles de potencia axial y por barras. La arquitectura empleada fue simple, ya que esta tarea no requiere una red densa. Se optó por un encoder con 2 capas ocultas, la primera de 64 neuronas y la segunda de 32. El decoder, por su parte, es el espejo del encoder.
 
 Se buscó el espacio latente de menor dimensión tal que la reconstrucción del vector de entrada en el conjunto de entrenamiento tuviera un coeficiente de determinación $\mathrm{R}^2>0.99$. El proceso de cálculo recorrió desde un espacio latente de dimensión 1 hasta la primera dimensión que cumpliera con la condición establecida. Para el entrenamiento se utilizó el mismo conjunto de datos que para el estimador de PLC.
 
@@ -155,10 +155,6 @@ En la figura \ref{fig:embeddings_radial} se presenta el gráfico análogo para e
 En la sección \ref{app_plc_emb_errores} se analiza la media y el desvío estándar del error por objetivo al aplicar los modelos de embeddings para la entrada de los predictores de DNBR y fracción de vacío.
 En la tabla \ref{tab:plc_emb_margen_perdido} se presenta el margen perdido total para el modelo base y los tres modelos con embeddings. En cuanto al DNBR, solo el modelo con embeddings para el perfil por barras presenta una reducción del margen perdido. Para el margen perdido de fracción de vacío se obtiene una reducción en los tres modelos.
 
-Se estima que la reducción del margen perdido en la PLC por DNBR al utilizar el espacio latente del perfil por barras proviene de la elevada dimensión de dicho perfil, en relación con la información que representa. Al reducir su dimensión, la DNN tendría mayor capacidad de centrar recursos en otras variables de entrada. 
-
-En el caso de la PLC por fracción de vacío, es sabido que depende de la integral de la energía entregada y no de condiciones locales. Por lo tanto, variables de entrada globales como las componentes del espacio latente presentan una ventaja esperable en su predicción.
-
 \begin{table}[H]
 	\centering
 	\caption{Margen perdido medio y máximo por utilizar DNN y embeddings, según zona hidráulica y total.}
@@ -176,6 +172,10 @@ En el caso de la PLC por fracción de vacío, es sabido que depende de la integr
 	\label{tab:plc_emb_margen_perdido}
 \end{table}
 
+Se estima que la reducción del margen perdido en la PLC por DNBR al utilizar el espacio latente del perfil por barras proviene de la elevada dimensión de dicho perfil, en relación con la información que representa. Al reducir su dimensión, la DNN tendría mayor capacidad de centrar recursos en otras variables de entrada. 
+
+En el caso de la PLC por fracción de vacío, es sabido que depende de la integral de la energía entregada y no de condiciones locales. Por lo tanto, variables de entrada globales como las componentes del espacio latente presentan una ventaja esperable en su predicción.
+
 % \newpage
 \section{Estimación de CHF}
 \label{sec:results_chf}
@@ -185,7 +185,7 @@ En primer lugar, se debe establecer el modelo de baja fidelidad, entrenado para 
 
 Luego, se presentan dos análisis respecto de la arquitectura del modelo. Ya que el trabajo propone una superposición de arquitecturas, se evalúa la contribución de cada cambio, con la referencia de un modelo simple y de la metodología actual. Se evalúa en primer lugar la arquitectura de multifidelidad, con la referencia de una implementación de una DNN tradicional. En segundo lugar, se evalúa la implementación de PINN a la red de multifidelidad, con la referencia de la arquitectura de multifidelidad base.
 
-En tercer lugar, en la sección \ref{sec:chf_variables_entrada} se analizan las variables de entrada al modelo, ya que su uso sin evaluación equivale a un modelo de caja negra, que no permite comprender su comportamiento ni su relación con la física del fenómeno. 
+En tercer lugar, en la subsección \ref{sec:chf_variables_entrada} se analizan las variables de entrada al modelo, ya que su uso sin evaluación equivale a un modelo de caja negra, que no permite comprender su comportamiento ni su relación con la física del fenómeno. 
 Citando a von Neumann: ``Con cuatro parámetros puedo ajustar un elefante, y con cinco puedo hacer que mueva su trompa''\footnotemark{}.
 \footnotetext{Traducido de la frase original en inglés: ``With four parameters I can fit an elephant, and with five I can make him wiggle his trunk'' \citep{dyson2004meeting}.}
 Debido a que el resultado de este análisis fue descartar el uso de variables adicionales, se lo ubica en el anexo \ref{appendix_chf}.
@@ -201,30 +201,32 @@ Estas son el flujo másico, la presión, el título termodinámico y la relació
 
 Las arquitecturas comparadas son las siguientes:
 \begin{itemize}
-    \item DNN tradicional entrenada directamente sobre las simulaciones con \break\mbox{COBRA3-CP} de los ensayos de la Universidad de Columbia. Constituye un baseline para determinar si las arquitecturas más complejas conllevan una mejora de precisión. También debe evaluarse su comportamiento en regiones no entrenadas y ponerse en tela de juicio si sus predicciones tienen sustento físico.
+    \item DNN tradicional entrenada directamente sobre las simulaciones con \break\mbox{COBRA3-CP} de los ensayos de la UC. Constituye un baseline para determinar si las arquitecturas más complejas conllevan una mejora de precisión. También debe evaluarse su comportamiento en regiones no entrenadas y ponerse en tela de juicio si sus predicciones tienen sustento físico.
     % \item DNN tradicional, entrenada directamente sobre las simulaciones con \nobreak COBRA3-CP de los ensayos de la Universidad de Columbia.
     \item \lfpinn{} entrenada sobre los ensayos en un tubo utilizados para conformar las LUT 2006 de Groeneveld. Esto permite tener un baseline del aporte de la predicción de CHF en un tubo y de su contribución a la arquitectura de multifidelidad.
-    \item \mfdnn{}, conjunción de la \lfpinn{} y la \hfdnn{}. Esta última fue entrenada sobre las simulaciones de COBRA3-CP de los ensayos de la Universidad de Columbia, con la predicción de la \lfpinn{} como entrada adicional.
+    \item \mfdnn{}, conjunción de la \lfpinn{} y la \hfdnn{}. Esta última fue entrenada sobre las simulaciones de COBRA3-CP de los ensayos de la UC, con la predicción de la \lfpinn{} como entrada adicional.
     % \item \texttt{MFPINN}, igual a la \texttt{MFDNN}, pero con la aplicación de las relaciones físicas descriptas en la sección \ref{sec:chf_arq}.
 \end{itemize}
 
-Para lograr una evaluación que no se limitara a la capacidad de los modelos de representar la información con la que fueron entrenados, se planteó entrenarlos con los casos menos exigentes desde el punto de vista del CHF. Entonces, para dividir entre los conjuntos de entrenamiento y prueba, se utilizaron en entrenamiento aquellos ensayos con un flujo másico superior a $4\,000\,\nicefrac{\mathrm{kg}}{\mathrm{m}^2\mathrm{s}}$. La división se grafica en la figura \ref{fig:chf_div_train_test}. Además del flujo másico, la división se presenta contra el título termodinámico, donde se observa que la división también implica dejar en evaluación a la mayoría de los ensayos que presentaron CHF a título alto. Esto permite evaluar el funcionamiento del modelo al extrapolar hacia condiciones más exigentes de CHF, de forma similar a lo realizado para evaluar y definir la \lfpinn{}.
+Para lograr una evaluación que no se limitara a la capacidad de los modelos de representar la información con la que fueron entrenados, se planteó entrenarlos con los casos menos exigentes desde el punto de vista del CHF. Entonces, para dividir entre los conjuntos de entrenamiento y prueba, se utilizaron en entrenamiento aquellos ensayos con un flujo másico superior a $4\,000\,\nicefrac{\mathrm{kg}}{\mathrm{m}^2\mathrm{s}}$. La división se grafica en la figura \ref{fig:chf_div_train_test}. 
+
+Además del flujo másico, la división se presenta contra el título termodinámico, donde se observa que la división también implica dejar en evaluación a la mayoría de los ensayos que presentaron CHF a título alto. Esto permite evaluar el funcionamiento del modelo al extrapolar hacia condiciones más exigentes de CHF, de forma similar a lo realizado para evaluar y definir la \lfpinn{}.
 
 Para evitar que los resultados de los modelos evaluados dependan del proceso estocástico de entrenamiento, se entrenaron 50 instancias de cada modelo. De esta forma, se comparan las métricas estadísticas y de $\mathrm{DNBR}$ medias de cada modelo.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{Figures/chf_division_train_test.png}
-    \caption{División de los datos de CHF de la Universidad de Columbia en entrenamiento y evaluación, según flujo másico. Los ejes de flujo másico y título termodinámico corresponden a los valores promedio de la sección de ensayo a la salida.}
+    \caption{División de los datos de CHF de la UC en entrenamiento y evaluación, según flujo másico. Los ejes de flujo másico y título termodinámico corresponden a los valores promedio de la sección de ensayo a la salida.}
     \label{fig:chf_div_train_test}
 \end{figure}
 
-Las arquitecturas se evaluaron en su predicción de CHF de forma tradicional, y adicionalmente por medio del $\mathrm{DNBR}_\mathrm{min}$, según lo explicado en la sección \ref{sec:chf_eval}. En la tabla \ref{tab:mf_estadistica} se comparan los valores de $\mathrm{R}^2$ y de RMSE para la DNN, la \lfpinn{} y la \mfdnn{}. 
+Las arquitecturas se evaluaron en su predicción de CHF de forma tradicional, y adicionalmente por medio del $\mathrm{DNBR}_\mathrm{min}$, según lo explicado en la subsección \ref{sec:chf_eval}. En la tabla \ref{tab:mf_estadistica} se comparan los valores de $\mathrm{R}^2$ y de RMSE para la DNN, la \lfpinn{} y la \mfdnn{}. 
 Se obtuvo un mejor rendimiento por parte de la \mfdnn{} respecto de la DNN en evaluación y muy similar en entrenamiento. En cuanto a la \lfpinn{}, su comportamiento es pobre, con un $\mathrm{R}^2<0$ que indica que una predicción constante e igual a la media obtendría un mejor ajuste.
 
 \begin{table}[h]
 	\centering
-	\caption{Evaluación por métricas estadísticas de la predicción sobre el conjunto de ensayos de la Universidad de Columbia. Para DNN y \mfdnn{} representa la mediana de 50 redes entrenadas.}
+	\caption{Evaluación por métricas estadísticas de la predicción sobre el conjunto de ensayos de la UC. Para DNN y \mfdnn{} representa la mediana de 50 redes entrenadas.}
 	\begin{tabular}{p{2cm} l c c} 
         \toprule
         \textbf{Modelo} & \textbf{Conjunto} & $\bm{\mathrm{R}^2}$ & $\bm{\mathrm{RMSE}}$ \\ \hline
@@ -247,7 +249,7 @@ Se obtiene nuevamente un comportamiento similar entre el modelo DNN y \mfdnn{}, 
 
 \begin{table}[H]
 	\centering
-	\caption{Evaluación por métricas de predicción de $\mathrm{DNBR}$ sobre el conjunto de ensayos de la Universidad de Columbia. Para DNN y \mfdnn{} representa la mediana de 50 redes entrenadas.}
+	\caption{Evaluación por métricas de predicción de $\mathrm{DNBR}$ sobre el conjunto de ensayos de la UC. Para DNN y \mfdnn{} representa la mediana de 50 redes entrenadas.}
 	\begin{tabular}{p{2cm} l c c c c} 
         \toprule
         \textbf{Modelo} & \textbf{Conjunto} & $\bm{f_c}$ & $\bm{\overline{\mathrm{DNBR}}}$ & $\bm{\sigma(\mathrm{DNBR})}$ & $\bm{\mathrm{DNBR}_\mathrm{min}}$ \\ \hline
@@ -362,7 +364,7 @@ Para realizar la comparación se dispuso el entrenamiento de la siguiente forma.
 	\label{tab:mfpinn_arqs}
 \end{table}
 
-A continuación se compara el rendimiento de los modelos en cuanto a predicción de DNBR, tanto en entrenamiento como en evaluación. Se presentan las tablas \ref{tab:mfpinn_arqs_dnbr_train} y \ref{tab:mfpinn_arqs_dnbr_test}, para entrenamiento y evaluación respectivamente.
+A continuación se compara el rendimiento de los modelos en cuanto a predicción de DNBR, tanto en entrenamiento como en evaluación. Se presentan las tablas \ref{tab:mfpinn_arqs_dnbr_train} y \ref{tab:mfpinn_arqs_dnbr_test}, para entrenamiento y evaluación, respectivamente.
 Nuevamente, el factor de centrado fue calculado sobre el conjunto de entrenamiento y aplicado al de evaluación, de forma análoga a lo que se realiza en inferencia. Se obtiene un rendimiento idéntico entre los modelos en el conjunto de entrenamiento, con una leve mejora respecto del modelo base \mfdnn{}. Esta mejora en todos los modelos es esperable, dado que se dispuso de más épocas de entrenamiento sobre el mismo conjunto.
 
 Luego, en evaluación, se obtienen resultados más diversos. Las variantes A, B2 y B3 logran mejorar el rendimiento de la referencia. Se obtuvo un aumento generalizado del desvío estándar y, en los modelos A a B2, una tendencia a subpredecir DNBR, mientras que en los modelos B3 a D se observó una tendencia a sobrepredecir. El modelo E, combinación de los modelos B y D, obtiene una mejora de rendimiento muy cercana a la del modelo completo A. Esta combinación se realizó no en función de los resultados de \dnbrmin{}, sino a partir de los gráficos de CHF predicho contra medido, presentados en las figuras \ref{fig:chf_pred_mfpinn_a}, \ref{fig:chf_pred_mfpinn_b} y \ref{fig:chf_pred_mfpinn_d} para las variantes A, B y D, respectivamente. 
@@ -420,7 +422,7 @@ En función de los resultados de esta sección, se definió utilizar la variante
 
 \subsection{Modelos finales}
 \label{sec:chf_modelos_finales}
-En las secciones \ref{sec:chf_arq_mfdnn} y \ref{sec:chf_arq_mfpinn} se validó la robustez de los modelos \mfdnn{} y \mfpinn{} para la estimación de CHF al restringir su entrenamiento a condiciones de medio a alto caudal y evaluación a bajo caudal. Dichas condiciones implican una penalización importante al modelo, ya que su conjunto de entrenamiento no contiene datos de las condiciones más críticas para el CHF. Si bien este análisis permitió validar el funcionamiento de los modelos, sus versiones finales no deben tener aplicada esta penalización. Por lo tanto, fueron entrenados con una división aleatoria entre conjuntos de entrenamiento y evaluación, con un 20\% de los datos reservados para evaluación. Se realizó la división con estratificación por conjunto de ensayos de la Universidad de Columbia, de forma de tener datos de los 4 conjuntos de ensayos disponibles.
+En las subsecciones \ref{sec:chf_arq_mfdnn} y \ref{sec:chf_arq_mfpinn} se validó la robustez de los modelos \mfdnn{} y \mfpinn{} para la estimación de CHF al restringir su entrenamiento a condiciones de medio a alto caudal y evaluación a bajo caudal. Dichas condiciones implican una penalización importante al modelo, ya que su conjunto de entrenamiento no contiene datos de las condiciones más críticas para el CHF. Si bien este análisis permitió validar el funcionamiento de los modelos, sus versiones finales no deben tener aplicada esta penalización. Por lo tanto, fueron entrenados con una división aleatoria entre conjuntos de entrenamiento y evaluación, con un 20\% de los datos reservados para evaluación. Se realizó la división con estratificación por conjunto de ensayos de la UC, de forma de tener datos de los 4 conjuntos de ensayos disponibles.
 
 En la tabla \ref{tab:mf_final_dnbr} se presentan los resultados de las métricas de predicción de $\mathrm{DNBR}$ para \mfdnn{} y \mfpinn{}. Adicionalmente se tienen los valores de la metodología actual, implementada por INVAP. Aquí se puede comparar directamente con ella, ya que los modelos \mfdnn{} y \mfpinn{} fueron entrenados con todo el rango de los ensayos. La metodología actual fue calibrada sin dejar un conjunto de evaluación, por lo que su capacidad de extrapolar por fuera del rango de calibración no ha sido estudiada.
 
@@ -428,7 +430,7 @@ El modelo \mfdnn{} obtiene un rendimiento similar a los análisis previos en el 
 
 \begin{table}[H]
 	\centering
-	\caption{Evaluación por métricas de predicción de $\mathrm{DNBR}$ sobre el conjunto de ensayos de la Universidad de Columbia. Para \mfdnn{} representa la mediana de 50 redes entrenadas. Entrenamiento y evaluación divididos de forma aleatoria.}
+	\caption{Evaluación por métricas de predicción de $\mathrm{DNBR}$ sobre el conjunto de ensayos de la UC. Para \mfdnn{} representa la mediana de 50 redes entrenadas. Entrenamiento y evaluación divididos de forma aleatoria.}
 	\begin{tabular}{p{2cm} l c c c c} 
         \toprule
         \textbf{Modelo} & \textbf{Conjunto} & $\bm{f_c}$ & $\bm{\overline{\mathrm{DNBR}}}$ & $\bm{\sigma(\mathrm{DNBR})}$ & $\bm{\mathrm{DNBR}_\mathrm{min}}$ \\ \hline

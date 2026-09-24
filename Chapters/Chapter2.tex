@@ -64,15 +64,9 @@ En cuanto a los datos de entrenamiento, se debe dividir esta sección en los dat
 
 Para la estimación de PLC, se utilizaron datos de simulaciones realizadas por la División de Diseño Termohidráulico de la Gerencia de Análisis de Seguridad y Diseño del Núcleo (GASyDN) de Nucleoeléctrica Argentina S.A. (NA-SA), que son de carácter confidencial. Los datos fueron generados con el código de simulación termohidráulica de subcanales COBRA3-CP \citep{cobra3cp}, a partir de estados del reactor calculados en las simulaciones de estrategias de recambio de combustibles. De las salidas de las simulaciones de COBRA3-CP se extrajeron los datos de entrada al código (perfiles de potencia axiales y por barra combustible, temperatura de entrada, presión de salida, potencia total, zona hidráulica, caudal, etc.) y los datos de salida del código de interés (mínimo DNBR, fracción de vacío promedio a la salida).
 
-Por otro lado, para la estimación de CHF, se dispone de múltiples fuentes de datos. Se incluyen los datos de ensayos en un tubo usados por Groeneveld en su LUT 2006, obtenidos de \citep{USNRC2019NUREGKM0011}, los datos de ensayos sobre el bundle de la \cna{} realizados por la Universidad de Columbia \citep{recopilacion_columbia}, y la réplica de los ensayos de Columbia con COBRA3-CP, que permite ampliar la cantidad de puntos de ensayo y obtener datos en función de la coordenada $z$. Estas últimas dos fuentes de datos son de carácter confidencial. 
+Por otro lado, para la estimación de CHF, se dispone de múltiples fuentes de datos. Se incluyen los datos de ensayos en un tubo usados por Groeneveld en su LUT 2006, obtenidos de \citep{USNRC2019NUREGKM0011}, los datos de ensayos sobre el bundle de la \cna{} realizados por la UC \citep{recopilacion_columbia}, y la réplica de los ensayos de la UC con COBRA3-CP, que permite ampliar la cantidad de puntos de ensayo y obtener datos en función de la coordenada $z$. Estas últimas dos fuentes de datos son de carácter confidencial. 
 
 Los datos de ensayos en un tubo tienen las siguientes variables disponibles: diámetro, longitud, presión a la salida, flujo másico, título termodinámico a la salida, entalpía a la entrada, flujo de calor y temperatura de entrada. En la figura \ref{fig:hist_groeneveld} se muestran los histogramas de las variables de estos ensayos.
-
-En los ensayos de Columbia se registraron las siguientes variables: presión a la salida, temperatura de entrada, flujo másico, flujo de calor, título termodinámico a la salida y diferencia de presión a la entrada. En la figura \ref{fig:hist_columbia} se presentan los histogramas de las variables de estos ensayos.
-
-Respecto de la infraestructura de cómputo, debido al carácter confidencial de los datos utilizados, se optó por realizar todo el proceso de entrenamiento en un entorno local. Para ello se dispuso de dos computadoras, una provista por la empresa NA-SA, con una placa gráfica NVIDIA A2000 y 32 GB de RAM, y otra de uso personal del autor, con una placa gráfica NVIDIA RTX 3090 y 64 GB de RAM. Ambas computadoras tienen capacidad apta para el trabajo en cuestión. 
-
-\pagebreak
 
 \begin{figure}[!htbp]
 	\centering
@@ -81,9 +75,11 @@ Respecto de la infraestructura de cómputo, debido al carácter confidencial de 
 	\label{fig:hist_groeneveld}
 \end{figure}
 
-\vfill
+En los ensayos de la UC se registraron las siguientes variables: presión a la salida, temperatura de entrada, flujo másico, flujo de calor, título termodinámico a la salida y diferencia de presión a la entrada. En la figura \ref{fig:hist_columbia} se presentan los histogramas de las variables de estos ensayos.
 
-\begin{figure}[!htbp]
+Respecto de la infraestructura de cómputo, debido al carácter confidencial de los datos utilizados, se optó por realizar todo el proceso de entrenamiento en un entorno local. Para ello se dispuso de dos computadoras, una provista por la empresa NA-SA, con una placa gráfica NVIDIA A2000 y 32 GB de RAM, y otra de uso personal del autor, con una placa gráfica NVIDIA RTX 3090 y 64 GB de RAM. Ambas computadoras tienen capacidad apta para el trabajo en cuestión. 
+
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=\textwidth]{Figures/hist_columbia.png}
 	\caption{Histogramas de las variables de los ensayos de CHF de la Universidad de Columbia.}
