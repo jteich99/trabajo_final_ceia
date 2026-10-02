@@ -1,0 +1,51 @@
+% Versión simplificada del esquema del lazo de cálculo de la potencia límite por DNBR,
+% pensada para una diapositiva de beamer.
+% Requiere en el preámbulo:
+%   \usepackage{tikz}
+%   \usetikzlibrary{arrows.meta, positioning, shapes.geometric}
+% Incluir en el frame con, por ejemplo:
+%   \begin{frame}{Lazo de cálculo de la potencia límite por DNBR}
+%       \centering
+%       \input{Figures/loop_potencia_dnbr_beamer.tex}
+%   \end{frame}
+\begin{tikzpicture}[
+    font=\footnotesize,
+    arr/.style={-{Latex[length=1.8mm]}, thick},
+    node distance=6mm and 12mm,
+    box/.style={
+        rectangle, rounded corners, draw, thick,
+        fill=blue!8, align=center,
+        text width=34mm, minimum height=7mm, inner sep=1mm
+    },
+    startbox/.style={box, fill=gray!15},
+    decision/.style={
+        diamond, draw, thick, fill=orange!12, aspect=2.4,
+        align=center, text width=22mm, inner sep=0mm
+    },
+    endbox/.style={
+        rectangle, rounded corners, draw, thick,
+        fill=green!12, align=center,
+        text width=14mm, minimum height=7mm, inner sep=1mm
+    },
+]
+
+    % Flujo principal
+    \node[startbox]                  (init)   {Potencia semilla};
+    \node[box, below=of init]        (caudal) {Caudal másico};
+    \node[box, below=of caudal]      (cobra)  {COBRA3-CP};
+    \node[box, below=of cobra]       (extrae) {Potencia a DNBR límite};
+    \node[decision, below=of extrae] (conv)   {¿Converge?};
+    \node[endbox, right=16mm of conv] (fin)   {Fin};
+
+    \draw[arr] (init)   -- (caudal);
+    \draw[arr] (caudal) -- (cobra);
+    \draw[arr] (cobra)  -- (extrae);
+    \draw[arr] (extrae) -- (conv);
+    \draw[arr] (conv)   -- node[above] {Sí} (fin);
+
+    % Realimentación: si no converge, se repite el cálculo de caudal
+    \coordinate (loop) at ([xshift=-10mm] caudal.west);
+    \draw[arr] (conv.west) -- node[above, pos=0.45] {No} (loop |- conv.west)
+        -- (loop) -- (caudal.west);
+
+\end{tikzpicture}

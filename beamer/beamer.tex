@@ -1,0 +1,182 @@
+\documentclass{beamer}
+% \usetheme[style=modern, language=spanish, compacttoc]{Celestia}
+% \usetheme[style=modern, language=spanish]{Celestia}
+\usetheme[style=modern, palette=sapphire, language=spanish]{Celestia}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, shapes.geometric}
+
+% \title{Desarrollo de una herramienta predictiva de la potencia límite de canal de la Central Nuclear Atucha II entrenada con simulaciones de código de subcanales}
+\title{Desarrollo de una herramienta predictiva de la PLC y el CHF para la CNA-UII}
+\author{Ing. Juan Ignacio Teich}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{frame}
+    \tableofcontents
+\end{frame}
+
+\section{Introducción general}
+\begin{frame}
+    \frametitle{Introducción general}
+    \vspace{2cm}
+    \begin{columns}
+        \begin{column}{0.4\textwidth}
+            \raggedleft
+            {\Huge IA}
+            \vspace{0.5cm}
+
+            Inteligencia Artificial
+        \end{column}
+        \begin{column}{0.1\textwidth}
+            \centering
+            {\Huge +}
+            \vspace{0.5cm}
+
+            +
+        \end{column}
+        \begin{column}{0.4\textwidth}
+            \raggedright
+            {\Huge TH}
+            \vspace{0.5cm}
+
+           Termohidráulica 
+        \end{column}
+
+    \end{columns}
+    \vspace{1cm}
+    ¿Cómo puede la Inteligencia Artificial ayudar a la Termohidráulica Nuclear?
+    \begin{itemize}
+        \item Velocidad de predicción.
+        \item Nuevas metodologías y mejores predicciones en campos de aplicación complejos. 
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Primero un poco de Ingeniería Nuclear...}
+
+    Central Nuclear Atucha II (CNA-UII)
+    \begin{columns}
+        \begin{column}{0.6\textwidth}
+            \begin{itemize}
+                \item Lima, Pcia. de Buenos Aires, Argentina.
+                \item PHWR de $2\,160$ MWt y $745$ MWe.
+                \item Combustible: uranio natural.
+                \item Refrigerante y moderador: agua pesada ($D_2O$). 
+                \item 451 canales refrigerantes.
+            \end{itemize}
+        \end{column}
+        \begin{column}{0.4\textwidth} 
+            \centering
+            \includegraphics[width=\textwidth]{../Figures/cna2.jpg}
+            % \includegraphics[width=\textwidth]{../Figures/cna2_rpv.png}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Primero un poco de Ingeniería Nuclear...}
+    Criterios de limitación de la potencia térmica.
+    \begin{itemize}
+        \item Fracción de vapor a la salida de los canales refrigerantes.
+        \item Distancia al Apartamiento de la Ebullición Nucleada (DNBR, del inglés \textit{Departure from Nucleate Boiling Ratio}).
+    \end{itemize}
+    \begin{center}
+        \resizebox{!}{0.6\textheight}{
+            \includegraphics[width=\textwidth]{dnb_tubo_flujo_ascendente.png}
+        }
+    \end{center}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Primero un poco de Ingeniería Nuclear...}
+    ¿Cuándo es necesario recalcular las potencias límite de canal (PLC)?
+    \begin{itemize}
+        \item Cambios de estrategia de recambio de combustible, cambios de condiciones de operación, operación con canales refrigerantes vacíos previo a parada programada, etc.
+        \item Algunos casos pueden implicar más de 1 millón de cálculos individuales.
+    \end{itemize}
+
+    ¿Cómo se calculan las PLC?
+    \begin{itemize}
+        \item Código de subcanales COBRA-3CP, especialmente calibrado para la predicción de las condiciones termohidráulicas de los canales refrigerantes de la CNA-UII.
+    \end{itemize}
+
+    ¿Cómo se calcula la distancia al DNB o DNBR?
+    \begin{itemize}
+        \item Correlaciones de CHF en un tubo.
+        \item Correcciones para la geometría de la CNA-UII a partir de ensayos experimentales.
+    \end{itemize}
+\end{frame}
+
+% \begin{frame}
+%     \frametitle{Apartamiento de la Ebullición Nucleada - DNB}
+%     \begin{figure}
+%         \centering
+%         \resizebox{!}{0.85\textheight}{
+%             \includegraphics[width=\textwidth]{dnb_tubo_flujo_ascendente.png}
+%         }
+%     \end{figure}
+% \end{frame}
+
+\section{Contexto y motivación}
+
+\begin{frame}
+    \frametitle{Contexto y motivación}
+    Objetivos estratégicos:
+    \begin{itemize}
+        \item Disminuir el tiempo y costo computacional del cálculo de PLC, mantiendo precisión.
+        \item Mejorar la precisión de la predicción de CHF para el bundle de la CNA-UII.
+    \end{itemize}
+    \vfill
+    Objetivos específicos:
+    \begin{enumerate}
+        \item Desarrollar una herramienta predictiva de PLC por fracción de vapor y DNBR, entrenada con simulaciones de código de subcanales.
+        \item Implementar reducción de dimensionalidad por medio de autoencoders para comprender las características relevantes de los perfiles de potencia de los elementos combustibles.
+        \item Desarrollar una metodología basada en Inteligencia Artificial para mejorar la precisión de la predicción de CHF para el bundle de la CNA-UII.
+    \end{enumerate}
+\end{frame}
+
+% \section{Introducción específica}
+% \begin{frame}
+%     \frametitle{Introducción específica}
+    
+% \end{frame}
+
+\section{Predictor de PLC}
+\begin{frame}
+    \frametitle{Predictor de PLC}
+    \textbf{¿Cómo se pueden aprovechar la IA para obtener mayor velocidad en el cálculo de PLC?}
+
+    Cálculo de la fracción de vapor y el DNBR, a partir de condiciones termohidráulicas de entrada y perfiles de potencia de los elementos combustibles.
+    \begin{itemize}
+        \item Pocas variables de entrada.
+        \item Muchos datos disponibles para entrenamiento.
+        % \item Sencillo implementar un lazo de cálculo para obtener los límites de operación.
+    \end{itemize}
+
+    Una red neuronal profunda (DNN) puede aprender la relación entre las condiciones de entrada y los resultados de salida.
+
+    Un lazo de cálculo iterativo permite utilizar la DNN para obtener las PLC según las condiciones. 
+\end{frame}
+
+\begin{frame}
+    \frametitle{Predictor de PLC - Entrenamiento de la DNN}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Predictor de PLC - Lazo de cálculo}
+    % \input{../Figures/loop_potencia_dnbr_beamer.tex}
+    \input{../Figures/dnb_dnn_loop_beamer.tex}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Predictor de PLC - Entrenamiento de la DNN}
+\end{frame}
+
+
+\section{Predictor de CHF}
+
+
+
+\end{document}
