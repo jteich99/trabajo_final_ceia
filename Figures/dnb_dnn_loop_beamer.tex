@@ -20,20 +20,25 @@
 \resizebox{!}{0.78\textheight}{%
 \begin{tikzpicture}[
     caja/.style   = {rectangle, rounded corners=2pt, draw=black!70,
-                     fill=black!4, line width=0.6pt, text width=6.0cm,
-                     align=center, font=\footnotesize, minimum height=0.9cm,
+                     fill=black!4, line width=0.6pt, text width=7.5cm,
+                    %  align=center, font=\footnotesize, minimum height=0.9cm,
+                     align=center, font=\normalsize, minimum height=0.9cm,
                      inner sep=3pt},
     subcaja/.style= {rectangle, rounded corners=2pt, draw=black!70,
-                     fill=white, line width=0.6pt, text width=4.6cm,
-                     align=center, font=\footnotesize, minimum height=1.2cm,
+                     fill=white, line width=0.6pt, text width=4cm,
+                    %  align=center, font=\footnotesize, minimum height=1.2cm,
+                     align=center, font=\normalsize, minimum height=1.2cm,
                      inner sep=3pt},
     final/.style  = {rectangle, rounded corners=2pt, draw=black!80,
                      fill=black!8, line width=0.9pt, text width=2.6cm,
-                     align=center, font=\footnotesize, minimum height=0.85cm,
+                    %  align=center, font=\footnotesize, minimum height=0.85cm,
+                     align=center, font=\normalsize, minimum height=0.85cm,
                      inner sep=3pt},
     rombo/.style  = {draw=black!70, fill=black!4, line width=0.6pt},
-    texto/.style  = {font=\footnotesize, align=center, inner sep=1pt},
-    nombre/.style = {font=\footnotesize, inner sep=1pt},
+    % texto/.style  = {font=\footnotesize, align=center, inner sep=1pt},
+    % nombre/.style = {font=\footnotesize, inner sep=1pt},
+    texto/.style  = {font=\normalsize, align=center, inner sep=1pt},
+    nombre/.style = {font=\normalsize, inner sep=1pt},
     flecha/.style = {-{Latex[length=2mm,width=1.6mm]}, draw=black!70,
                      line width=0.6pt},
     linea/.style  = {draw=black!70, line width=0.6pt},
@@ -66,24 +71,22 @@
 
   %-------------------------------------------------- 0. condiciones
   \node[caja] (A) at (0,0)
-    {0.~Condiciones de operaci\'on y objetivo $\mathrm{MDNBR}^{*}$};
+    {0.~Condiciones de operaci\'on\\y objetivo $\mathrm{MDNBR}^{*}$};
 
   %-------------------------------------------------- 1 y 2. piso y techo
   \node[subcaja] (P) at (-2.7,-2.0)
-    {1.~Piso: fijar $q''_{\min}$,\\ calcular $G$ y predecir\\
-     $\mathrm{MDNBR}_{\min}$ con la DNN};
+    {1.~Piso: predecir $\mathrm{MDNBR}_{\min}$ con la DNN};
   \node[subcaja] (T) at ( 2.7,-2.0)
-    {2.~Techo: fijar $q''_{\max}$,\\ calcular $G$ y predecir\\
-     $\mathrm{MDNBR}_{\max}$ con la DNN};
+    {2.~Techo: predecir $\mathrm{MDNBR}_{\max}$ con la DNN};
 
   %-------------------------------------------------- 3. lazo de la secante
   \node[caja] (C) at (0,-3.90)
-    {3.~M\'etodo de la secante: nuevo flujo de calor $q''_{k+1}$};
+    {3.~M\'etodo de la secante:\\nuevo flujo de calor $q''_{k+1}$};
 
   \node[caja, minimum height=1.3cm] (D) at (0,-5.50) {};
-  \node[texto, text width=3.6cm] at (-0.92,-5.50)
+  \node[texto, text width=6cm] at (-1.22,-5.50)
     {4.~Calcular $G_{k+1}$ y predecir $\mathrm{MDNBR}_{k+1}$ con la DNN};
-  \pic at (1.45,-5.50) {dnnmini};
+  \pic at (1.75,-5.50) {dnnmini};
 
   %-------------------------------------------------- convergencia
   \draw[rombo] (0,-6.60) -- (3.2,-7.60) -- (0,-8.60) -- (-3.2,-7.60) -- cycle;
@@ -100,9 +103,9 @@
   \draw[flecha] ( 2.7,-1.00) -- (T.north);
 
   %-------------------------------------------------- ramas -> secante
-  \draw[linea]  (P.south) -- (-2.7,-3.20) -- (0,-3.20);
-  \draw[linea]  (T.south) -- ( 2.7,-3.20) -- (0,-3.20);
-  \draw[flecha] (0,-3.20) -- (C.north);
+  \draw[linea]  (P.south) -- (-2.7,-3.0) -- (0,-3.00);
+  \draw[linea]  (T.south) -- ( 2.7,-3.0) -- (0,-3.00);
+  \draw[flecha] (0,-3.00) -- (C.north);
 
   %-------------------------------------------------- lazo
   \draw[flecha] (C.south) -- (D.north);
@@ -113,5 +116,5 @@
 
   \draw[linea]  (-3.2,-7.60) -- (-4.6,-7.60) -- (-4.6,-3.90);
   \draw[flecha] (-4.6,-3.90) -- (C.west);
-  \node[nombre, anchor=west] at (-4.45,-5.90) {no};
+  \node[nombre, anchor=east] at (-5.05,-5.90) {no};
 \end{tikzpicture}}

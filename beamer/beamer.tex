@@ -1,4 +1,11 @@
 \documentclass{beamer}
+\usepackage{multicol, multirow, booktabs} % para tablas
+
+% Parche de compatibilidad para tcolorbox antiguo en Ubuntu
+\makeatletter
+\providecommand{\tcbthemeset}[1]{}
+\makeatother
+
 % \usetheme[style=modern, language=spanish, compacttoc]{Celestia}
 % \usetheme[style=modern, language=spanish]{Celestia}
 \usetheme[style=modern, palette=sapphire, language=spanish]{Celestia}
@@ -18,40 +25,6 @@
 \end{frame}
 
 \section{Introducción general}
-\begin{frame}
-    \frametitle{Introducción general}
-    \vspace{2cm}
-    \begin{columns}
-        \begin{column}{0.4\textwidth}
-            \raggedleft
-            {\Huge IA}
-            \vspace{0.5cm}
-
-            Inteligencia Artificial
-        \end{column}
-        \begin{column}{0.1\textwidth}
-            \centering
-            {\Huge +}
-            \vspace{0.5cm}
-
-            +
-        \end{column}
-        \begin{column}{0.4\textwidth}
-            \raggedright
-            {\Huge TH}
-            \vspace{0.5cm}
-
-           Termohidráulica 
-        \end{column}
-
-    \end{columns}
-    \vspace{1cm}
-    ¿Cómo puede la Inteligencia Artificial ayudar a la Termohidráulica Nuclear?
-    \begin{itemize}
-        \item Velocidad de predicción.
-        \item Nuevas metodologías y mejores predicciones en campos de aplicación complejos. 
-    \end{itemize}
-\end{frame}
 
 \begin{frame}
     \frametitle{Primero un poco de Ingeniería Nuclear...}
@@ -79,7 +52,7 @@
     \frametitle{Primero un poco de Ingeniería Nuclear...}
     Criterios de limitación de la potencia térmica.
     \begin{itemize}
-        \item Fracción de vapor a la salida de los canales refrigerantes.
+        \item Fracción de vapor o vacío ($\alpha$) a la salida de los canales refrigerantes.
         \item Distancia al Apartamiento de la Ebullición Nucleada (DNBR, del inglés \textit{Departure from Nucleate Boiling Ratio}).
     \end{itemize}
     \begin{center}
@@ -122,7 +95,42 @@
 \section{Contexto y motivación}
 
 \begin{frame}
-    \frametitle{Contexto y motivación}
+    \frametitle{IA + TH}
+    \vspace{2cm}
+    \begin{columns}
+        \begin{column}{0.4\textwidth}
+            \raggedleft
+            {\Huge IA}
+            \vspace{0.5cm}
+
+            Inteligencia Artificial
+        \end{column}
+        \begin{column}{0.1\textwidth}
+            \centering
+            {\Huge +}
+            \vspace{0.5cm}
+
+            +
+        \end{column}
+        \begin{column}{0.4\textwidth}
+            \raggedright
+            {\Huge TH}
+            \vspace{0.5cm}
+
+           Termohidráulica 
+        \end{column}
+
+    \end{columns}
+    \vspace{1cm}
+    ¿Cómo puede la Inteligencia Artificial ayudar a la Termohidráulica Nuclear?
+    \begin{itemize}
+        \item Velocidad de predicción.
+        \item Nuevas metodologías y mejores predicciones en campos de aplicación complejos. 
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Objetivos}
     Objetivos estratégicos:
     \begin{itemize}
         \item Disminuir el tiempo y costo computacional del cálculo de PLC, mantiendo precisión.
@@ -162,20 +170,297 @@
 
 \begin{frame}
     \frametitle{Predictor de PLC - Entrenamiento de la DNN}
-\end{frame}
-
-\begin{frame}
-    \frametitle{Predictor de PLC - Lazo de cálculo}
-    % \input{../Figures/loop_potencia_dnbr_beamer.tex}
-    \input{../Figures/dnb_dnn_loop_beamer.tex}
+    Conjunto de entrenamiento:
+    \begin{itemize}
+        \item Potencia entre $5\%$ y $30\%$ sobre nominal.
+        \item Temperatura entre $268$ y $288$ °C ($\pm 10$ °C nominal).
+        \item Presión entre $105$ y $125\,\mathrm{bar}$ ($\pm 10\,\mathrm{bar}$ nominal).
+    \end{itemize}
+    \begin{figure}[t]
+        \centering 
+        \includegraphics[width=0.8\textwidth]{plc_eda.png}
+    \end{figure}
 \end{frame}
 
 \begin{frame}
     \frametitle{Predictor de PLC - Entrenamiento de la DNN}
+    \begin{itemize}
+        \item Optimizador: Adam.
+        \item Optimización de hiperparámetros con Optuna.
+        \item Función de pérdida: MRE para DNBR y $100\cdot$MAE para $\alpha$.
+    \end{itemize}
+    \vspace{0.5cm}
+    Hiperparámetros optimizados:
+    \begin{table}[H]
+        \small
+        \centering
+        % \caption{Hiperparámetros de la arquitectura final.}
+        \begin{tabular}{l c}    
+            \toprule
+            \textbf{Hiperparámetro} & \textbf{Valor} \\
+            \hline
+            Cantidad de capas ocultas & $3$ \\
+            Cantidad de neuronas por capa & $478$ \\
+            Learning rate & $1.38 \cdot 10^{-4}$ \\
+            Batch & 64 \\
+            Función de activación & ReLU \\
+            \bottomrule
+        \end{tabular}
+        % \label{tab:plc_arq_hp}
+    \end{table}
+
 \end{frame}
 
+\begin{frame}
+    \frametitle{Predictor de PLC - Resultados de predicción}
+
+    \textbf{Predicción de DNBR:} subpredicción con media de $0.006$. Conservativo.
+
+    \textbf{Predicción de la fracción de vacío:} sobrepredicción con media de $0.018$. Conservativo.
+
+    \begin{figure}[t]
+        \centering 
+        \includegraphics[width=0.8\textwidth]{plc_pred_test.png}
+        % \caption{Resultados de predicción de la fracción de vapor y el DNBR para el conjunto de evaluación.}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Predictor de PLC - Lazo de cálculo}
+    ¿Cómo estimar PLC a partir de la predicción de DNBR y fracción de vacío de la DNN?
+    % \input{../Figures/loop_potencia_dnbr_beamer.tex}
+    \vspace{0.5cm}
+
+    \begin{columns}
+        \begin{column}{0.6\textwidth}
+            \centering
+            \resizebox{!}{0.8\textwidth}{
+                \input{../Figures/dnb_dnn_loop_beamer.tex}
+            }
+        \end{column}
+        \begin{column}{0.4\textwidth}
+            Factor de corrección para asegurar con 95\% de probabilidad y confianza subpredicción de PLC.
+            \begin{equation}
+                \mathrm{PLC}^* = \mathrm{PLC} \cdot F_\mathrm{PLC}
+            \end{equation}
+            \begin{table}
+                \centering
+                \small
+                \begin{tabular}{l c c} 
+                    \toprule 
+                    \multirow{2}{*}{ZH} & \multicolumn{2}{c}{$F_\mathrm{PLC}$} \\
+                    & DNBR & $\alpha$ \\ \hline
+                    1 & $0.933$ & $0.985$ \\
+                    5 & $0.995$ & $0.997$ \\
+                    \bottomrule
+                \end{tabular}
+            \end{table}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+% \begin{frame}
+%     \frametitle{Predictor de PLC - Corrección conservadora}
+
+%     Factor de corrección para asegurar con 95\% de probabilidad y confianza que la PLC estimada por la DNN es conservativa respecto de la PLC calculada por COBRA3-CP.
+%     \begin{equation}
+%         \mathrm{PLC}^* = \mathrm{PLC} \cdot F_\mathrm{PLC}
+%     \end{equation}
+% \end{frame}
+
+\begin{frame}
+    \frametitle{Predictor de PLC - Resultados de predicción de PLC}
+    Errores medios de predicción de PLC por DNBR y por fracción de vacío.
+    \begin{table}
+        \centering
+        \small
+        \begin{tabular}{l c c} 
+            \toprule 
+            \multirow{2}{*}{ZH} & \multicolumn{2}{c}{Media del error} \\
+            & DNBR & $\alpha$ \\ \hline
+            1 & $1.047$ & $1.008$ \\
+            3 & $1.018$ & $1.002$ \\
+            5 & $1.001$ & $1.001$ \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+    
+    Predicciones con y sin corrección para la ZH5.
+    \begin{figure}[t]
+        \centering 
+        \includegraphics[width=0.85\textwidth]{plc_pred_loop_zh5.png}
+        % \caption{Resultados de predicción de la fracción de vapor y el DNBR para el conjunto de evaluación.}
+    \end{figure}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Predictor de PLC - Tiempos de cómputo}
+    Se estimó la PLC por DNBR y fracción de vacío para 100 estados del reactor. 
+    
+    Aproximadamente un 4\% de una estrategia de recambio de combustible completa.
+
+    \textbf{DNBR:} mejora de tiempo de cómputo entre $8\,500$ y $9\,500$ veces menor.
+
+    \textbf{Fracción de vacío:} mejora de tiempo de cómputo entre $2\,000$ y $2\,500$ veces menor.
+
+    \begin{table}[H]
+        \centering
+        \small
+        % \caption{Tiempos de cómputo para cálculo de PLC.}
+        \begin{tabular}{l c c c c c} 
+            \toprule 
+            % \multicolumn{6}{c}{Estimación de PLC para 100 estados del reactor.}
+            % \\ \hline
+            & \multicolumn{3}{c}{\textbf{Tiempo}} & \multicolumn{2}{c}{\multirow{2}{*}{\textbf{Mejora}}} \\
+            & \multirow{2}{*}{\textbf{COBRA3-CP}} & \multicolumn{2}{c}{\textbf{DNN}} &  \\
+            &                                     & CPU & GPU & CPU & GPU \\
+            \hline
+            DNBR   & 306 h     & 117 s & 130 s& x9 445  & x8 503\\
+            \hline
+            Fracción de vacío  & 74 h     & 108 s & 120 s & x2 479  & x2 224\\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+\end{frame}
+
+\section{Espacio latente de perfiles de potencia}
+\begin{frame}
+    \frametitle{Espacio latente de perfiles de potencia}
+    \textbf{¿Cómo se pueden aprovechar la IA para comprender las características relevantes de los perfiles de potencia de los elementos combustibles?} 
+
+    Autoencoder.
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[trim=20 20 0 30,clip,width=0.8\textwidth]{../Figures/embeddings_axial_componentes_latente.png}
+    % \end{figure}
+
+    % \begin{figure}[hbtp]
+    %     \centering
+        \includegraphics[trim=20 20 0 30,clip,width=0.8\textwidth]{../Figures/embeddings_radial_componentes_latente.png}
+    \end{figure}
+
+
+    
+\end{frame}
 
 \section{Predictor de CHF}
+
+\begin{frame}
+    \frametitle{Definición del enfoque}
+    Conjuntos de datos disponibles:
+    \begin{itemize}
+        \item Ensayos experimentales de CHF en tubos, recopilados por Groeneveld $\Longrightarrow$ alta disponibilidad, no representan la geometría de interés.
+        \item Ensayos experimentales de CHF en bundle de la CNA-UII, realizados por la UColumbia $\Longrightarrow$ baja disponibilidad de ensayos y de puntos medidos.
+        \item Replicación numérica con COBRA-3CP de los ensayos experimentales de CHF en bundle de la CNA-UII $\Longrightarrow$ pocos ensayos pero se tienen datos de todos los puntos, sujeto a error por los modelos implementados en COBRA-3CP.
+    \end{itemize}
+
+    Características adicionales del problema:
+    \begin{itemize}
+        \item No se tiene una ecuación de conservación a resolver.
+        \item Se tienen tendencias físicas conocidas y validadas con datos experimentales.
+        \item Los ensayos no reportan la ubicación de la ocurrencia de CHF.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Definición del enfoque}
+    Conjuntos de datos disponibles:
+    \begin{table}[H]
+        \centering
+        \small
+        % \caption{Tiempos de cómputo para cálculo de PLC.}
+        \begin{tabular}{l l} 
+            % \toprule 
+            \multirow{2}{3.5cm}{Ensayos en tubo} & Alta disponibilidad \\
+            & No representan la geometría de interés \\ \hline
+            \multirow{3}{3.5cm}{Ensayos en bundle CNA-UII} & Baja disponibilidad \\
+            & Representan la geometría de interés \\
+            & No informan la ubicación de CHF \\ \hline
+            \multirow{3}{3.5cm}{Replicación de ensayos con COBRA-3CP} & Baja disponibilidad de ensayos \\
+            & Alta disponibilidad de puntos medidos \\
+            & Representan la geometría de interés \\
+            & No informan CHF
+        \end{tabular}
+    \end{table}
+
+    Características adicionales del problema:
+    \begin{itemize}
+        \item No se tiene una ecuación de conservación a resolver.
+        \item Se tienen tendencias físicas conocidas y validadas con datos experimentales.
+        \item Los ensayos no reportan la ubicación de la ocurrencia de CHF.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Definición del enfoque}
+    \textbf{¿Cómo se puede aprovechar la IA considerando las limitaciones que impone el problema de predecir CHF para la CNA-UII?}
+
+    \vfill
+
+    Combinación de 2 conceptos:
+    \begin{itemize}
+        \item Redes Neuronales de \textbf{Multifidelidad} (MFNN). 
+        \begin{itemize}
+            \item Red de baja fidelidad (LFNN) predice CHF en tubos, a partir de condiciones locales.
+            \item Red de alta fidelidad (HFNN) predice CHF en bundle de la CNA-UII, a partir de condiciones locales y la predicción de la LFNN.
+        \end{itemize}
+        \item Redes Neuronales \textbf{Informadas por Física} (PINN).
+        \begin{itemize}
+            \item Relaciones diferenciales del CHF con las condiciones locales.
+            \item A partir de los ensayos en tubo.
+        \end{itemize}
+    \end{itemize}
+    
+\end{frame}
+
+\begin{frame}
+    \frametitle{Arquitectura MFPINN}
+    \centering
+    \resizebox{!}{0.65\textwidth}{
+        \input{../Figures/mfnn_pinn_beamer.tex}
+    }
+\end{frame}
+
+\begin{frame}
+    \frametitle{Relaciones físicas}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Entrenamiento de la MFPINN}
+
+    Entrenamiento con los puntos obtenidos de COBRA-3CP.
+    \vspace{0.5cm}
+
+    \textbf{Problema:} se tiene sólo el mínimo de CHF del ensayo para comparar, y COBRA-3CP obtiene 9060 datos por ensayo. El mínimo hace imposible el entrenamiento.
+    \begin{itemize}
+        \item \textbf{Solución:} entrenamiento con mínimo suave. Se ponderan los puntos con menor predicción de CHF, disminuyendo la cantidad al avanzar las épocas de entrenamiento.
+    \end{itemize}
+    \vspace{0.5cm}
+
+    \textbf{Evaluación de modelos con penalización:} se entrena con los ensayos de alto caudal y evalúa con los de bajo caudal. Los modelos con correctas relaciones físicas logran generalizar a la región de menor CHF.
+\end{frame}
+
+\begin{frame}
+    \frametitle{Entrenamiento de la MFPINN}
+    Se evaluó el valor de:
+    \begin{itemize}
+        \item \textbf{La arquitectura de multifidelidad.} Aporta consistencia en la predicción en regiones no entrenadas a través de la información de la LFNN.
+        \item \textbf{La incorporación de relaciones físicas.} La correcta combinación de ellas permite reducir la incerteza en la predicción. Asegura predicciones consistentes con la física en regiones no entrenadas.
+        \item \textbf{La incorporación de variables adicionales.} No se obtuvo beneficio de ellas, incluso se observó que la predicción empeoraba al incorporarlas.
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{Predictor de CHF - Modelos finales}
+\end{frame}
+
+\section{Conclusiones y trabajo futuro}
+\begin{frame}
+    \frametitle{Conclusiones y trabajo futuro}
+
+\end{frame}
 
 
 
