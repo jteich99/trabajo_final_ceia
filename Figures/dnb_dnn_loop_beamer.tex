@@ -1,0 +1,117 @@
+% Version simplificada del lazo de calculo del flujo de calor que alcanza el
+% MDNBR objetivo, pensada para una diapositiva de beamer.
+%
+% Requiere en el preambulo:
+%   \usepackage{tikz}
+%   \usetikzlibrary{arrows.meta}
+%   \usepackage{amsmath,amssymb}
+%
+% Incluir en el frame con, por ejemplo:
+%   \begin{frame}{Lazo de calculo del flujo de calor}
+%       \centering
+%       \input{Figures/dnb_dnn_loop_beamer.tex}
+%   \end{frame}
+%
+% Simplificaciones respecto de fig:dnb-dnn-loop: cada rama (piso y techo) se
+% resume en una unica caja, los pasos 3.a y 3.b se agrupan en una sola caja, el
+% criterio de convergencia se enuncia en palabras y el esquema en miniatura de
+% la DNN aparece una sola vez.
+
+\resizebox{!}{0.78\textheight}{%
+\begin{tikzpicture}[
+    caja/.style   = {rectangle, rounded corners=2pt, draw=black!70,
+                     fill=black!4, line width=0.6pt, text width=6.0cm,
+                     align=center, font=\footnotesize, minimum height=0.9cm,
+                     inner sep=3pt},
+    subcaja/.style= {rectangle, rounded corners=2pt, draw=black!70,
+                     fill=white, line width=0.6pt, text width=4.6cm,
+                     align=center, font=\footnotesize, minimum height=1.2cm,
+                     inner sep=3pt},
+    final/.style  = {rectangle, rounded corners=2pt, draw=black!80,
+                     fill=black!8, line width=0.9pt, text width=2.6cm,
+                     align=center, font=\footnotesize, minimum height=0.85cm,
+                     inner sep=3pt},
+    rombo/.style  = {draw=black!70, fill=black!4, line width=0.6pt},
+    texto/.style  = {font=\footnotesize, align=center, inner sep=1pt},
+    nombre/.style = {font=\footnotesize, inner sep=1pt},
+    flecha/.style = {-{Latex[length=2mm,width=1.6mm]}, draw=black!70,
+                     line width=0.6pt},
+    linea/.style  = {draw=black!70, line width=0.6pt},
+    %--- estilos del esquema en miniatura de la red
+    nnnodo/.style = {circle, draw=black!65, fill=white, line width=0.3pt,
+                     minimum size=1.4mm, inner sep=0pt},
+    nnarco/.style = {draw=black!30, line width=0.25pt},
+    %--- esquema en miniatura de la DNN (3 entradas, 4+4 ocultas, 2 salidas)
+    dnnmini/.pic  = {
+      \foreach \ya in {0.20,0,-0.20}
+        \foreach \yb in {0.30,0.10,-0.10,-0.30}
+          \draw[nnarco] (0,\ya) -- (0.4,\yb);
+      \foreach \ya in {0.30,0.10,-0.10,-0.30}
+        \foreach \yb in {0.30,0.10,-0.10,-0.30}
+          \draw[nnarco] (0.4,\ya) -- (0.8,\yb);
+      \foreach \ya in {0.30,0.10,-0.10,-0.30}
+        \foreach \yb in {0.10,-0.10}
+          \draw[nnarco] (0.8,\ya) -- (1.2,\yb);
+      \foreach \y in {0.20,0,-0.20}
+        \node[nnnodo] at (0,\y) {};
+      \foreach \y in {0.30,0.10,-0.10,-0.30} {
+        \node[nnnodo] at (0.4,\y) {};
+        \node[nnnodo] at (0.8,\y) {};
+      }
+      \foreach \y in {0.10,-0.10}
+        \node[nnnodo] at (1.2,\y) {};
+    },
+  ]
+  \useasboundingbox (-4.95,-8.85) rectangle (6.65,0.70);
+
+  %-------------------------------------------------- 0. condiciones
+  \node[caja] (A) at (0,0)
+    {0.~Condiciones de operaci\'on y objetivo $\mathrm{MDNBR}^{*}$};
+
+  %-------------------------------------------------- 1 y 2. piso y techo
+  \node[subcaja] (P) at (-2.7,-2.0)
+    {1.~Piso: fijar $q''_{\min}$,\\ calcular $G$ y predecir\\
+     $\mathrm{MDNBR}_{\min}$ con la DNN};
+  \node[subcaja] (T) at ( 2.7,-2.0)
+    {2.~Techo: fijar $q''_{\max}$,\\ calcular $G$ y predecir\\
+     $\mathrm{MDNBR}_{\max}$ con la DNN};
+
+  %-------------------------------------------------- 3. lazo de la secante
+  \node[caja] (C) at (0,-3.90)
+    {3.~M\'etodo de la secante: nuevo flujo de calor $q''_{k+1}$};
+
+  \node[caja, minimum height=1.3cm] (D) at (0,-5.50) {};
+  \node[texto, text width=3.6cm] at (-0.92,-5.50)
+    {4.~Calcular $G_{k+1}$ y predecir $\mathrm{MDNBR}_{k+1}$ con la DNN};
+  \pic at (1.45,-5.50) {dnnmini};
+
+  %-------------------------------------------------- convergencia
+  \draw[rombo] (0,-6.60) -- (3.2,-7.60) -- (0,-8.60) -- (-3.2,-7.60) -- cycle;
+  \node[texto, text width=4.0cm] at (0,-7.60)
+    {5.~\textrm{\textquestiondown}Convergencia en\\
+     $\mathrm{MDNBR}$, $G$ y $q''$?};
+
+  \node[final] (F) at (5.20,-7.60) {$q''_{\mathrm{PLC}}=q''_{k+1}$};
+
+  %-------------------------------------------------- flujo: 0 -> ramas
+  \draw[linea]  (A.south) -- (0,-1.00);
+  \draw[linea]  (-2.7,-1.00) -- (2.7,-1.00);
+  \draw[flecha] (-2.7,-1.00) -- (P.north);
+  \draw[flecha] ( 2.7,-1.00) -- (T.north);
+
+  %-------------------------------------------------- ramas -> secante
+  \draw[linea]  (P.south) -- (-2.7,-3.20) -- (0,-3.20);
+  \draw[linea]  (T.south) -- ( 2.7,-3.20) -- (0,-3.20);
+  \draw[flecha] (0,-3.20) -- (C.north);
+
+  %-------------------------------------------------- lazo
+  \draw[flecha] (C.south) -- (D.north);
+  \draw[flecha] (D.south) -- (0,-6.60);
+
+  \draw[flecha] (3.2,-7.60) -- (F.west);
+  \node[nombre] at (3.53,-7.33) {s\'i};
+
+  \draw[linea]  (-3.2,-7.60) -- (-4.6,-7.60) -- (-4.6,-3.90);
+  \draw[flecha] (-4.6,-3.90) -- (C.west);
+  \node[nombre, anchor=west] at (-4.45,-5.90) {no};
+\end{tikzpicture}}
