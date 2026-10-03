@@ -76,7 +76,7 @@ En la figura \ref{fig:plc_results_corr} se presentan los resultados, segmentados
 \begin{figure}[H]
     \centering
     % \includegraphics[width=\textwidth]{Figures/plc_pred_corr.png}
-    \includegraphics[height=\textheight]{Figures/plc_pred_corr.png}
+    \includegraphics[height=0.89\textheight]{Figures/plc_pred_corr.png}
     \caption{Resultados de estimación de PLC por DNBR y fracción de vacío con factor de corrección, por zona hidráulica.}
     \label{fig:plc_results_corr}
 \end{figure}
@@ -214,15 +214,15 @@ Además del flujo másico, la división se presenta contra el título termodiná
 
 Para evitar que los resultados de los modelos evaluados dependan del proceso estocástico de entrenamiento, se entrenaron 50 instancias de cada modelo. De esta forma, se comparan las medianas de las métricas estadísticas y de $\mathrm{DNBR}$ de cada modelo.
 
+Las arquitecturas se evaluaron mediante métricas tradicionales de predicción de CHF y, adicionalmente, mediante el $\mathrm{DNBR}_\mathrm{min}$, según lo explicado en la subsección \ref{sec:chf_eval}. En la tabla \ref{tab:mf_estadistica} se comparan los valores de $\mathrm{R}^2$ y de RMSE para la DNN, la \lfpinn{} y la \mfdnn{}. 
+Se obtuvo un mejor rendimiento por parte de la \mfdnn{} respecto de la DNN en evaluación y muy similar en entrenamiento. En cuanto a la \lfpinn{}, su comportamiento es pobre, con un $\mathrm{R}^2<0$ que indica que una predicción constante e igual a la media obtendría un mejor ajuste.
+
 \begin{figure}[H]
     \centering
     \includegraphics[width=\textwidth]{Figures/chf_division_train_test.png}
     \caption{División de los datos de CHF de la UC en entrenamiento y evaluación, según flujo másico. Los ejes de flujo másico y título termodinámico corresponden a los valores promedio de la sección de ensayo a la salida.}
     \label{fig:chf_div_train_test}
 \end{figure}
-
-Las arquitecturas se evaluaron mediante métricas tradicionales de predicción de CHF y, adicionalmente, mediante el $\mathrm{DNBR}_\mathrm{min}$, según lo explicado en la subsección \ref{sec:chf_eval}. En la tabla \ref{tab:mf_estadistica} se comparan los valores de $\mathrm{R}^2$ y de RMSE para la DNN, la \lfpinn{} y la \mfdnn{}. 
-Se obtuvo un mejor rendimiento por parte de la \mfdnn{} respecto de la DNN en evaluación y muy similar en entrenamiento. En cuanto a la \lfpinn{}, su comportamiento es pobre, con un $\mathrm{R}^2<0$ que indica que una predicción constante e igual a la media obtendría un mejor ajuste.
 
 \begin{table}[h]
 	\centering
