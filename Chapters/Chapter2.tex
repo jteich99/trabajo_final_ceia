@@ -7,14 +7,14 @@ En este capítulo se explican los frameworks, arquitecturas y bibliotecas utiliz
 \label{sec:frameworks}
 En esta sección se establecen los frameworks y bibliotecas utilizados para resolver los dos problemas planteados en este trabajo: la estimación de PLC y la estimación del CHF.
 
-En primer lugar, la estimación de las PLC se realizó con redes neuronales profundas (DNN, del inglés \textit{Deep Neural Networks}). Esta metodología fue elegida principalmente debido a su elevada capacidad de representar funciones no lineales, característica fundamental para el cálculo de las PLC, que presentan un alto grado de no linealidad. Para su implementación se consideraron dos posibilidades: un modelo que calcule directamente PLC y un modelo que reemplace el paso realizado por COBRA3-CP en el procedimiento de cálculo. En la figura \ref{fig:loop_potencia_dnbr} se esquematiza el procedimiento de cálculo con COBRA3-CP de la PLC por DNBR. El procedimiento para el cálculo de PLC por vacío es similar, pero se aproxima al valor deseado de vacío por el método de la secante \citep{burden2015numerical}.
+En primer lugar, la estimación de las PLC se realizó con DNN. Esta metodología fue elegida principalmente debido a su elevada capacidad de representar funciones no lineales, característica fundamental para el cálculo de las PLC, que presentan un alto grado de no linealidad. Para su implementación se consideraron dos posibilidades: un modelo que calcule directamente la PLC y otro que reemplace el paso realizado por COBRA3-CP en el procedimiento de cálculo. En la figura \ref{fig:loop_potencia_dnbr} se esquematiza el procedimiento de cálculo de la PLC por DNBR con COBRA3-CP. El procedimiento para el cálculo de PLC por vacío es similar, pero se aproxima al valor deseado de vacío por el método de la secante \citep{burden2015numerical}.
 
 \begin{figure}[htbp]
 	\centering
 	\resizebox{0.7\textwidth}{!}{
 		\input{Figures/loop_potencia_dnbr.tex}
 	}
-	\caption{Esquema del loop de cálculo iterativo de la PLC por DNBR con COBRA3-CP.}
+	\caption{Esquema del lazo de cálculo iterativo de la PLC por DNBR con COBRA3-CP.}
 	\label{fig:loop_potencia_dnbr}
 \end{figure}
 
@@ -46,25 +46,25 @@ También es de interés en este trabajo analizar la aplicación de reducción de
 
 Por otro lado, en cuanto a la estimación de CHF, se debe tener en cuenta que esta implica la predicción de un fenómeno físico. Por lo tanto, la aplicación de una arquitectura PINN, presentada por Raissi, Perdikaris y Karniadakis \citep{RAISSI2019}, resultó la primera alternativa a considerar. Este tipo de arquitectura permite utilizar una función de pérdida que busque cumplir una ecuación diferencial en derivadas parciales (PDE, del inglés \textit{Partial Differential Equation}), además de la función de pérdida respecto de los datos tabulados para entrenamiento. En principio, esto resulta un problema complejo, ya que definir una ecuación que describa la fenomenología del DNB es una cuestión aún no resuelta. Existen intentos de deducir una ecuación que dependa lo menos posible de factores empíricos, como la de Zhao et al. \citep{ZHAO2021}, pero estos no son del todo satisfactorios. Adicionalmente, los ensayos del bundle de la \cna{} solo proveen información a la salida de la sección ensayada, por lo que computar derivadas espaciales resulta imposible.
 
-Por este motivo, se propuso utilizar una metodología novedosa para la estimación de CHF basada en MFDNN, propuesta por Meng y Karniadakis \citep{MENG2020}. Esta arquitectura permite considerar conjuntos de datos de distinta fidelidad, por ejemplo, datos obtenidos a partir de ensayos experimentales (alta fidelidad, disponibilidad acotada o baja), datos obtenidos a partir de ensayos numéricos (media fidelidad, disponibilidad acotada en puntos con CHF y alta en condiciones termohidráulicas), datos de ensayos experimentales en geometrías o condiciones diferentes (baja fidelidad, disponibilidad alta), etc. Para realizar esto, se propone la hipótesis de que los datos de alta fidelidad tienen una relación no lineal con los datos de baja fidelidad, que puede ser aproximada por medio de una DNN. Esta metodología se ajusta a los datos disponibles, que combinan información de muy alta fidelidad pero muy acotada, y múltiples fuentes de datos de baja o mediana fidelidad con gran volumen.
+Por este motivo, se optó por una metodología novedosa para la estimación de CHF basada en MFDNN, desarrollada por Meng y Karniadakis \citep{MENG2020}. Esta arquitectura permite considerar conjuntos de datos de distinta fidelidad, por ejemplo, datos obtenidos a partir de ensayos experimentales (alta fidelidad, disponibilidad acotada o baja), datos obtenidos a partir de ensayos numéricos (media fidelidad, disponibilidad acotada en puntos con CHF y alta en condiciones termohidráulicas), datos de ensayos experimentales en geometrías o condiciones diferentes (baja fidelidad, disponibilidad alta), etc. Para realizar esto, se propone la hipótesis de que los datos de alta fidelidad tienen una relación no lineal con los datos de baja fidelidad, que puede ser aproximada por medio de una DNN. Esta metodología se ajusta a los datos disponibles, que combinan información de muy alta fidelidad, pero muy acotada, y múltiples fuentes de datos de baja o mediana fidelidad con gran volumen.
 
 
-Para realizar el desarrollo de las arquitecturas mencionadas, en este trabajo se utilizó la biblioteca PyTorch \citep{PYTORCH}, \citep{PYTORCH_WEBSITE}. Esta biblioteca permite implementar arquitecturas derivadas de un módulo base \lstinline|torch.nn.Module()|, lo que facilita el desarrollo de modelos complejos. 
+Para realizar el desarrollo de las arquitecturas mencionadas, en este trabajo se utilizó la biblioteca PyTorch \citep{PYTORCH, PYTORCH_WEBSITE}. Esta biblioteca permite implementar arquitecturas derivadas de un módulo base \lstinline|torch.nn.Module()|, lo que facilita el desarrollo de modelos complejos. 
 Para evaluar las propiedades termofísicas del agua se utilizó la biblioteca CoolProp \citep{bell2014coolprop}, de amplia adopción y frecuente actualización.
 La biblioteca Pandas \citep{reback2020pandas, mckinney2010} se utilizó para la manipulación de datos en formato tabulado.
 Para diversas funciones de transformación de los datos en el pipeline se hizo uso de las bibliotecas scikit-learn \citep{pedregosa2011scikit} y NumPy \citep{harris2020array}.
-Para graficado de resultados se utilizaron las bibliotecas Matplotlib \citep{matplotlib_hunter2007} y Seaborn \citep{seaborn_waskom2021}.
+Para el graficado de resultados se utilizaron las bibliotecas Matplotlib \citep{matplotlib_hunter2007} y Seaborn \citep{seaborn_waskom2021}.
 Para la optimización de los hiperparámetros se utilizó la biblioteca Optuna \citep{optuna2019}.
-Se utilizó la asistencia de Claude \citep{claude2026} como IA generativa para desarrollo de códigos de graficación, automatización y revisión de este trabajo.
+Se utilizó la asistencia de Claude \citep{claude2026} como inteligencia artificial (IA) generativa para el desarrollo de códigos de graficado y automatización, y para la revisión de este trabajo.
 
-\section{Datasets y datos de entrenamiento}
+\section{Conjuntos de datos de entrenamiento}
 \label{sec:datasets}
 
-En cuanto a los datos de entrenamiento, se debe dividir esta sección en los datos utilizados para la estimación de las PLC y para la estimación de CHF.
+En cuanto a los datos de entrenamiento, se distinguen los utilizados para la estimación de las PLC y los utilizados para la estimación del CHF.
 
-Para la estimación de PLC, se utilizaron datos de simulaciones realizadas por la División de Diseño Termohidráulico de la Gerencia de Análisis de Seguridad y Diseño del Núcleo (GASyDN) de Nucleoeléctrica Argentina S.A. (NA-SA), que son de carácter confidencial. Los datos fueron generados con el código de simulación termohidráulica de subcanales COBRA3-CP \citep{cobra3cp}, a partir de estados del reactor calculados en las simulaciones de estrategias de recambio de combustibles. De las salidas de las simulaciones de COBRA3-CP se extrajeron los datos de entrada al código (perfiles de potencia axiales y por barra combustible, temperatura de entrada, presión de salida, potencia total, zona hidráulica, caudal, etc.) y los datos de salida del código de interés (mínimo DNBR, fracción de vacío promedio a la salida).
+Para la estimación de PLC, se utilizaron datos de simulaciones realizadas por la División de Diseño Termohidráulico de la Gerencia de Análisis de Seguridad y Diseño del Núcleo (GASyDN) de Nucleoeléctrica Argentina S.A. (NA-SA), que son de carácter confidencial. Los datos fueron generados con el código de simulación termohidráulica de subcanales COBRA3-CP \citep{cobra3cp}, a partir de estados del reactor calculados en las simulaciones de estrategias de recambio de combustibles. De las salidas de las simulaciones de COBRA3-CP se extrajeron los datos de entrada al código (perfiles de potencia axiales y por barra combustible, temperatura de entrada, presión de salida, potencia total, zona hidráulica, caudal, etc.) y los datos de salida de interés del código (MDNBR, fracción de vacío promedio a la salida).
 
-Por otro lado, para la estimación de CHF, se dispone de múltiples fuentes de datos. Se incluyen los datos de ensayos en un tubo usados por Groeneveld en su LUT 2006, obtenidos de \citep{USNRC2019NUREGKM0011}, los datos de ensayos sobre el bundle de la \cna{} realizados por la UC \citep{recopilacion_columbia}, y la réplica de los ensayos de la UC con COBRA3-CP, que permite ampliar la cantidad de puntos de ensayo y obtener datos en función de la coordenada $z$. Estas últimas dos fuentes de datos son de carácter confidencial. 
+Por otro lado, para la estimación de CHF, se dispone de múltiples fuentes de datos. Se incluyen los datos de ensayos en un tubo usados por Groeneveld en su LUT 2006, obtenidos de \citep{USNRC2019NUREGKM0011}, los datos de ensayos sobre el bundle de la \cna{} realizados por la UC \citep{recopilacion_columbia}, y la réplica de los ensayos de la UC con COBRA3-CP, que permite ampliar la cantidad de puntos de ensayo y obtener datos en función de la coordenada $z$. Estas dos últimas fuentes de datos son de carácter confidencial. 
 
 Los datos de ensayos en un tubo tienen las siguientes variables disponibles: diámetro, longitud, presión a la salida, flujo másico, título termodinámico a la salida, entalpía a la entrada, flujo de calor y temperatura de entrada. En la figura \ref{fig:hist_groeneveld} se muestran los histogramas de las variables de estos ensayos.
 
@@ -77,11 +77,11 @@ Los datos de ensayos en un tubo tienen las siguientes variables disponibles: di�
 
 En los ensayos de la UC se registraron las siguientes variables: presión a la salida, temperatura de entrada, flujo másico, flujo de calor, título termodinámico a la salida y diferencia de presión a la entrada. En la figura \ref{fig:hist_columbia} se presentan los histogramas de las variables de estos ensayos.
 
-Respecto de la infraestructura de cómputo, debido al carácter confidencial de los datos utilizados, se optó por realizar todo el proceso de entrenamiento en un entorno local. Para ello se dispuso de dos computadoras, una provista por la empresa NA-SA, con una placa gráfica NVIDIA A2000 y 32 GB de RAM, y otra de uso personal del autor, con una placa gráfica NVIDIA RTX 3090 y 64 GB de RAM. Ambas computadoras tienen capacidad apta para el trabajo en cuestión. 
+Respecto de la infraestructura de cómputo, debido al carácter confidencial de los datos utilizados, se optó por realizar todo el proceso de entrenamiento en un entorno local. Para ello se dispuso de dos computadoras: una provista por la empresa NA-SA, con una placa gráfica NVIDIA RTX A2000 y 32 GB de RAM, y otra de uso personal del autor, con una placa gráfica NVIDIA RTX 3090 y 64 GB de RAM. Ambas computadoras tienen capacidad suficiente para el trabajo en cuestión. 
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[width=\textwidth]{Figures/hist_columbia.png}
-	\caption{Histogramas de las variables de los ensayos de CHF de la Universidad de Columbia.}
+	\caption{Histogramas de las variables de los ensayos de CHF de la UC.}
 	\label{fig:hist_columbia}
 \end{figure}

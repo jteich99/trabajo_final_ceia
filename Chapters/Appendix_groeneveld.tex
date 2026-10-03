@@ -47,7 +47,7 @@ A continuación, se exponen los factores de corrección propuestos por Groenevel
         \label{eq:groeneveld_k4}
         K_4 = \exp{\left[ \frac{D_h}{L} \exp{(2\alpha)} \right]} && \frac{L}{D_h}\geq 5
     \end{align}
-    $\alpha$ es la fracción de vacío calculada según el modelo homogéneo.
+    En esta expresión, $\alpha$ es la fracción de vacío calculada según el modelo homogéneo.
 
     \item Factor de perfil axial de potencia, expresado en la ecuación \ref{eq:groeneveld_k5}.
     \begin{equation}
@@ -57,11 +57,11 @@ A continuación, se exponen los factores de corrección propuestos por Groenevel
             1 & x < 0
         \end{cases}
     \end{equation}
-    $q_\mathrm{BLA}$ es el flujo de calor promedio sobre la longitud con ebullición, es decir, desde $x=0$ hasta $x=x_\mathrm{CHF}$.
+    En esta expresión, $q_\mathrm{BLA}$ es el flujo de calor promedio sobre la longitud con ebullición, es decir, desde $x=0$ hasta $x=x_\mathrm{CHF}$.
 \end{itemize}
 
 En particular, para la metodología actual de predicción de CHF en el bundle de la \cna{}, solo se utilizan los factores de subcanal $K_1$ y de perfil axial de potencia $K_5$. Adicionalmente, se utilizan tres factores propuestos por INVAP, explicados en la sección \ref{sec:app_tmf}.
 
 \section{Factores de corrección propuestos por INVAP}
 \label{sec:app_tmf}
-INVAP propuso en \citep{invapTMF1, invapTMF2} factores de corrección para mejorar la predicción de CHF por medio de las LUT, específicamente para el bundle de la \cna{}. Estos factores se plantearon como la exponencial de un polinomio de segundo grado, cuyos coeficientes se optimizaron para reducir la dependencia residual del CHF predicho con el flujo másico y el título termodinámico. Adicionalmente, se aplicó un factor de centrado, que permite luego aplicar el criterio de 95\% de probabilidad y confianza para el cálculo del $\mathrm{DNBR}_\mathrm{min}$, descripto en la sección \ref{sec:chf_eval}.
+INVAP propuso en \citep{invapTMF1, invapTMF2} factores de corrección para mejorar la predicción de CHF por medio de las LUT, específicamente para el bundle de la \cna{}. Estos factores se plantearon como la exponencial de un polinomio de segundo grado, cuyos coeficientes se optimizaron para reducir la dependencia residual del CHF predicho con el flujo másico y el título termodinámico. Adicionalmente, se aplicó un factor de centrado, que permite emplear luego el criterio de 95\% de probabilidad y confianza para el cálculo del $\mathrm{DNBR}_\mathrm{min}$, descripto en la sección \ref{sec:chf_eval}.
