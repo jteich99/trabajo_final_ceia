@@ -1,10 +1,12 @@
 \documentclass{beamer}
 \usepackage{multicol, multirow, booktabs} % para tablas
+\usepackage{bm, nicefrac}
+\usepackage{enumitem}
 
 % Parche de compatibilidad para tcolorbox antiguo en Ubuntu
-\makeatletter
-\providecommand{\tcbthemeset}[1]{}
-\makeatother
+% \makeatletter
+% \providecommand{\tcbthemeset}[1]{}
+% \makeatother
 
 % \usetheme[style=modern, language=spanish, compacttoc]{Celestia}
 % \usetheme[style=modern, language=spanish]{Celestia}
@@ -17,8 +19,93 @@
 \author{Ing. Juan Ignacio Teich}
 \date{\today}
 
+% --- Datos de la portada personalizada ---
+\newcommand{\director}{Mg. Ing. Martín Sebastián Silva}
+\newcommand{\juradoA}{Ing. Gaston H. Pintos}
+\newcommand{\juradoB}{Dr. Ing. Benjamín A. Tourn}
+\newcommand{\juradoC}{Esp. Ing. Fabricio Lopretto}
+\newcommand{\institucion}{Facultad de Ingeniería, Universidad de Buenos Aires}
+\newcommand{\logoInstitucion}{../Figures/logoFIUBA.pdf}
+% \newcommand{\lse}{Laboratorio de Sistemas Embebidos}
+% \newcommand{\logoLSE}{logo_lse.png}
+\newcommand{\empresa}{Nucleoeléctrica Argentina S.A.}
+\newcommand{\logoEmpresa}{../Figures/logoNASA.png}
+\newcommand{\degreename}{Carrera de Especialización en Inteligencia Artificial}
+
+% Inserta el logo si el archivo existe; si no, dibuja un recuadro de reserva
+\newcommand{\insertarLogo}[2]{%
+    \IfFileExists{#1}{%
+        \includegraphics[height=#2]{#1}%
+    }{%
+        \fbox{\parbox[c][#2][c]{#2}{\centering\tiny Logo}}%
+    }%
+}
+
+\newcommand{\portada}{%
+    \begin{frame}[plain]
+        \begin{columns}[T]
+            \begin{column}{0.5\textwidth}
+                \centering
+                \insertarLogo{\logoInstitucion}{1.2cm}\\[0.1cm]
+                {\scriptsize \institucion}
+            \end{column}
+            \begin{column}{0.5\textwidth}
+                \centering
+                \insertarLogo{\logoEmpresa}{1.2cm}\\[0.1cm]
+                {\scriptsize \empresa}
+            \end{column}
+            % \begin{column}{0.3\textwidth}
+            %     \centering
+            %     \insertarLogo{\logoInstitucion}{1.2cm}\\[0.1cm]
+            %     {\scriptsize \institucion}
+            % \end{column}
+            % \hfill
+            % \begin{column}{0.3\textwidth}
+            %     \centering
+            %     \insertarLogo{\logoLSE}{1.2cm}\\[0.1cm]
+            %     {\scriptsize \lse}
+            % \end{column}
+            % \hfill
+            % \begin{column}{0.3\textwidth}
+            %     \centering
+            %     \insertarLogo{\logoEmpresa}{1.2cm}\\[0.1cm]
+            %     {\scriptsize \empresa}
+            % \end{column}
+        \end{columns}
+
+        \vfill
+        \begin{center}
+            {\Large \usebeamercolor[fg]{title} \textbf{\inserttitle}}\\[0.4cm]
+            {\normalsize \insertauthor} \\[0.3cm]
+            {\small \degreename}
+        \end{center}
+        \vfill
+
+        \begin{columns}[T]
+            \begin{column}{0.5\textwidth}
+                \centering
+                {\footnotesize \textbf{Director}}\\
+                {\footnotesize \director}
+            \end{column}
+            \begin{column}{0.5\textwidth}
+                \centering
+                {\footnotesize \textbf{Jurado}}\\
+                {\footnotesize \juradoA}\\
+                {\footnotesize \juradoB}\\
+                {\footnotesize \juradoC}
+            \end{column}
+        \end{columns}
+
+        \vfill
+        \begin{center}
+            {\footnotesize \insertdate}
+        \end{center}
+    \end{frame}
+}
+
 \begin{document}
-\maketitle
+% \maketitle
+\portada
 
 \begin{frame}
     \tableofcontents
@@ -178,38 +265,38 @@
     \end{itemize}
     \begin{figure}[t]
         \centering 
-        \includegraphics[width=0.8\textwidth]{plc_eda.png}
+        \includegraphics[width=0.85\textwidth]{plc_eda.png}
     \end{figure}
 \end{frame}
 
-\begin{frame}
-    \frametitle{Predictor de PLC - Entrenamiento de la DNN}
-    \begin{itemize}
-        \item Optimizador: Adam.
-        \item Optimización de hiperparámetros con Optuna.
-        \item Función de pérdida: MRE para DNBR y $100\cdot$MAE para $\alpha$.
-    \end{itemize}
-    \vspace{0.5cm}
-    Hiperparámetros optimizados:
-    \begin{table}[H]
-        \small
-        \centering
-        % \caption{Hiperparámetros de la arquitectura final.}
-        \begin{tabular}{l c}    
-            \toprule
-            \textbf{Hiperparámetro} & \textbf{Valor} \\
-            \hline
-            Cantidad de capas ocultas & $3$ \\
-            Cantidad de neuronas por capa & $478$ \\
-            Learning rate & $1.38 \cdot 10^{-4}$ \\
-            Batch & 64 \\
-            Función de activación & ReLU \\
-            \bottomrule
-        \end{tabular}
-        % \label{tab:plc_arq_hp}
-    \end{table}
+% \begin{frame}
+%     \frametitle{Predictor de PLC - Entrenamiento de la DNN}
+%     \begin{itemize}
+%         \item Optimizador: Adam.
+%         \item Optimización de hiperparámetros con Optuna.
+%         \item Función de pérdida: MRE para DNBR y $100\cdot$MAE para $\alpha$.
+%     \end{itemize}
+%     \vspace{0.5cm}
+%     Hiperparámetros optimizados:
+%     \begin{table}[H]
+%         \small
+%         \centering
+%         % \caption{Hiperparámetros de la arquitectura final.}
+%         \begin{tabular}{l c}    
+%             \toprule
+%             \textbf{Hiperparámetro} & \textbf{Valor} \\
+%             \hline
+%             Cantidad de capas ocultas & $3$ \\
+%             Cantidad de neuronas por capa & $478$ \\
+%             Learning rate & $1.38 \cdot 10^{-4}$ \\
+%             Batch & 64 \\
+%             Función de activación & ReLU \\
+%             \bottomrule
+%         \end{tabular}
+%         % \label{tab:plc_arq_hp}
+%     \end{table}
 
-\end{frame}
+% \end{frame}
 
 \begin{frame}
     \frametitle{Predictor de PLC - Resultados de predicción}
@@ -220,7 +307,7 @@
 
     \begin{figure}[t]
         \centering 
-        \includegraphics[width=0.8\textwidth]{plc_pred_test.png}
+        \includegraphics[width=0.9\textwidth]{plc_pred_test.png}
         % \caption{Resultados de predicción de la fracción de vapor y el DNBR para el conjunto de evaluación.}
     \end{figure}
 \end{frame}
@@ -240,9 +327,9 @@
         \end{column}
         \begin{column}{0.4\textwidth}
             Factor de corrección para asegurar con 95\% de probabilidad y confianza subpredicción de PLC.
-            \begin{equation}
+            \begin{equation*}
                 \mathrm{PLC}^* = \mathrm{PLC} \cdot F_\mathrm{PLC}
-            \end{equation}
+            \end{equation*}
             \begin{table}
                 \centering
                 \small
@@ -346,22 +433,22 @@
 
 \section{Predictor de CHF}
 
-\begin{frame}
-    \frametitle{Definición del enfoque}
-    Conjuntos de datos disponibles:
-    \begin{itemize}
-        \item Ensayos experimentales de CHF en tubos, recopilados por Groeneveld $\Longrightarrow$ alta disponibilidad, no representan la geometría de interés.
-        \item Ensayos experimentales de CHF en bundle de la CNA-UII, realizados por la UColumbia $\Longrightarrow$ baja disponibilidad de ensayos y de puntos medidos.
-        \item Replicación numérica con COBRA-3CP de los ensayos experimentales de CHF en bundle de la CNA-UII $\Longrightarrow$ pocos ensayos pero se tienen datos de todos los puntos, sujeto a error por los modelos implementados en COBRA-3CP.
-    \end{itemize}
+% \begin{frame}
+%     \frametitle{Definición del enfoque}
+%     Conjuntos de datos disponibles:
+%     \begin{itemize}
+%         \item Ensayos experimentales de CHF en tubos, recopilados por Groeneveld $\Longrightarrow$ alta disponibilidad, no representan la geometría de interés.
+%         \item Ensayos experimentales de CHF en bundle de la CNA-UII, realizados por la UColumbia $\Longrightarrow$ baja disponibilidad de ensayos y de puntos medidos.
+%         \item Replicación numérica con COBRA-3CP de los ensayos experimentales de CHF en bundle de la CNA-UII $\Longrightarrow$ pocos ensayos pero se tienen datos de todos los puntos, sujeto a error por los modelos implementados en COBRA-3CP.
+%     \end{itemize}
 
-    Características adicionales del problema:
-    \begin{itemize}
-        \item No se tiene una ecuación de conservación a resolver.
-        \item Se tienen tendencias físicas conocidas y validadas con datos experimentales.
-        \item Los ensayos no reportan la ubicación de la ocurrencia de CHF.
-    \end{itemize}
-\end{frame}
+%     Características adicionales del problema:
+%     \begin{itemize}
+%         \item No se tiene una ecuación de conservación a resolver.
+%         \item Se tienen tendencias físicas conocidas y validadas con datos experimentales.
+%         \item Los ensayos no reportan la ubicación de la ocurrencia de CHF.
+%     \end{itemize}
+% \end{frame}
 
 \begin{frame}
     \frametitle{Definición del enfoque}
@@ -417,13 +504,46 @@
 \begin{frame}
     \frametitle{Arquitectura MFPINN}
     \centering
-    \resizebox{!}{0.65\textwidth}{
+    \resizebox{!}{0.82\textheight}{
         \input{../Figures/mfnn_pinn_beamer.tex}
     }
 \end{frame}
 
 \begin{frame}
     \frametitle{Relaciones físicas}
+    Basadas en conceptos de termohidráulica nuclear y validadas con ensayos experimentales de CHF en tubos:
+    \vspace{0.5cm}
+    % \begin{columns}
+    %     \begin{column}{0.8\textwidth}
+    %         \begin{itemize}
+    %             \item $\cfrac{\partial \mathrm{CHF}}{\partial G}\begin{cases} > 0 & (x < 0.15) \cup ( G > 3\,000\,\nicefrac{\mathrm{kg}}{\mathrm{m}^2\mathrm{s}}) \\ < 0 & (x > 0.15) \cap ( G < 3\,000\,\nicefrac{\mathrm{kg}}{\mathrm{m}^2\mathrm{s}}) \end{cases}$
+    %         \end{itemize}
+    %     \end{column}
+    %     \begin{column}{0.2\textwidth}
+    %     \end{column}
+    % \end{columns}
+    % \begin{columns}
+    %     \begin{column}{0.5\textwidth}
+    %         \begin{itemize}
+    %             \item $\cfrac{\partial \mathrm{CHF}}{\partial x} < 0$
+    %             \item $\cfrac{\partial \mathrm{CHF}}{\partial P} > 0 \quad ; \quad P>60\,\mathrm{bar}$
+    %         \end{itemize}
+    %     \end{column}
+    %     \begin{column}{0.5\textwidth}
+    %         \begin{itemize}
+    %             % \item $\cfrac{\partial^2 \mathrm{CHF}}{\partial x \partial G} < 0$
+    %             \item $\cfrac{\partial^2 \mathrm{CHF}}{\partial x^2} > 0 \quad ; \quad x > 0.2$
+    %         \end{itemize}
+    %     \end{column}
+    % \end{columns}
+    \begin{itemize}
+        \item $\cfrac{\partial \mathrm{CHF}}{\partial G}\begin{cases} > 0 & (x < 0.15) \cup ( G > 3\,000\,\nicefrac{\mathrm{kg}}{\mathrm{m}^2\mathrm{s}}) \\ < 0 & (x > 0.15) \cap ( G < 3\,000\,\nicefrac{\mathrm{kg}}{\mathrm{m}^2\mathrm{s}}) \end{cases}$
+        \item $\cfrac{\partial \mathrm{CHF}}{\partial x} < 0$
+        \item $\cfrac{\partial \mathrm{CHF}}{\partial P} > 0 \quad ; \quad P>60\,\mathrm{bar}$
+        \item $\cfrac{\partial^2 \mathrm{CHF}}{\partial x^2} > 0 \quad ; \quad x > 0.2$
+    \end{itemize}
+
+    % \includegraphics[width=\textwidth]{tendencias_chf_g.png}
 \end{frame}
 
 \begin{frame}
@@ -432,7 +552,7 @@
     Entrenamiento con los puntos obtenidos de COBRA-3CP.
     \vspace{0.5cm}
 
-    \textbf{Problema:} se tiene sólo el mínimo de CHF del ensayo para comparar, y COBRA-3CP obtiene 9060 datos por ensayo. El mínimo hace imposible el entrenamiento.
+    \textbf{Problema:} se tiene sólo el mínimo de CHF del ensayo para comparar, y COBRA-3CP obtiene 9060 datos por ensayo. El mínimo hace imposible el entrenamiento por gradiente.
     \begin{itemize}
         \item \textbf{Solución:} entrenamiento con mínimo suave. Se ponderan los puntos con menor predicción de CHF, disminuyendo la cantidad al avanzar las épocas de entrenamiento.
     \end{itemize}
@@ -445,7 +565,7 @@
     \frametitle{Entrenamiento de la MFPINN}
     Se evaluó el valor de:
     \begin{itemize}
-        \item \textbf{La arquitectura de multifidelidad.} Aporta consistencia en la predicción en regiones no entrenadas a través de la información de la LFNN.
+        \item \textbf{La arquitectura de multifidelidad.} Aporta robustez en la predicción en regiones no entrenadas a través de la información de la LFNN.
         \item \textbf{La incorporación de relaciones físicas.} La correcta combinación de ellas permite reducir la incerteza en la predicción. Asegura predicciones consistentes con la física en regiones no entrenadas.
         \item \textbf{La incorporación de variables adicionales.} No se obtuvo beneficio de ellas, incluso se observó que la predicción empeoraba al incorporarlas.
     \end{itemize}
@@ -453,15 +573,133 @@
 \end{frame}
 
 \begin{frame}
+    \frametitle{Entrenamiento de la MFPINN}
+    
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \centering
+            MFDNN
+            \includegraphics[trim=0 0 280 0,clip,width=0.8\textwidth]{../Figures/chf_mfdnn_pred.png}
+            $\mathrm{DNBR}_\mathrm{min} = 1.233$ (*)
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \centering
+            MFPINN
+            \includegraphics[trim=0 0 280 0,clip,width=0.8\textwidth]{../Figures/chf_mfpinn_E.png}
+            $\mathrm{DNBR}_\mathrm{min} = 1.203$ (*)
+        \end{column}
+    \end{columns}
+
+    \vspace{0.2cm}
+    Referencia INVAP: $\mathrm{DNBR}_\mathrm{min} = 1.212$ (sin penalización).
+
+    \vspace{0.2cm}
+    \textbf{$\bm{\mathrm{DNBR}_\mathrm{min}}$ en el orden de INVAP pero con modelos penalizados.}
+
+    % \vspace{0.3cm}
+    \vspace{0.1cm}
+    {\small
+        (*) $\mathrm{DNBR}_\mathrm{min}$ obtenido del conjunto de evaluación.
+    }
+\end{frame}
+
+\begin{frame}
     \frametitle{Predictor de CHF - Modelos finales}
+
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \centering
+            MFDNN
+            \includegraphics[trim=0 0 280 0,clip,width=0.8\textwidth]{../Figures/chf_mfdnn_pred_final.png}
+            $\mathrm{DNBR}_\mathrm{min} = 1.113$ (*)
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \centering
+            MFPINN
+            \includegraphics[trim=0 0 280 0,clip,width=0.8\textwidth]{../Figures/chf_mfpinn_pred_final.png}
+            $\mathrm{DNBR}_\mathrm{min} = 1.084$ (*)
+        \end{column}
+    \end{columns}
+
+    \vspace{0.2cm}
+    Referencia INVAP: $\mathrm{DNBR}_\mathrm{min} = 1.212$.
+
+    \vspace{0.2cm}
+    \textbf{Considerable mejora en $\bm{\mathrm{DNBR}_\mathrm{min}}$ para ambas metodologías.}
+
+    \vspace{0.1cm}
+    {\small
+        (*) $\mathrm{DNBR}_\mathrm{min}$ obtenido del conjunto de evaluación.
+    }
+\end{frame}
+
+\begin{frame}
+    \frametitle{Predictor de CHF - Evaluación del impacto en PLC}
+    \textbf{¿Qué impacto tiene la mejora en $\bm{\mathrm{DNBR}_\mathrm{min}}$ sobre la PLC?}
+
+    % Aumento de PLC por zona hidráulica para la metodología MFPINN, respecto de la metodología de INVAP.
+
+    % Evaluado con los condiciones conservativas del diseño termohidráulico de la CNA-UII.
+
+    \begin{table}[H]
+        \centering
+        \begin{tabular}{c c c c c c} 
+            \toprule
+                        & \multicolumn{5}{c}{\textbf{Zona Hidráulica}} \\
+                        & 1         & 2         & 3         & 4         & 5         \\ \hline
+            Diferencia  & $+2.6\%$  & $+7.6\%$ & $+9.7\%$ & $+3.6\%$ & $+3.0\%$ \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+
+    Tener en cuenta: 
+    \begin{itemize}
+        \item Sólo la ZH5 se encuentra limitada por DNBR. Las zonas 1 a 4 están limitadas por la fracción de vacío.
+        \item El cambio de metodología de predicción de CHF podría modificar el $\mathrm{SDL}_\mathrm{max}$, impactando en el $\mathrm{DNBR}_\mathrm{LCO}$.
+    \end{itemize}
+
 \end{frame}
 
 \section{Conclusiones y trabajo futuro}
 \begin{frame}
     \frametitle{Conclusiones y trabajo futuro}
+    Objetivos específicos:
+    \begin{itemize}[label={\checkmark}]
+        \item Herramienta predictiva de PLC.
+        \item Análisis de características relevantes de los perfiles de potencia de los elementos combustibles.
+        \item Metodología de predicción de CHF para la CNA-UII, basada en IA.
+    \end{itemize}
 
+    Objetivos estratégicos:
+    \begin{itemize}[label={\checkmark}]
+        \item Disminución en entre $2\,000$ y $9\,500$ veces el tiempo de cómputo para estimación de PLC.
+        \item Mejora de la predicción de CHF para el bundle de la CNA-UII, obteniendo un $\mathrm{DNBR}_\mathrm{min} = 1.084$ y un posible aumento de PLC de $+3.0\%$.
+    \end{itemize}
 \end{frame}
 
+\begin{frame}
+    \frametitle{Conclusiones y trabajo futuro}
+    \textbf{Predictor de PLC:}
+    \begin{itemize}[label={\square}]
+        \item Análisis de casos anómalos fuera del conjunto de entrenamiento. ¿Es conservativa la extrapolación?
+        \item Investigar si se predicen los mismos casos y canales limitantes que con COBRA-3CP.
+        \item Analizar mejoras en predicción para zonas periféricas. ¿Es necesario entrenar con aun más sobrepotencia en estas zonas?
+        \item Implementar el modelo en un entorno de cálculo real.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+    \frametitle{Conclusiones y trabajo futuro}
+
+    \textbf{Predictor de CHF:}
+    \begin{itemize}[label={\square}]
+        \item Realizar un análisis cuantitativo de los límites de aplicación de las relaciones diferenciales físicas propuestas.
+        \item Mejorar el modelo de baja fidelidad, específicamente en el rango de operación de la CNA-UII. ¿Permite mejorar aún más la predicción del modelo MFPINN?
+        \item Optimización de hiperparámetros por medio de Optuna.
+        \item Implementación del modelo final en COBRA-3CP.
+        \item Cálculo del diseño termohidráulico completo para definir el impacto real en PLC.
+    \end{itemize}
+\end{frame}
 
 
 \end{document}
